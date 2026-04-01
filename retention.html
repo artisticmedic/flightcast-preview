@@ -41,9 +41,17 @@
   --accent: #7857d1;
   --accent-hover: #6a4abf;
   --accent-light: #f3f0fb;
+  --accent-muted: #ebe5f7;
 
   --success: #30a84a;
+  --success-light: #f0fdf4;
   --danger: #d5432c;
+  --danger-light: #fef2f2;
+  --warning: #e5a00d;
+  --warning-light: #fffbeb;
+  --info: #3b82f6;
+  --info-light: #eff6ff;
+  --border-hover: #a3a3a3;
 
   --radius: 4px;
   --radius-sm: 4px;
@@ -210,7 +218,7 @@ a { text-decoration: none; color: inherit; }
   flex-shrink: 0;
 }
 .transcript-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #171717;
 }
@@ -502,7 +510,7 @@ a { text-decoration: none; color: inherit; }
   gap: 8px;
 }
 .analysis-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: #171717;
 }
@@ -753,13 +761,13 @@ a { text-decoration: none; color: inherit; }
   display: flex; align-items: center; gap: 4px;
   padding: 12px; border: 1px solid #e5e5e5; border-radius: 4px;
   background: white; cursor: pointer; width: 100%;
-  font-size: 14px; font-weight: 500; color: #171717;
+  font-size: 15px; font-weight: 500; color: #171717;
   letter-spacing: -0.15px;
   box-shadow: 0 0 1px rgba(0,0,0,0.03), 0 1px 1px rgba(0,0,0,0.03), 0 2px 1px rgba(0,0,0,0.02);
   transition: border-color 150ms ease;
 }
 .chapter-dropdown-trigger:hover { border-color: #a3a3a3; }
-.chapter-dropdown-trigger .ch-num { color: #a3a3a3; font-size: 14px; font-weight: 500; }
+.chapter-dropdown-trigger .ch-num { color: #a3a3a3; font-size: 15px; font-weight: 500; }
 .chapter-dropdown-trigger .ch-name { flex: 1; color: #171717; }
 .chapter-dropdown-trigger .ch-time {
   font-size: 13px; font-weight: 500; color: #525252;
@@ -948,7 +956,7 @@ a { text-decoration: none; color: inherit; }
 }
 .faye-sparkle { width: 16px; height: 16px; flex-shrink: 0; }
 .faye-name {
-  font-size: 14px; font-weight: 500; color: #171717; letter-spacing: -0.15px;
+  font-size: 15px; font-weight: 500; color: #171717; letter-spacing: -0.15px;
 }
 .faye-collapse-btn {
   width: 20px; height: 20px;
@@ -1058,7 +1066,7 @@ a { text-decoration: none; color: inherit; }
   padding: 8px 12px; cursor: text;
 }
 .faye-input-placeholder {
-  font-size: 14px; font-weight: 400; color: #7f7f7f; letter-spacing: -0.15px;
+  font-size: 15px; font-weight: 400; color: #7f7f7f; letter-spacing: -0.15px;
 }
 
 /* ── Segments View ── */
@@ -1096,7 +1104,7 @@ a { text-decoration: none; color: inherit; }
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 16px; border-bottom: 1px solid #eee;
 }
-.segments-chart-title { font-size: 14px; font-weight: 600; color: #171717; }
+.segments-chart-title { font-size: 16px; font-weight: 600; color: #171717; }
 .segments-legend { display: flex; gap: 12px; }
 .segments-legend-item { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 500; color: #7f7f7f; }
 .segments-legend-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
@@ -1112,7 +1120,7 @@ a { text-decoration: none; color: inherit; }
   display: flex; flex-direction: column; gap: 12px;
 }
 .segments-panel-header { flex-shrink: 0; }
-.segments-panel-title { font-size: 14px; font-weight: 600; color: #171717; }
+.segments-panel-title { font-size: 16px; font-weight: 600; color: #171717; }
 
 .segments-cards { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; }
 .segment-card-item {
@@ -1155,7 +1163,7 @@ a { text-decoration: none; color: inherit; }
 }
 .segment-insight-card.highlight { background: #faf8ff; border-color: rgba(120,87,209,0.2); }
 .segment-insight-title { font-size: 13px; font-weight: 600; color: #171717; margin-bottom: 4px; }
-.segment-insight-value { font-size: 18px; font-weight: 700; color: #7857d1; margin-bottom: 4px; }
+.segment-insight-value { font-size: 20px; font-weight: 700; color: #7857d1; margin-bottom: 4px; }
 .segment-insight-desc { font-size: 13px; color: #7f7f7f; line-height: 1.5; }
 
 /* ── Panel Drag Handles ── */
@@ -1378,7 +1386,7 @@ a { text-decoration: none; color: inherit; }
 .comp-insight { flex:1; border:1px solid #e5e5e5; border-radius:6px; padding:14px 16px; }
 .comp-insight.highlight { background:#faf8ff; border-color:rgba(120,87,209,0.2); }
 .comp-insight-title { font-size:13px; font-weight:600; color:#171717; margin-bottom:4px; }
-.comp-insight-value { font-size:18px; font-weight:700; color:#7857d1; margin-bottom:4px; }
+.comp-insight-value { font-size:20px; font-weight:700; color:#7857d1; margin-bottom:4px; }
 .comp-insight-desc { font-size:13px; color:#7f7f7f; line-height:1.5; }
 
 /* ── Platform Bar ── */
@@ -1431,6 +1439,44 @@ a { text-decoration: none; color: inherit; }
 }
 .transcript-line.search-match .txt { background: rgba(120,87,209,0.12); }
 .transcript-line.search-match.search-current .txt { background: rgba(120,87,209,0.25); }
+
+/* ── Panel load animations ── */
+@keyframes panelFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideFromLeft {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideFromRight {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.transcript-panel {
+  animation: slideFromLeft 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  animation-delay: 50ms;
+}
+.right-content {
+  animation: panelFadeIn 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  animation-delay: 100ms;
+}
+.faye-panel {
+  animation: slideFromRight 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  animation-delay: 150ms;
+}
+.analysis-area {
+  animation: slideUp 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  animation-delay: 200ms;
+}
+.platform-bar {
+  animation: panelFadeIn 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  animation-delay: 250ms;
+}
 </style>
 </head>
 <body>
