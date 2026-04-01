@@ -55,12 +55,12 @@
   flex-shrink: 0; z-index: 100; position: relative;
 }
 .preview-nav-left { display: flex; align-items: center; gap: 10px; }
-.preview-nav-wordmark { font-size: 16px; font-weight: 700; color: #525252; letter-spacing: -0.3px; }
+.preview-nav-wordmark { font-size: 14px; font-weight: 700; color: #525252; letter-spacing: -0.3px; }
 .preview-nav-sep { width: 1px; height: 16px; background: #d4d4d4; }
-.preview-nav-label { font-size: 14px; font-weight: 600; color: #7f7f7f; letter-spacing: 0.5px; text-transform: uppercase; }
+.preview-nav-label { font-size: 12px; font-weight: 600; color: #7f7f7f; letter-spacing: 0.5px; text-transform: uppercase; }
 .preview-nav-links { display: flex; gap: 2px; }
 .preview-nav-link {
-  font-size: 15px; font-weight: 500; color: #7f7f7f; padding: 8px 12px;
+  font-size: 13px; font-weight: 500; color: #7f7f7f; padding: 8px 12px;
   border-radius: 4px; text-decoration: none; transition: all 150ms ease;
   letter-spacing: -0.1px;
 }
@@ -700,19 +700,6 @@ tr:hover td { background: var(--bg-hover); }
           </div>
           <div class="funnel-filters">
             <div class="funnel-filter-group">
-              <span class="funnel-filter-label">Episode</span>
-              <select class="funnel-filter-select" id="funnelEpisodeFilter" onchange="applyFunnelFilters()">
-                <option value="all">All Episodes</option>
-                <option value="ep214">E382: Simon Sinek — Why Leaders Eat Last</option>
-                <option value="ep213">E381: The Neuroscientist Who Decoded Anxiety</option>
-                <option value="ep212">E380: Gary Vee — The Truth About Social Media</option>
-                <option value="ep211">E379: Dr. Rangan Chatterjee — The 4 Pillars</option>
-                <option value="ep210">E378: Alex Hormozi — Building a $100M Business</option>
-                <option value="ep209">E377: Mo Gawdat — Why AI Changes Everything</option>
-              </select>
-            </div>
-            <div class="funnel-filter-sep"></div>
-            <div class="funnel-filter-group">
               <span class="funnel-filter-label">Audience</span>
               <select class="funnel-filter-select" id="funnelAudienceFilter" onchange="applyFunnelFilters()">
                 <option value="all">All Listeners</option>
@@ -792,9 +779,9 @@ tr:hover td { background: var(--bg-hover); }
             <div class="loyalty-detail-header">
               <div>
                 <div class="card-title">Top Episodes Driving Loyalty</div>
-                <div class="card-desc">Most consumed by 5+ episode viewers</div>
+                <div class="card-desc">Of listeners who watched 5+ episodes, what % also watched each episode</div>
               </div>
-              <div class="loyalty-detail-badge">5+ ep cohort</div>
+              <div class="loyalty-detail-badge">5+ episode listeners</div>
             </div>
             <div class="loyalty-bar-list" id="loyaltyBarList"></div>
           </div>
@@ -809,6 +796,7 @@ tr:hover td { background: var(--bg-hover); }
             <div class="loyalty-trend-wrap" id="loyaltyTrendChart"></div>
           </div>
         </div>
+
       </div>
 
 
@@ -1051,8 +1039,8 @@ tr:hover td { background: var(--bg-hover); }
             <div class="empty-state-icon">
               <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="12" cy="16" r="8" stroke="currentColor" stroke-width="1.5" opacity="0.3"/><circle cx="20" cy="16" r="8" stroke="currentColor" stroke-width="1.5" opacity="0.3"/></svg>
             </div>
-            <div class="empty-state-text">Requires 3+ published episodes</div>
-            <div class="empty-state-sub">Overlap data will appear once enough episodes are available</div>
+            <div class="empty-state-text">Coming soon</div>
+            <div class="empty-state-sub">Cross-episode overlap analysis is in development</div>
           </div>
         </div>
       </div>
@@ -1073,12 +1061,12 @@ const FUNNEL_DATA = {
 };
 
 const LOYALTY_EPISODES = [
-  { title: 'E382: Simon Sinek — Why Leaders Eat Last', pct: 94, plays: '1.8M' },
-  { title: 'E378: Alex Hormozi — $100M Business', pct: 89, plays: '1.6M' },
-  { title: 'E381: The Neuroscientist Who Decoded Anxiety', pct: 84, plays: '1.4M' },
-  { title: 'E377: Mo Gawdat — Why AI Changes Everything', pct: 79, plays: '1.3M' },
-  { title: 'E380: Gary Vee — The Truth About Social Media', pct: 74, plays: '1.2M' },
-  { title: 'E379: Dr. Rangan Chatterjee — The 4 Pillars', pct: 68, plays: '1.1M' },
+  { title: 'E382: Simon Sinek — Why Leaders Eat Last', pct: 94, views: '1.8M' },
+  { title: 'E378: Alex Hormozi — $100M Business', pct: 89, views: '1.6M' },
+  { title: 'E381: The Neuroscientist Who Decoded Anxiety', pct: 84, views: '1.4M' },
+  { title: 'E377: Mo Gawdat — Why AI Changes Everything', pct: 79, views: '1.3M' },
+  { title: 'E380: Gary Vee — The Truth About Social Media', pct: 74, views: '1.2M' },
+  { title: 'E379: Dr. Rangan Chatterjee — The 4 Pillars', pct: 68, views: '1.1M' },
 ];
 
 const LOYALTY_TREND = [
@@ -1123,30 +1111,6 @@ const FILTER_DATA = {
     { label:'7', count:264000, pct:11 }, { label:'8', count:168000, pct:7 },
     { label:'9', count:96000, pct:4 }, { label:'10+', count:48000, pct:2 },
   ],
-  // E382: Simon Sinek — viral, exceptional retention
-  'ep214|all': [
-    { label:'1', count:684000, pct:100 }, { label:'2', count:581400, pct:85 },
-    { label:'3', count:478800, pct:70 }, { label:'4', count:389880, pct:57 },
-    { label:'5', count:307800, pct:45 }, { label:'6', count:232560, pct:34 },
-    { label:'7', count:171000, pct:25 }, { label:'8', count:116280, pct:17 },
-    { label:'9', count:75240, pct:11 }, { label:'10+', count:41040, pct:6 },
-  ],
-  // E381: Neuroscientist — niche but very sticky audience
-  'ep213|all': [
-    { label:'1', count:512800, pct:100 }, { label:'2', count:410200, pct:80 },
-    { label:'3', count:333300, pct:65 }, { label:'4', count:266700, pct:52 },
-    { label:'5', count:210200, pct:41 }, { label:'6', count:158900, pct:31 },
-    { label:'7', count:117900, pct:23 }, { label:'8', count:82000, pct:16 },
-    { label:'9', count:51300, pct:10 }, { label:'10+', count:30800, pct:6 },
-  ],
-  // E380: Gary Vee — big reach, average retention
-  'ep212|all': [
-    { label:'1', count:398600, pct:100 }, { label:'2', count:271000, pct:68 },
-    { label:'3', count:183400, pct:46 }, { label:'4', count:127600, pct:32 },
-    { label:'5', count:83700, pct:21 }, { label:'6', count:55800, pct:14 },
-    { label:'7', count:35900, pct:9 }, { label:'8', count:19900, pct:5 },
-    { label:'9', count:12000, pct:3 }, { label:'10+', count:6000, pct:2 },
-  ],
   // US audience — 31% of total, slightly better retention (business content resonates)
   'all|us': [
     { label:'1', count:744000, pct:100 }, { label:'2', count:542900, pct:73 },
@@ -1179,54 +1143,12 @@ const FILTER_DATA = {
     { label:'7', count:70700, pct:17 }, { label:'8', count:49900, pct:12 },
     { label:'9', count:33300, pct:8 }, { label:'10+', count:20800, pct:5 },
   ],
-  // Simon Sinek + YouTube — the killer combo, 90% ep2 retention
-  'ep214|youtube': [
-    { label:'1', count:520000, pct:100 }, { label:'2', count:468000, pct:90 },
-    { label:'3', count:400400, pct:77 }, { label:'4', count:332800, pct:64 },
-    { label:'5', count:270400, pct:52 }, { label:'6', count:208000, pct:40 },
-    { label:'7', count:156000, pct:30 }, { label:'8', count:109200, pct:21 },
-    { label:'9', count:72800, pct:14 }, { label:'10+', count:41600, pct:8 },
-  ],
-  // Simon Sinek + UK — home market loves leadership content
-  'ep214|uk': [
-    { label:'1', count:260000, pct:100 }, { label:'2', count:226200, pct:87 },
-    { label:'3', count:192400, pct:74 }, { label:'4', count:161200, pct:62 },
-    { label:'5', count:132600, pct:51 }, { label:'6', count:104000, pct:40 },
-    { label:'7', count:78000, pct:30 }, { label:'8', count:54600, pct:21 },
-    { label:'9', count:36400, pct:14 }, { label:'10+', count:20800, pct:8 },
-  ],
-  // Simon Sinek + US
-  'ep214|us': [
-    { label:'1', count:212000, pct:100 }, { label:'2', count:180200, pct:85 },
-    { label:'3', count:150500, pct:71 }, { label:'4', count:125100, pct:59 },
-    { label:'5', count:99600, pct:47 }, { label:'6', count:76300, pct:36 },
-    { label:'7', count:55100, pct:26 }, { label:'8', count:38200, pct:18 },
-    { label:'9', count:25400, pct:12 }, { label:'10+', count:14800, pct:7 },
-  ],
 };
 
 function getFilteredData() {
-  const epVal = document.getElementById('funnelEpisodeFilter').value;
   const audVal = document.getElementById('funnelAudienceFilter').value;
-  const key = epVal + '|' + audVal;
-
-  // Try exact match first, then episode-only, then audience-only, then default
+  const key = 'all|' + audVal;
   if (FILTER_DATA[key]) return FILTER_DATA[key];
-  if (FILTER_DATA[epVal + '|all']) {
-    // Scale episode data by audience ratio
-    const epData = FILTER_DATA[epVal + '|all'];
-    const audData = FILTER_DATA['all|' + audVal];
-    if (audData) {
-      const ratio = audData[0].count / FILTER_DATA['all|all'][0].count;
-      return epData.map((row, i) => ({
-        label: row.label,
-        count: Math.round(row.count * ratio),
-        pct: Math.max(1, Math.round(row.pct * (audData[i] ? audData[i].pct / FILTER_DATA['all|all'][i].pct : ratio))),
-      }));
-    }
-    return epData;
-  }
-  if (FILTER_DATA['all|' + audVal]) return FILTER_DATA['all|' + audVal];
   return FILTER_DATA['all|all'];
 }
 
@@ -1237,15 +1159,10 @@ function applyFunnelFilters() {
 }
 
 function updateFilterTags() {
-  const epEl = document.getElementById('funnelEpisodeFilter');
   const audEl = document.getElementById('funnelAudienceFilter');
   const tagsWrap = document.getElementById('funnelActiveTags');
   let tags = '';
 
-  if (epEl.value !== 'all') {
-    const label = epEl.options[epEl.selectedIndex].text;
-    tags += `<div class="funnel-active-tag">${label}<span class="funnel-active-tag-x" onclick="document.getElementById('funnelEpisodeFilter').value='all';applyFunnelFilters()">&#215;</span></div>`;
-  }
   if (audEl.value !== 'all') {
     const label = audEl.options[audEl.selectedIndex].text;
     tags += `<div class="funnel-active-tag">${label}<span class="funnel-active-tag-x" onclick="document.getElementById('funnelAudienceFilter').value='all';applyFunnelFilters()">&#215;</span></div>`;
@@ -1262,8 +1179,7 @@ function trapezoidPath(x, segW, leftH, rightH, midY, r) {
 function renderFunnel() {
   const data = getFilteredData();
   const allData = FILTER_DATA['all|all'];
-  const isFiltered = document.getElementById('funnelEpisodeFilter').value !== 'all' ||
-                     document.getElementById('funnelAudienceFilter').value !== 'all';
+  const isFiltered = document.getElementById('funnelAudienceFilter').value !== 'all';
   const tooltip = document.getElementById('funnelTooltip');
   const svgWrap = document.getElementById('funnelSvg');
   const legendWrap = document.getElementById('funnelLegend');
@@ -1444,8 +1360,8 @@ function renderLoyaltyBarList() {
       <div class="loyalty-bar-bg" style="width:${ep.pct}%"></div>
       <div class="loyalty-bar-rank">${i + 1}</div>
       <div class="loyalty-bar-label">${ep.title}</div>
-      <div class="loyalty-bar-meta">${ep.plays}</div>
-      <div class="loyalty-bar-value">${ep.pct}%</div>
+      <div class="loyalty-bar-meta">${ep.views} views</div>
+      <div class="loyalty-bar-value">${ep.pct}% watched</div>
     </div>`).join('');
 }
 

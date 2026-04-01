@@ -188,7 +188,7 @@ a { text-decoration: none; color: inherit; }
 
 /* ── Grid layouts ── */
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.grid-65-35 { display: grid; grid-template-columns: 1.85fr 1fr; gap: 16px; }
+.grid-65-35 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
 /* ── Platform pills ── */
 .platform-pills { display: flex; gap: 4px; margin-top: 12px; margin-bottom: 16px; }
@@ -374,7 +374,7 @@ tr:hover td { background: var(--bg-hover); }
 }
 .affinity-select:hover { border-color: var(--border-hover); }
 .affinity-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
-.affinity-bars { display: flex; align-items: flex-end; gap: 12px; height: 180px; padding: 0 8px; }
+.affinity-bars { display: flex; align-items: flex-end; gap: 12px; flex: 1; min-height: 180px; padding: 0 8px; }
 .affinity-bar-wrap {
   flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%;
 }
@@ -392,7 +392,7 @@ tr:hover td { background: var(--bg-hover); }
 .affinity-bar-label { font-size: 13px; font-weight: 600; color: var(--text-tertiary); text-align: center; }
 
 /* ── Episode Cluster Grid ── */
-.cluster-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.cluster-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .cluster-ep-card {
   border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px;
   display: flex; flex-direction: column; gap: 6px; transition: border-color var(--ease), box-shadow var(--ease);
@@ -428,6 +428,31 @@ tr:hover td { background: var(--bg-hover); }
 .insight-banner-title { font-size: 16px; font-weight: 600; letter-spacing: -0.2px; margin-bottom: 4px; }
 .insight-banner-body { font-size: 13px; color: var(--text-secondary); line-height: 1.65; }
 .insight-banner-body strong { color: var(--accent); font-weight: 700; }
+
+/* ── Gateway Episodes (Style D — green success bars) ── */
+.gateway-bar-list { display: flex; flex-direction: column; gap: 6px; }
+.gateway-bar-item {
+  position: relative; display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: var(--radius-lg); overflow: hidden;
+}
+.gateway-bar-bg {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  background: var(--success-light); border-radius: var(--radius-lg); z-index: 0;
+  transition: width 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.reveal:not(.visible) .gateway-bar-bg { width: 0 !important; }
+.gateway-bar-rank { font-size: 13px; font-weight: 600; color: var(--text-tertiary); width: 16px; text-align: right; position: relative; z-index: 1; }
+.gateway-bar-label { flex: 1; font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; z-index: 1; }
+.gateway-bar-meta { font-size: 13px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; position: relative; z-index: 1; white-space: nowrap; }
+.gateway-bar-value { font-size: 14px; font-weight: 700; color: var(--success); font-variant-numeric: tabular-nums; position: relative; z-index: 1; white-space: nowrap; }
+.reveal.visible .gateway-bar-item { animation: rowFadeIn 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+.reveal.visible .gateway-bar-item:nth-child(1) { animation-delay: 50ms; }
+.reveal.visible .gateway-bar-item:nth-child(2) { animation-delay: 100ms; }
+.reveal.visible .gateway-bar-item:nth-child(3) { animation-delay: 150ms; }
+.reveal.visible .gateway-bar-item:nth-child(4) { animation-delay: 200ms; }
+.reveal.visible .gateway-bar-item:nth-child(5) { animation-delay: 250ms; }
+.reveal.visible .gateway-bar-item:nth-child(6) { animation-delay: 300ms; }
+.reveal:not(.visible) .gateway-bar-item { opacity: 0; }
 
 /* ── Scroll reveal ── */
 .reveal {
@@ -634,45 +659,46 @@ tr:hover td { background: var(--bg-hover); }
         </div>
       </div>
 
-      <!-- Topic Affinity -->
-      <div class="card reveal">
-        <div class="card-header-row">
-          <div>
-            <div class="card-title">Topic Affinity</div>
-            <div class="card-desc">If they watch a topic, what else do they watch?</div>
+      <!-- Topic Affinity + Frequently Watched Together -->
+      <div class="grid-2 reveal">
+        <div class="card" style="display: flex; flex-direction: column;">
+          <div class="card-header-row">
+            <div>
+              <div class="card-title">Topic Affinity</div>
+              <div class="card-desc">If they watch a topic, what else do they watch?</div>
+            </div>
           </div>
-        </div>
-        <div class="affinity-selector">
-          <span class="affinity-prompt">If they watch</span>
-          <select class="affinity-select" id="affinityTopic" onchange="renderAffinity()">
-            <option value="business">Business</option>
-            <option value="finance">Finance</option>
-            <option value="health">Health</option>
-            <option value="relationships">Relationships</option>
-            <option value="culture">Culture</option>
-            <option value="interviews">Interviews</option>
-          </select>
-          <span class="affinity-prompt">they are most likely to also watch...</span>
-        </div>
-        <div class="affinity-bars" id="affinityBars"></div>
-      </div>
-
-      <!-- Episode cluster grid -->
-      <div class="card reveal">
-        <div class="card-header-row">
-          <div>
-            <div class="card-title">Frequently Watched Together</div>
-            <div class="card-desc">These episodes are often consumed by the same listeners</div>
-          </div>
-          <div class="card-actions">
-            <select class="affinity-select" id="clusterSelect" onchange="renderClusterGrid()">
-              <option value="business">Business Masterclass</option>
-              <option value="health">Health &amp; Science</option>
-              <option value="culture">Culture &amp; Society</option>
+          <div class="affinity-selector">
+            <span class="affinity-prompt">If they watch</span>
+            <select class="affinity-select" id="affinityTopic" onchange="renderAffinity()">
+              <option value="business">Business</option>
+              <option value="finance">Finance</option>
+              <option value="health">Health</option>
+              <option value="relationships">Relationships</option>
+              <option value="culture">Culture</option>
+              <option value="interviews">Interviews</option>
             </select>
+            <span class="affinity-prompt">they are most likely to also watch...</span>
           </div>
+          <div class="affinity-bars" id="affinityBars"></div>
         </div>
-        <div class="cluster-grid" id="clusterGrid"></div>
+
+        <div class="card">
+          <div class="card-header-row">
+            <div>
+              <div class="card-title">Frequently Watched Together</div>
+              <div class="card-desc">These episodes are often consumed by the same listeners</div>
+            </div>
+            <div class="card-actions">
+              <select class="affinity-select" id="clusterSelect" onchange="renderClusterGrid()">
+                <option value="business">Business Masterclass</option>
+                <option value="health">Health &amp; Science</option>
+                <option value="culture">Culture &amp; Society</option>
+              </select>
+            </div>
+          </div>
+          <div class="cluster-grid" id="clusterGrid"></div>
+        </div>
       </div>
 
       <!-- Episode cluster table -->
@@ -725,24 +751,43 @@ tr:hover td { background: var(--bg-hover); }
         </div>
       </div>
 
-      <div class="card reveal">
-        <div class="card-header-row">
-          <div>
-            <div class="card-title">Also Watched</div>
-            <div class="card-desc">Listeners of a selected episode also watched these</div>
+      <!-- Also Watched + Gateway Episodes -->
+      <div class="grid-2 reveal">
+        <div class="card">
+          <div class="card-header-row">
+            <div>
+              <div class="card-title">Also Watched</div>
+              <div class="card-desc">Listeners of a selected episode also watched these</div>
+            </div>
+            <div class="card-actions">
+              <select class="affinity-select" id="alsoWatchedSelect" onchange="renderAlsoWatched()">
+                <option value="money">The Money Expert: You're Being Lied To</option>
+                <option value="sinek">Simon Sinek: Advice Young People NEED</option>
+                <option value="hormozi">Alex Hormozi: $100M Business</option>
+              </select>
+            </div>
           </div>
-          <div class="card-actions">
-            <select class="affinity-select" id="alsoWatchedSelect" onchange="renderAlsoWatched()">
-              <option value="money">The Money Expert: You're Being Lied To</option>
-              <option value="sinek">Simon Sinek: Advice Young People NEED</option>
-              <option value="hormozi">Alex Hormozi: $100M Business</option>
-            </select>
+          <div class="aw-list" id="alsoWatchedList"></div>
+          <div class="card-footer">
+            <span class="card-footer-text" id="alsoWatchedFooter">Based on 1.2M total viewers</span>
+            <a class="card-footer-link">View All</a>
           </div>
         </div>
-        <div class="aw-list" id="alsoWatchedList"></div>
-        <div class="card-footer">
-          <span class="card-footer-text" id="alsoWatchedFooter">Based on 1.2M total viewers</span>
-          <a class="card-footer-link">View All</a>
+
+        <div class="card">
+          <div class="card-header-row">
+            <div>
+              <div class="card-title">Gateway Episodes</div>
+              <div class="card-desc">Episodes that converted first-time viewers into returning listeners</div>
+            </div>
+            <div class="card-actions">
+              <span style="font-size: 13px; font-weight: 600; padding: 3px 8px; border-radius: 20px; background: var(--success-light); color: var(--success); white-space: nowrap;">new → returning</span>
+            </div>
+          </div>
+          <div class="gateway-bar-list" id="gatewayBarList"></div>
+          <div class="card-footer">
+            <span class="card-footer-text">Based on listeners who returned for 2+ episodes within 30 days</span>
+          </div>
         </div>
       </div>
 
@@ -978,10 +1023,38 @@ function renderAlsoWatched() {
   document.getElementById('alsoWatchedFooter').textContent = 'Based on ' + data.total + ' total viewers';
 }
 
+// ── Gateway Episodes ──
+const GATEWAY_EPISODES = [
+  { title: 'E378: Alex Hormozi — Building a $100M Business', converted: 52400, pct: 100 },
+  { title: 'E382: Simon Sinek — Why Leaders Eat Last', converted: 48200, pct: 92 },
+  { title: 'E380: Gary Vee — The Truth About Social Media', converted: 41800, pct: 80 },
+  { title: 'E377: Mo Gawdat — Why AI Changes Everything', converted: 36100, pct: 69 },
+  { title: 'E381: The Neuroscientist Who Decoded Anxiety', converted: 31400, pct: 60 },
+  { title: 'E379: Dr. Rangan Chatterjee — The 4 Pillars', converted: 28900, pct: 55 },
+];
+
+function fmtK(n) {
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  return n.toLocaleString();
+}
+
+function renderGatewayEpisodes() {
+  document.getElementById('gatewayBarList').innerHTML = GATEWAY_EPISODES.map((ep, i) => `
+    <div class="gateway-bar-item">
+      <div class="gateway-bar-bg" style="width:${ep.pct}%"></div>
+      <div class="gateway-bar-rank">${i + 1}</div>
+      <div class="gateway-bar-label">${ep.title}</div>
+      <div class="gateway-bar-meta">${fmtK(ep.converted)} converted</div>
+      <div class="gateway-bar-value">${ep.pct === 100 ? '#1' : ep.pct + '%'}</div>
+    </div>`).join('');
+}
+
 // Init
 renderAffinity();
 renderClusterGrid();
 renderAlsoWatched();
+renderGatewayEpisodes();
 
 // ── Scroll reveal with stagger ──
 (function() {
