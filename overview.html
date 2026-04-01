@@ -427,6 +427,13 @@ tr:hover td { background: var(--bg-hover); }
 
 .funnel-svg-wrap { position: relative; }
 .funnel-svg-wrap svg { width: 100%; height: auto; display: block; }
+.funnel-html-row { display: flex; gap: 4px; }
+.funnel-html-cell { flex: 1; text-align: center; font-family: var(--font); }
+.funnel-header-row .funnel-html-cell { font-size: 13px; font-weight: 600; color: var(--text-secondary); padding-bottom: 6px; }
+.funnel-dropoff-row { margin-top: 8px; }
+.funnel-dropoff-row .funnel-html-cell { font-size: 13px; font-weight: 600; color: var(--danger); opacity: 0.7; }
+.funnel-pct-row { margin-top: 2px; }
+.funnel-pct-row .funnel-html-cell { font-size: 13px; font-weight: 600; color: var(--text-tertiary); }
 .funnel-svg-wrap svg .funnel-seg { cursor: pointer; transition: filter 150ms ease; }
 /* Funnel hover — dim siblings, pop active */
 .funnel-svg-wrap svg .funnel-seg { cursor: pointer; transition: opacity 180ms ease, filter 180ms ease; }
@@ -1261,8 +1268,8 @@ function renderFunnel() {
   const svgWrap = document.getElementById('funnelSvg');
   const legendWrap = document.getElementById('funnelLegend');
 
-  const W = 680, funnelH = 240, headerY = 14, funnelTop = 28;
-  const dropoffY = funnelTop + funnelH + 16, pctY = dropoffY + 16, totalH = pctY + 8;
+  const W = 680, funnelH = 240, funnelTop = 0;
+  const totalH = funnelH;
   const gap = 4, segW = (W - (data.length - 1) * gap) / data.length, minH = 22;
   const midY = funnelTop + funnelH / 2, r = 2;
 
@@ -1280,12 +1287,6 @@ function renderFunnel() {
   const absPcts = data.map(row => (row.count / allData[0].count) * 100);
 
   let svgContent = '';
-
-  // Headers
-  data.forEach((d, i) => {
-    const cx = i * (segW + gap) + segW / 2;
-    svgContent += `<text x="${cx}" y="${headerY}" text-anchor="middle" fill="#525252" font-size="13" font-weight="600">${d.label}</text>`;
-  });
 
   // Reference outlines (all|all) — only when filtered
   if (isFiltered) {
@@ -1318,22 +1319,32 @@ function renderFunnel() {
     </g>`;
   });
 
-  // Drop-offs
-  data.forEach((d, i) => {
-    if (i === 0) return;
-    const cx = i * (segW + gap) + segW / 2;
-    svgContent += `<text x="${cx}" y="${dropoffY}" text-anchor="middle" fill="#d5432c" font-size="11" font-weight="600" opacity="0.7">-${dropoffs[i]}%</text>`;
-  });
-
-  // Percentages
-  data.forEach((d, i) => {
-    const cx = i * (segW + gap) + segW / 2;
-    svgContent += `<text x="${cx}" y="${pctY}" text-anchor="middle" fill="#7f7f7f" font-size="11" font-weight="600">${d.pct}%</text>`;
-  });
-
+  // Remove old elements
   const old = svgWrap.querySelector('svg');
   if (old) old.remove();
-  svgWrap.insertAdjacentHTML('afterbegin', `<svg viewBox="0 0 ${W} ${totalH}" xmlns="http://www.w3.org/2000/svg">${svgContent}</svg>`);
+  var oldHeader = svgWrap.querySelector('.funnel-header-row');
+  if (oldHeader) oldHeader.remove();
+  var oldDropoff = svgWrap.querySelector('.funnel-dropoff-row');
+  if (oldDropoff) oldDropoff.remove();
+  var oldPct = svgWrap.querySelector('.funnel-pct-row');
+  if (oldPct) oldPct.remove();
+
+  // Header row (HTML)
+  const headerHtml = `<div class="funnel-html-row funnel-header-row">${data.map(d => `<div class="funnel-html-cell">${d.label}</div>`).join('')}</div>`;
+
+  // SVG (funnel shapes only)
+  const svgEl = `<svg viewBox="0 0 ${W} ${totalH}" xmlns="http://www.w3.org/2000/svg">${svgContent}</svg>`;
+
+  // Drop-off row (HTML)
+  const dropoffHtml = `<div class="funnel-html-row funnel-dropoff-row">${data.map((d, i) => `<div class="funnel-html-cell">${dropoffs[i] !== null ? '-' + dropoffs[i] + '%' : ''}</div>`).join('')}</div>`;
+
+  // Percentage row (HTML)
+  const pctHtml = `<div class="funnel-html-row funnel-pct-row">${data.map(d => `<div class="funnel-html-cell">${d.pct}%</div>`).join('')}</div>`;
+
+  svgWrap.insertAdjacentHTML('afterbegin', pctHtml);
+  svgWrap.insertAdjacentHTML('afterbegin', dropoffHtml);
+  svgWrap.insertAdjacentHTML('afterbegin', svgEl);
+  svgWrap.insertAdjacentHTML('afterbegin', headerHtml);
 
   // Legend
   legendWrap.innerHTML = `<div class="funnel-legend-title">Breakdown</div>` +
