@@ -254,7 +254,7 @@ a { text-decoration: none; color: inherit; }
   background: #fafafa;
 }
 .transcript-line.active {
-  background: #f0f0f0;
+  background: #f5f5f5;
   border-left: 4px solid #8a67e0;
   border-radius: 0;
   padding: 4px 8px 4px 12px;
@@ -2206,9 +2206,9 @@ a { text-decoration: none; color: inherit; }
       allLines.forEach(function(line, i) {
         var dist = Math.abs(i - firstLineIndex);
         if (dist === 0 || dist <= 1) line.style.opacity = '1';
-        else if (dist <= 3) line.style.opacity = '0.7';
-        else if (dist <= 6) line.style.opacity = '0.45';
-        else line.style.opacity = '0.3';
+        else if (dist <= 3) line.style.opacity = '0.85';
+        else if (dist <= 6) line.style.opacity = '0.65';
+        else line.style.opacity = '0.5';
       });
 
       // Scroll to center
@@ -2613,9 +2613,9 @@ a { text-decoration: none; color: inherit; }
       const dist = Math.abs(i - activeIndex);
       if (dist === 0) line.style.opacity = '1';
       else if (dist <= 1) line.style.opacity = '1';
-      else if (dist <= 3) line.style.opacity = '0.7';
-      else if (dist <= 6) line.style.opacity = '0.45';
-      else line.style.opacity = '0.3';
+      else if (dist <= 3) line.style.opacity = '0.85';
+      else if (dist <= 6) line.style.opacity = '0.65';
+      else line.style.opacity = '0.5';
     });
     const activeLine = transcriptLines[activeIndex];
     if (activeLine) {
