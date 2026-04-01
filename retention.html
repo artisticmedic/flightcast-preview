@@ -1,0 +1,3772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flightcast — Preview: Retention Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   DESIGN TOKENS
+   ============================================ */
+:root {
+  --font: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --background: #ffffff;
+  --surface: #f5f5f5;
+  --foreground-strong: #171717;
+  --muted-foreground: #7f7f7f;
+  --muted-foreground-light: #a3a3a3;
+  --primary: #7857d1;
+  --primary-light: #f3f0fb;
+  --destructive: #d5432c;
+  --border: #d4d4d4;
+  --border-light: #e5e5e5;
+  --border-sidebar: #d9dbe2;
+
+  --text-primary: #171717;
+  --text-secondary: #525252;
+  --text-tertiary: #7f7f7f;
+  --text-inverse: #ffffff;
+
+  --bg-page: #ffffff;
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --bg-hover: #fafafa;
+  --bg-active: #f5f5f5;
+  --bg-muted: #f5f5f5;
+
+  --accent: #7857d1;
+  --accent-hover: #6a4abf;
+  --accent-light: #f3f0fb;
+
+  --success: #30a84a;
+  --danger: #d5432c;
+
+  --radius: 4px;
+  --radius-sm: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --ease: 150ms ease;
+}
+
+/* ============================================
+   PREVIEW NAV
+   ============================================ */
+.preview-nav {
+  height: 40px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; background: #ffffff; border-bottom: 1px solid #e5e5e5;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  flex-shrink: 0; z-index: 100; position: relative;
+}
+.preview-nav-left { display: flex; align-items: center; gap: 10px; }
+.preview-nav-wordmark { font-size: 14px; font-weight: 700; color: #525252; letter-spacing: -0.3px; }
+.preview-nav-sep { width: 1px; height: 16px; background: #d4d4d4; }
+.preview-nav-label { font-size: 12px; font-weight: 600; color: #7f7f7f; letter-spacing: 0.5px; text-transform: uppercase; }
+.preview-nav-links { display: flex; gap: 2px; }
+.preview-nav-link {
+  font-size: 13px; font-weight: 500; color: #7f7f7f; padding: 8px 12px;
+  border-radius: 4px; text-decoration: none; transition: all 150ms ease;
+  letter-spacing: -0.1px;
+}
+.preview-nav-link:hover { color: #171717; background: #f5f5f5; }
+.preview-nav-link.active { color: #7857d1; font-weight: 600; }
+
+/* ============================================
+   RESET & BASE
+   ============================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { height: 100%; }
+body {
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: 100vh;
+  overflow: hidden;
+  letter-spacing: -0.15px;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; font-size: inherit; color: inherit; }
+a { text-decoration: none; color: inherit; }
+
+/* ============================================
+   APP SHELL
+   ============================================ */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 40px);
+  overflow: hidden;
+}
+
+/* ============================================
+   MAIN AREA
+   ============================================ */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ── Episode Header ── */
+.episode-header {
+  background: white;
+  flex-shrink: 0;
+}
+.episode-header-row-1 {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 32px;
+}
+.episode-header-title-area {
+  display: flex; align-items: center; gap: 24px;
+  flex: 1; min-width: 0;
+}
+.episode-header-title {
+  font-size: 18px; font-weight: 600; color: #171717;
+  letter-spacing: -0.31px;
+  flex: 1 1 auto; min-width: 200px;
+}
+.chip {
+  background: #f5f5f5;
+  font-size: 13px;
+  font-weight: 500;
+  color: #525252;
+  border-radius: 4px;
+  padding: 2px 6px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.unpublish-btn {
+  background: #fdf4f2; color: #d5432c;
+  font-size: 14px; font-weight: 500;
+  padding: 8px 12px; border-radius: 4px;
+  cursor: pointer; transition: background 150ms;
+  flex-shrink: 0; letter-spacing: -0.15px;
+  margin-left: 24px;
+}
+.unpublish-btn:hover { background: #fce8e4; }
+.episode-header-row-2 {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px;
+  border-top: 1px solid #d4d4d4;
+  border-bottom: 1px solid #d4d4d4;
+}
+.episode-tabs { display: flex; gap: 4px; }
+.episode-tab {
+  padding: 10px 12px; font-size: 14px; font-weight: 500;
+  color: #7f7f7f; cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 150ms ease;
+}
+.episode-tab:hover { color: #171717; }
+.episode-tab.active { color: #171717; border-bottom-color: #7857d1; }
+.episode-header-actions { display: flex; gap: 4px; }
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 150ms ease;
+  color: #7f7f7f;
+}
+.icon-btn:hover { background: #f5f5f5; color: #171717; }
+.icon-btn svg { width: 16px; height: 16px; }
+
+/* ============================================
+   BODY AREA
+   ============================================ */
+.body-area {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Transcript Panel ── */
+.transcript-panel {
+  flex: 1;
+  min-width: 240px;
+  background: white;
+  border-right: 1px solid #e5e5e5;
+  display: flex;
+  flex-direction: column;
+}
+.transcript-header {
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.transcript-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #171717;
+}
+.transcript-header-icons {
+  display: flex;
+  gap: 8px;
+}
+.transcript-header-icons svg {
+  width: 16px;
+  height: 16px;
+  color: #a3a3a3;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+.transcript-header-icons svg:hover { color: #171717; }
+.transcript-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.transcript-line {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 100ms ease;
+}
+.transcript-line:hover {
+  background: #fafafa;
+}
+.transcript-line.active {
+  background: #fafafa;
+  border-left: 4px solid #8a67e0;
+  border-radius: 0;
+  padding: 4px 8px 4px 12px;
+}
+.transcript-line .ts {
+  font-size: 13px;
+  font-weight: 500;
+  color: #a3a3a3;
+  width: 40px;
+  min-width: 40px;
+  font-variant-numeric: tabular-nums;
+  line-height: 16.5px;
+  letter-spacing: -0.15px;
+  padding-top: 1.5px;
+  white-space: nowrap;
+}
+.transcript-line .txt {
+  font-size: 13px;
+  font-weight: 400;
+  color: #7f7f7f;
+  line-height: 19.5px;
+  letter-spacing: -0.15px;
+  flex: 1;
+}
+.transcript-line.active .txt {
+  color: #171717;
+  font-weight: 500;
+}
+
+/* ── Right Content (center column) ── */
+.right-content {
+  width: 50%;
+  max-width: 50%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  background: white;
+}
+
+/* ── Video Section ── */
+.video-section {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: calc(50vh - 80px);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  position: relative;
+  flex-shrink: 0;
+  cursor: pointer;
+  overflow: hidden;
+}
+.video-guest-label {
+  position: absolute; bottom: 36px; left: 16px;
+  font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8);
+}
+.video-play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 200ms ease;
+}
+.video-section:hover .video-play-btn { background: rgba(255,255,255,0.3); }
+.video-play-btn svg { width: 32px; height: 32px; }
+.video-timestamp {
+  position: absolute;
+  bottom: 14px;
+  left: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.8);
+}
+.video-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(255,255,255,0.2);
+}
+.video-progress-played {
+  width: 240px;
+  height: 100%;
+  background: #7857d1;
+}
+
+/* ── Audio Controls ── */
+.audio-controls {
+  background: white;
+  padding: 8px 16px;
+  border-top: 1px solid #e5e5e5;
+  border-bottom: 1px solid #e5e5e5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.pause-btn {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 50%;
+  background: #171717;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.pause-btn:hover { background: #333; transform: scale(1.05); }
+.pause-btn svg { width: 16px; height: 16px; }
+.audio-time {
+  font-size: 13px;
+  font-weight: 500;
+  color: #171717;
+  min-width: 34px;
+  font-variant-numeric: tabular-nums;
+}
+.audio-time.remaining {
+  color: #a3a3a3;
+}
+.waveform-area {
+  flex: 1;
+  height: 44px;
+  position: relative;
+  background: #fafafa;
+  border-radius: 6px;
+  border: 1px solid #eee;
+  overflow: visible;
+}
+.waveform-area svg {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: 5px;
+}
+
+/* Playhead */
+.waveform-playhead {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: #7857d1;
+  left: 35%;
+  z-index: 3;
+  transition: left 50ms linear;
+}
+/* Playhead dots removed — Figma canon has clean line only */
+
+/* Played region tint */
+.waveform-played-region {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(120, 87, 209, 0.06);
+  z-index: 0;
+  pointer-events: none;
+  transition: width 50ms linear;
+  border-radius: 5px 0 0 5px;
+}
+
+/* Drop-off markers — removed for cleanliness */
+
+/* Hover time indicator on waveform */
+.waveform-hover-time {
+  position: absolute;
+  top: -22px;
+  transform: translateX(-50%);
+  background: #171717;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 100ms;
+  z-index: 10;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.waveform-hover-time::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 3px;
+  background: #171717;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+.waveform-hover-line {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: rgba(23, 23, 23, 0.2);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 100ms;
+  z-index: 2;
+}
+.volume-icon {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7f7f7f;
+  cursor: pointer;
+  transition: background 150ms;
+}
+.volume-icon:hover { background: #f5f5f5; }
+.volume-icon svg { width: 16px; height: 16px; }
+
+/* ── Analysis Chart Area ── */
+.analysis-area {
+  flex: 1;
+  background: white;
+  padding: 0 0 38px 0;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
+  overflow: visible;
+}
+.analysis-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding: 8px 16px 0;
+}
+.analysis-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.analysis-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #171717;
+}
+.analysis-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.legend-item { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 500; color: #7f7f7f; }
+.legend-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.view-toggle {
+  display: flex; border: 1px solid #d4d4d4; border-radius: 4px; padding: 1px;
+}
+.view-toggle-btn {
+  padding: 4px 10px; font-size: 13px; font-weight: 500; color: #7f7f7f;
+  cursor: pointer; transition: all 150ms; letter-spacing: -0.1px;
+}
+.view-toggle-btn:hover { color: #171717; }
+.view-toggle-btn.active { background: #171717; color: white; border-radius: 3px; }
+.period-selector {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #f5f5f5;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #171717;
+  cursor: pointer;
+}
+.period-selector svg { width: 12px; height: 12px; color: #7f7f7f; }
+
+.mini-stats-bar {
+  display: flex; gap: 24px; align-items: baseline; padding: 6px 16px;
+  flex-shrink: 0;
+  overflow: hidden; white-space: nowrap;
+}
+.mini-stat { display: flex; gap: 6px; align-items: baseline; }
+.mini-stat-label { font-size: 13px; font-weight: 500; color: #7f7f7f; }
+.mini-stat-value { font-size: 13px; font-weight: 700; color: #171717; }
+.mini-stat-delta { font-size: 13px; font-weight: 600; }
+.mini-stat-delta.up { color: #229f60; }
+.mini-stat-delta.down { color: #d5432c; }
+
+/* ── Chart ── */
+.chart-container {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  overflow: visible;
+  display: flex;
+  padding-top: 14px;
+}
+.chart-y-axis {
+  width: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px 4px 24px 4px;
+  flex-shrink: 0;
+}
+.chart-y-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #a3a3a3;
+  text-align: right;
+}
+.chart-main {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+  padding-right: 40px;
+  overflow: visible;
+}
+.chart-y-right {
+  position: absolute; right: 0; top: 8px; bottom: 24px;
+  width: 36px; display: flex; flex-direction: column;
+  justify-content: space-between; pointer-events: none;
+}
+.chart-y-right-label {
+  font-size: 13px; font-weight: 500; color: rgba(120, 87, 209, 0.6);
+  text-align: left; padding-left: 4px;
+}
+.chart-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.chart-x-axis {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+}
+.chart-x-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #a3a3a3;
+}
+
+/* ── Persistent playhead on chart ── */
+.chart-playhead-line {
+  position: absolute;
+  top: 8px;
+  bottom: 24px;
+  width: 1.5px;
+  background: #7857d1;
+  pointer-events: none;
+  z-index: 5;
+}
+.chart-playhead-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #7857d1;
+  border: 2px solid white;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 6;
+  box-shadow: 0 1px 4px rgba(120,87,209,0.3);
+}
+/* Smooth transition only on click-to-seek, not drag */
+.chart-playhead-line.smooth, .chart-playhead-dot.smooth {
+  transition: left 150ms ease, top 150ms ease;
+}
+
+/* ── Chart hover elements ── */
+.chart-hover-line {
+  position: absolute;
+  top: 8px;
+  bottom: 24px;
+  width: 1px;
+  background: #a3a3a3;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 80ms ease;
+}
+.chart-hover-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #7857d1;
+  border: 2px solid white;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 80ms ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+/* Avg line label — hidden (Figma canon: dashed line only, no badge) */
+.avg-label {
+  display: none;
+}
+
+/* Drop-off markers on chart */
+/* chart dropoff markers — removed */
+
+/* Scrollbar */
+.transcript-body::-webkit-scrollbar { width: 4px; }
+.transcript-body::-webkit-scrollbar-track { background: transparent; }
+.transcript-body::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 2px; }
+.transcript-body::-webkit-scrollbar-thumb:hover { background: #a3a3a3; }
+
+/* ── Transcript fade edges (removed) ── */
+
+/* ── Chapter markers on waveform ── */
+.chapter-tick {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 8px;
+  background: #d4d4d4;
+  pointer-events: none;
+}
+
+/* ── Zoom handles — clean flag style ── */
+.zoom-handle {
+  position: absolute;
+  top: -1px;
+  width: 14px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 6;
+  transition: all 100ms;
+}
+/* Thin vertical edge line */
+.zoom-handle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: #7857d1;
+  opacity: 0.4;
+  transition: opacity 150ms;
+}
+/* Flag tab at top */
+.zoom-handle::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  width: 8px;
+  height: 14px;
+  background: #7857d1;
+  opacity: 0.6;
+  transition: opacity 150ms;
+  border-radius: 2px;
+}
+.zoom-handle:hover::before,
+.zoom-handle.dragging::before { opacity: 0.8; }
+.zoom-handle:hover::after,
+.zoom-handle.dragging::after { opacity: 1; }
+
+.zoom-handle-left {
+  left: -7px;
+}
+.zoom-handle-left::before { right: 6px; }
+.zoom-handle-left::after {
+  right: 3px;
+  border-radius: 2px 0 0 2px;
+}
+.zoom-handle-right {
+  right: -7px;
+}
+.zoom-handle-right::before { left: 6px; }
+.zoom-handle-right::after {
+  left: 3px;
+  border-radius: 0 2px 2px 0;
+}
+
+/* ── Chapter dropdown ── */
+.chapter-dropdown {
+  position: relative; width: 100%;
+  margin-top: 8px;
+}
+.chapter-dropdown-trigger {
+  display: flex; align-items: center; gap: 4px;
+  padding: 12px; border: 1px solid #e5e5e5; border-radius: 4px;
+  background: white; cursor: pointer; width: 100%;
+  font-size: 14px; font-weight: 500; color: #171717;
+  letter-spacing: -0.15px;
+  box-shadow: 0 0 1px rgba(0,0,0,0.03), 0 1px 1px rgba(0,0,0,0.03), 0 2px 1px rgba(0,0,0,0.02);
+  transition: border-color 150ms ease;
+}
+.chapter-dropdown-trigger:hover { border-color: #a3a3a3; }
+.chapter-dropdown-trigger .ch-num { color: #a3a3a3; font-size: 14px; font-weight: 500; }
+.chapter-dropdown-trigger .ch-name { flex: 1; color: #171717; }
+.chapter-dropdown-trigger .ch-time {
+  font-size: 13px; font-weight: 500; color: #525252;
+  background: #f5f5f5; padding: 2px 6px; border-radius: 4px;
+}
+.chapter-dropdown-trigger .ch-chevron { width: 16px; height: 16px; color: #7f7f7f; transition: transform 150ms; }
+.chapter-dropdown-trigger.open .ch-chevron { transform: rotate(180deg); }
+
+.chapter-dropdown-list {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: white; border: 1px solid #d4d4d4; border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1); z-index: 30;
+  display: none; overflow: hidden;
+}
+.chapter-dropdown-list.open { display: block; }
+.chapter-dropdown-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; cursor: pointer; font-size: 13px;
+  transition: background 100ms ease;
+}
+.chapter-dropdown-item:hover { background: #fafafa; }
+.chapter-dropdown-item.active { background: #f3f0fb; }
+.chapter-dropdown-item .ch-num { font-size: 13px; font-weight: 600; color: #a3a3a3; width: 32px; }
+.chapter-dropdown-item .ch-name { flex: 1; font-weight: 500; color: #171717; }
+.chapter-dropdown-item .ch-time { font-size: 13px; color: #a3a3a3; }
+.chapter-dropdown-item .ch-quality {
+  width: 24px; height: 4px; border-radius: 2px;
+}
+
+/* ── Transcript chapter breaks ── */
+.transcript-chapter-break {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 31.5px;
+  flex-shrink: 0;
+}
+.transcript-chapter-line {
+  flex: 1;
+  height: 1px;
+  background: #e5e5e5;
+}
+.transcript-chapter-label {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.transcript-chapter-label:hover { text-decoration: underline; }
+
+/* ── Chart chapter indicators ── */
+.chart-chapter-line {
+  position: absolute;
+  top: 12px;
+  bottom: 24px;
+  width: 1px;
+  background: #eeeeee;
+  pointer-events: none;
+}
+.chart-chapter-label {
+  position: absolute;
+  top: -18px;
+  transform: translateX(-50%);
+  font-size: 13px;
+  font-weight: 600;
+  color: #a3a3a3;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ── Chart pan cursors ── */
+.chart-main.zoomed { cursor: grab; }
+.chart-main.panning { cursor: grabbing !important; }
+
+/* ── Waveform cursor ── */
+.waveform-area { cursor: pointer; }
+.waveform-area .zoom-handle { cursor: col-resize; }
+
+/* ── Zoom indicator ── */
+.zoom-indicator {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: #7f7f7f;
+}
+.zoom-indicator-range { font-weight: 500; }
+.zoom-indicator-reset {
+  font-size: 13px; font-weight: 600; color: #7857d1;
+  cursor: pointer; padding: 2px 6px; border-radius: 4px;
+}
+.zoom-indicator-reset:hover { background: #f3f0fb; }
+
+/* ── Waveform zoom window ── */
+.waveform-zoom-window {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+.waveform-zoom-window .zoom-handle { pointer-events: auto; }
+/* Dim areas outside the zoom window */
+.waveform-outside-left,
+.waveform-outside-right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(255,255,255,0.45);
+  pointer-events: none;
+  z-index: 3;
+  border-radius: 5px;
+}
+
+/* ── Horizontal dashed hover line ── */
+.chart-hover-h-line {
+  position: absolute;
+  left: 0;
+  height: 1px;
+  border-top: 1px dashed #7857d1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 80ms ease;
+}
+.chart-hover-h-label {
+  position: absolute;
+  left: -2px;
+  transform: translate(-100%, -50%);
+  font-size: 9px;
+  font-weight: 600;
+  color: #7857d1;
+  background: #f3f0fb;
+  padding: 1px 5px;
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 80ms ease;
+  white-space: nowrap;
+}
+
+/* ── Tooltip — Figma canon (150:14548) ── */
+.chart-tooltip {
+  position: absolute;
+  background: white;
+  border-radius: 4px;
+  padding: 8px;
+  width: 300px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 80ms ease;
+  box-shadow: 0 0 1px rgba(0,0,0,0.04), 0 2px 6px rgba(0,0,0,0.08);
+  z-index: 100;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.tooltip-platforms { display: flex; gap: 4px; }
+.tooltip-platform { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.tooltip-platform-pct { font-size: 13px; font-weight: 500; color: #171717; display: flex; align-items: center; gap: 4px; }
+.tooltip-platform-icon { width: 16px; height: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.tooltip-platform-icon svg { width: 16px; height: 16px; }
+.tooltip-platform-count { font-size: 13px; font-weight: 400; color: #7f7f7f; }
+
+
+/* ── Faye AI Right Sidebar ── */
+.faye-panel {
+  flex: 1;
+  min-width: 240px;
+  background: white;
+  border-left: 1px solid #e5e5e5;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: width 200ms ease, min-width 200ms ease;
+}
+.faye-panel.collapsed {
+  width: 0;
+  min-width: 0;
+  border-left: none;
+  overflow: hidden;
+}
+/* Faye header — Figma canon */
+.faye-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+.faye-sparkle { width: 16px; height: 16px; flex-shrink: 0; }
+.faye-name {
+  font-size: 14px; font-weight: 500; color: #171717; letter-spacing: -0.15px;
+}
+.faye-collapse-btn {
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #ccc; border-radius: 3px;
+  transition: color 150ms;
+}
+.faye-collapse-btn:hover { color: #999; }
+.faye-panel.collapsed .faye-body,
+.faye-panel.collapsed .faye-input-area,
+.faye-panel.collapsed .faye-header { display: none; }
+
+/* Faye body */
+.faye-body {
+  flex: 1; display: flex; flex-direction: column;
+  gap: 14px; padding: 14px 0 14px 12px; overflow-y: auto;
+}
+
+/* Chips — bg #f5f5f5, no border */
+.faye-chips {
+  display: flex; gap: 8px;
+  overflow-x: auto; flex-shrink: 0;
+}
+.faye-chips::-webkit-scrollbar { height: 0; }
+.faye-chip {
+  display: flex; flex-direction: column; gap: 1px;
+  padding: 8px; background: #f5f5f5; border: none; border-radius: 4px;
+  flex-shrink: 0; cursor: pointer; transition: all 150ms;
+  font-size: 13px; letter-spacing: -0.1px;
+}
+.faye-chip:hover { background: #eee; }
+.faye-chip-text { font-weight: 500; color: #525252; }
+.faye-chip-val { font-weight: 500; color: #7857d1; }
+
+/* Empty state — no dot */
+.faye-empty {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.faye-empty-text {
+  font-size: 13px; font-weight: 500; color: #7f7f7f; text-align: center;
+  line-height: 1.4;
+}
+
+/* Chat messages */
+.faye-messages {
+  display: flex; flex-direction: column; gap: 12px;
+  padding-right: 12px;
+}
+.faye-msg {
+  display: flex; flex-direction: column; gap: 6px;
+  animation: fayeFadeIn 300ms ease;
+}
+@keyframes fayeFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.faye-msg-user {
+  align-self: flex-end;
+  background: #f5f5f5;
+  padding: 8px 12px;
+  border-radius: 12px 12px 2px 12px;
+  font-size: 13px; font-weight: 500; color: #171717;
+  max-width: 85%;
+  letter-spacing: -0.1px;
+}
+.faye-msg-ai {
+  display: flex; gap: 8px; align-items: flex-start;
+}
+.faye-msg-ai-icon {
+  width: 20px; height: 20px; min-width: 20px;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 2px;
+}
+.faye-msg-ai-content {
+  font-size: 13px; font-weight: 400; color: #525252;
+  line-height: 1.5; letter-spacing: -0.1px;
+}
+.faye-msg-ai-content strong {
+  font-weight: 600; color: #171717;
+}
+.faye-msg-ai-content .faye-highlight {
+  color: #7857d1; font-weight: 500;
+}
+.faye-typing {
+  display: flex; gap: 4px; align-items: center; padding: 4px 0;
+  animation: fayeFadeIn 200ms ease;
+}
+.faye-typing-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: #a3a3a3;
+  animation: fayePulse 1.2s ease infinite;
+}
+.faye-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.faye-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes fayePulse {
+  0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
+  30% { opacity: 1; transform: scale(1); }
+}
+
+/* Input — Figma canon */
+.faye-input-area {
+  padding: 8px 8px 24px; border-top: 1px solid #eee; flex-shrink: 0;
+}
+.faye-input {
+  background: #f5f5f5; border-radius: 8px;
+  padding: 8px 12px; cursor: text;
+}
+.faye-input-placeholder {
+  font-size: 14px; font-weight: 400; color: #7f7f7f; letter-spacing: -0.15px;
+}
+
+/* ── Segments View ── */
+.segments-container {
+  flex: 1; display: flex; flex-direction: column; gap: 16px;
+  padding: 20px 24px; overflow-y: auto; background: white;
+}
+
+/* Filter Bar */
+.segment-filter-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 16px; border-bottom: 1px solid #eee; flex-shrink: 0;
+}
+.segment-filter-left { display: flex; align-items: center; gap: 12px; }
+.segment-filter-label { font-size: 13px; font-weight: 500; color: #7f7f7f; }
+.segment-dimension-tabs { display: flex; gap: 4px; }
+.segment-dim-tab {
+  padding: 5px 12px; border-radius: 4px; font-size: 13px; font-weight: 500;
+  color: #7f7f7f; cursor: pointer; transition: all 150ms; border: 1px solid transparent;
+}
+.segment-dim-tab:hover { color: #171717; background: #fafafa; }
+.segment-dim-tab.active { color: #171717; background: #f5f5f5; border-color: #e5e5e5; }
+.segment-filter-right { display: flex; align-items: center; gap: 12px; }
+.segment-ep-label { font-size: 13px; font-weight: 500; color: #a3a3a3; }
+
+/* Body */
+.segments-body { display: flex; gap: 16px; flex: 1; min-height: 0; }
+
+/* Chart Area */
+.segments-chart-area {
+  flex: 1; display: flex; flex-direction: column; min-width: 0;
+  border: 1px solid #e5e5e5; border-radius: 8px; overflow: hidden;
+}
+.segments-chart-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border-bottom: 1px solid #eee;
+}
+.segments-chart-title { font-size: 14px; font-weight: 600; color: #171717; }
+.segments-legend { display: flex; gap: 12px; }
+.segments-legend-item { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 500; color: #7f7f7f; }
+.segments-legend-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.segments-chart {
+  flex: 1; position: relative; min-height: 250px;
+  padding: 12px 16px 24px 40px;
+}
+.segments-chart canvas { width: 100%; height: 100%; display: block; }
+
+/* Comparison Panel */
+.segments-panel {
+  width: 320px; min-width: 320px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.segments-panel-header { flex-shrink: 0; }
+.segments-panel-title { font-size: 14px; font-weight: 600; color: #171717; }
+
+.segments-cards { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; }
+.segment-card-item {
+  border: 1px solid #e5e5e5; border-radius: 6px; padding: 12px 14px;
+  cursor: pointer; transition: all 150ms;
+}
+.segment-card-item:hover { border-color: #d4d4d4; }
+.segment-card-item.highlighted { border-color: #7857d1; background: #faf8ff; }
+.segment-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.segment-card-name { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #171717; }
+.segment-card-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.segment-card-listeners { font-size: 13px; font-weight: 500; color: #a3a3a3; }
+.segment-card-stats { display: flex; gap: 16px; }
+.segment-card-stat { display: flex; flex-direction: column; gap: 1px; }
+.segment-card-stat-label { font-size: 13px; font-weight: 500; color: #a3a3a3; }
+.segment-card-stat-value { font-size: 13px; font-weight: 600; color: #171717; }
+.segment-card-stat-value.up { color: #229f60; }
+.segment-card-stat-value.down { color: #d5432c; }
+
+/* Mini retention bar inside card */
+.segment-card-minibar {
+  margin-top: 8px; height: 4px; background: #f5f5f5; border-radius: 2px; overflow: hidden;
+}
+.segment-card-minibar-fill { height: 100%; border-radius: 2px; transition: width 400ms ease; }
+
+/* Key Differences */
+.segments-diff-section { flex-shrink: 0; }
+.segments-diff-title { font-size: 13px; font-weight: 600; color: #171717; margin-bottom: 8px; display: block; }
+.segment-diff-item {
+  display: flex; align-items: flex-start; gap: 8px; padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5; font-size: 13px; color: #525252; line-height: 1.5;
+}
+.segment-diff-item:last-child { border-bottom: none; }
+.segment-diff-icon { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+
+/* Bottom Insights */
+.segments-insights { display: flex; gap: 12px; flex-shrink: 0; }
+.segment-insight-card {
+  flex: 1; border: 1px solid #e5e5e5; border-radius: 6px; padding: 14px 16px;
+}
+.segment-insight-card.highlight { background: #faf8ff; border-color: rgba(120,87,209,0.2); }
+.segment-insight-title { font-size: 13px; font-weight: 600; color: #171717; margin-bottom: 4px; }
+.segment-insight-value { font-size: 18px; font-weight: 700; color: #7857d1; margin-bottom: 4px; }
+.segment-insight-desc { font-size: 13px; color: #7f7f7f; line-height: 1.5; }
+
+/* ── Panel Drag Handles ── */
+/* ── Panel Drag Handle (3 horizontal dots) ── */
+.panel-drag-handle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: grab;
+  padding: 0;
+}
+.panel-drag-handle:active { cursor: grabbing; }
+.panel-drag-handle-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 1.5px;
+  background: #c4c4c4;
+  transition: background 150ms;
+}
+.panel-header-bar:hover .panel-drag-handle-dot { background: #999; }
+
+/* ── Panel Header Bar — hidden ── */
+.panel-header-bar { display: none; }
+.panel-header-label { display: none; }
+.panel-header-actions { display: flex; gap: 4px; }
+.panel-collapse-btn {
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 3px; cursor: pointer; color: #c4c4c4;
+  transition: all 150ms; flex-shrink: 0;
+}
+.panel-collapse-btn:hover { color: #999; }
+.panel-collapse-btn.collapsed svg { transform: rotate(180deg); }
+
+/* ── Resize Handle Vertical ── */
+.resize-handle-v {
+  width: 6px;
+  cursor: col-resize;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 5;
+}
+.resize-handle-v-line {
+  width: 2px;
+  height: 32px;
+  background: #d4d4d4;
+  border-radius: 1px;
+  transition: all 150ms;
+}
+.resize-handle-v:hover .resize-handle-v-line {
+  height: 48px;
+  background: #7857d1;
+  width: 3px;
+}
+
+/* ── Resize Handle Horizontal ── */
+.resize-handle-h {
+  height: 6px;
+  cursor: row-resize;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 5;
+}
+.resize-handle-h-line {
+  width: 32px;
+  height: 2px;
+  background: #d4d4d4;
+  border-radius: 1px;
+  transition: all 150ms;
+}
+.resize-handle-h:hover .resize-handle-h-line {
+  width: 48px;
+  background: #7857d1;
+  height: 3px;
+}
+
+/* ── Layout Presets ── */
+.layout-presets {
+  display: flex; gap: 2px; margin-left: 12px;
+  border-left: 1px solid #eee; padding-left: 12px;
+}
+.layout-preset {
+  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  border-radius: 4px; cursor: pointer; color: #a3a3a3;
+  transition: all 150ms;
+}
+.layout-preset:hover { background: #f5f5f5; color: #525252; }
+.layout-preset.active { background: #f5f5f5; color: #171717; }
+
+/* ── Transcript Collapse ── */
+.transcript-panel {
+  transition: width 200ms ease, min-width 200ms ease;
+}
+.transcript-panel.collapsed {
+  width: 0 !important;
+  min-width: 0 !important;
+  overflow: hidden;
+  border-right: none;
+}
+.transcript-panel.collapsed .transcript-header,
+.transcript-panel.collapsed .transcript-body,
+.transcript-panel.collapsed .chapter-dropdown,
+.transcript-panel.collapsed .panel-header-bar { display: none; }
+
+/* ── Sidebar Expand Buttons ── */
+.sidebar-expand-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  background: white;
+  border: 1px solid #e5e5e5;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 150ms;
+}
+.sidebar-expand-btn:hover { background: #fafafa; border-color: #d4d4d4; }
+.sidebar-expand-left {
+  left: 0;
+  border-radius: 0 6px 6px 0;
+  border-left: none;
+}
+.sidebar-expand-right {
+  right: 0;
+  border-radius: 6px 0 0 6px;
+  border-right: none;
+}
+
+/* ── Faye Open Button (in analysis header) ── */
+.faye-open-btn {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; cursor: pointer;
+  background: #f3f0fb; transition: all 150ms;
+}
+.faye-open-btn:hover { background: #edeaf9; }
+
+/* ── Drag Ghost & Drop Zones ── */
+.drag-ghost {
+  position: fixed;
+  transform: translate(-50%, -50%);
+  background: #7857d1;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 4px 16px rgba(120,87,209,0.3);
+}
+
+.drop-zone {
+  position: absolute;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  border: 2px dashed transparent;
+  border-radius: 8px;
+  transition: all 150ms;
+  pointer-events: auto;
+}
+.drop-zone-active {
+  border-color: #7857d1;
+  background: rgba(120,87,209,0.04);
+}
+.drop-zone-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #7857d1;
+  opacity: 0;
+  transition: opacity 150ms;
+}
+.drop-zone-active .drop-zone-label { opacity: 1; }
+
+/* ═══ COMPARISONS VIEW ═══ */
+.comp-container { flex:1; display:flex; flex-direction:column; gap:16px; padding:20px 24px; overflow-y:auto; background:white; }
+.comp-picker { display:flex; align-items:center; gap:12px; padding-bottom:12px; border-bottom:1px solid #eee; flex-shrink:0; }
+.comp-picker-label { font-size:13px; font-weight:500; color:#7f7f7f; white-space:nowrap; }
+.comp-picker-episodes { display:flex; gap:6px; flex:1; flex-wrap:wrap; }
+.comp-ep-tag { display:flex; align-items:center; gap:6px; padding:4px 10px 4px 6px; border-radius:4px; font-size:13px; font-weight:500; cursor:pointer; border:1px solid #e5e5e5; color:#525252; transition:all 150ms; }
+.comp-ep-tag.selected { border-color:currentColor; }
+.comp-ep-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.comp-ep-x { width:14px; height:14px; display:flex; align-items:center; justify-content:center; font-size:13px; color:#a3a3a3; margin-left:2px; border-radius:50%; cursor:pointer; }
+.comp-ep-x:hover { background:#eee; color:#525252; }
+.comp-add-btn { display:flex; align-items:center; gap:4px; padding:4px 10px; border-radius:4px; font-size:13px; font-weight:500; color:#7857d1; border:1px dashed #d4d4d4; cursor:pointer; transition:all 150ms; position:relative; }
+.comp-add-btn:hover { border-color:#7857d1; background:#faf8ff; }
+.comp-callout { display:flex; align-items:center; gap:12px; padding:12px 16px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; flex-shrink:0; }
+.comp-callout-icon { width:28px; height:28px; border-radius:50%; background:#dcfce7; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:14px; color:#166534; }
+.comp-callout-text { font-size:13px; color:#166534; line-height:1.5; }
+.comp-chart-area { flex-shrink:0; position:relative; height:300px; }
+.comp-chart-area canvas { width:100%; height:100%; display:block; }
+.comp-chart-legend { position:absolute; top:8px; right:8px; display:flex; flex-direction:column; gap:4px; background:rgba(255,255,255,0.92); padding:8px 10px; border-radius:6px; border:1px solid #eee; }
+.comp-chart-legend-item { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:500; color:#525252; }
+.comp-chart-legend-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.comp-table-wrap { flex-shrink:0; }
+.comp-table { width:100%; border-collapse:collapse; font-size:13px; }
+.comp-table th { text-align:left; font-weight:600; color:#7f7f7f; font-size:13px; padding:8px 12px; border-bottom:1px solid #e5e5e5; }
+.comp-table td { padding:10px 12px; border-bottom:1px solid #f5f5f5; color:#171717; font-weight:500; }
+.comp-table tr:hover td { background:#fafafa; }
+.comp-ep-name-cell { display:flex; align-items:center; gap:8px; font-weight:600; }
+.comp-format-tag { font-size:13px; font-weight:600; padding:1px 6px; border-radius:3px; background:#f5f5f5; color:#7f7f7f; }
+.comp-val-best { color:#229f60; }
+.comp-val-worst { color:#d5432c; }
+.comp-val-delta { font-size:13px; font-weight:600; }
+.comp-val-delta.up { color:#229f60; }
+.comp-val-delta.down { color:#d5432c; }
+.comp-mini-spark { width:60px; height:20px; vertical-align:middle; }
+.comp-insights { display:flex; gap:12px; flex-shrink:0; }
+.comp-insight { flex:1; border:1px solid #e5e5e5; border-radius:6px; padding:14px 16px; }
+.comp-insight.highlight { background:#faf8ff; border-color:rgba(120,87,209,0.2); }
+.comp-insight-title { font-size:13px; font-weight:600; color:#171717; margin-bottom:4px; }
+.comp-insight-value { font-size:18px; font-weight:700; color:#7857d1; margin-bottom:4px; }
+.comp-insight-desc { font-size:13px; color:#7f7f7f; line-height:1.5; }
+
+/* ── Platform Bar ── */
+.platform-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px; height: 36px; flex-shrink: 0;
+  margin-top: 12px;
+}
+.platform-bar-left { display: flex; align-items: center; gap: 12px; }
+.platform-item { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 500; color: #7f7f7f; letter-spacing: -0.1px; }
+.platform-icon { width: 20px; height: 20px; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.platform-icon svg { width: 100%; height: 100%; }
+.platform-filter {
+  width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+  border-radius: 110px; cursor: pointer;
+}
+.platform-filter:hover { background: #f5f5f5; }
+.platform-filter svg { width: 16px; height: 16px; }
+.platform-bar-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+
+/* ── Transcript Search ── */
+.transcript-search-icon {
+  cursor: pointer; flex-shrink: 0;
+}
+.transcript-search-icon:hover { stroke: #525252; }
+
+.transcript-search-bar {
+  display: none;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e5e5e5;
+}
+.transcript-search-bar.open { display: flex; }
+.transcript-search-input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  color: #171717;
+  outline: none;
+  letter-spacing: -0.15px;
+}
+.transcript-search-input:focus { border-color: #8a67e0; }
+.transcript-search-input::placeholder { color: #a3a3a3; }
+.transcript-search-count {
+  font-size: 13px; color: #a3a3a3; font-weight: 500;
+  white-space: nowrap; padding-left: 8px; align-self: center;
+}
+.transcript-line.search-match .txt { background: rgba(120,87,209,0.12); }
+.transcript-line.search-match.search-current .txt { background: rgba(120,87,209,0.25); }
+</style>
+</head>
+<body>
+<nav class="preview-nav">
+  <div class="preview-nav-left">
+    <span class="preview-nav-wordmark">Flightcast</span>
+    <div class="preview-nav-sep"></div>
+    <span class="preview-nav-label">Preview</span>
+  </div>
+  <div class="preview-nav-links">
+    <a href="./overview.html" class="preview-nav-link">Overview</a>
+    <a href="./retention.html" class="preview-nav-link active">Retention</a>
+    <a href="./clusters.html" class="preview-nav-link">Listener Clusters</a>
+  </div>
+</nav>
+<div class="app">
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="main">
+
+    <!-- Body Area -->
+    <div class="body-area">
+
+      <!-- Sidebar expand buttons (shown when panels are collapsed) -->
+      <button class="sidebar-expand-btn sidebar-expand-left" id="transcriptExpandBtn" style="display:none;" title="Show Transcript">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M5 3l4 4-4 4"/></svg>
+      </button>
+
+      <!-- Transcript Panel -->
+      <div class="transcript-panel">
+        <div class="panel-header-bar" data-panel="transcript">
+          <div class="panel-drag-handle" data-panel="transcript">
+            <div class="panel-drag-handle-dot"></div><div class="panel-drag-handle-dot"></div><div class="panel-drag-handle-dot"></div>
+          </div>
+          <button class="panel-collapse-btn" data-target="transcript" title="Collapse">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M9 3L5 7l4 4"/></svg>
+          </button>
+        </div>
+        <div class="transcript-header" style="flex-direction: column; align-items: stretch;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="chapter-dropdown" id="chapterDropdown" style="flex:1; margin-top: 0;">
+              <div class="chapter-dropdown-trigger" id="chapterDropdownTrigger">
+                <span class="ch-num">3.</span>
+                <span class="ch-name">Research</span>
+                <span class="ch-time">10:00</span>
+                <svg class="ch-chevron" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="chapter-dropdown-list" id="chapterDropdownList"></div>
+            </div>
+            <svg class="transcript-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a3a3a3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+        </div>
+        <div class="transcript-search-bar" id="transcriptSearchBar">
+          <input class="transcript-search-input" id="transcriptSearchInput" type="text" placeholder="Search transcript...">
+          <span class="transcript-search-count" id="transcriptSearchCount"></span>
+        </div>
+        <div class="transcript-body" id="transcriptBody">
+          <!-- Lines will be injected by JS -->
+        </div>
+      </div>
+
+      <!-- Vertical Resize Handle -->
+      <div class="resize-handle-v" id="resizeV">
+        <div class="resize-handle-v-line"></div>
+      </div>
+
+      <!-- Right Content -->
+      <div class="right-content">
+
+        <!-- Video Section -->
+        <div class="video-section" id="videoSection" style="background: url('video-thumb.jpg') center/cover no-repeat;">
+        </div>
+
+        <!-- Audio Controls -->
+        <div class="audio-controls">
+          <div class="pause-btn" id="pauseBtn">
+            <svg viewBox="0 0 14 14" fill="none" id="pauseIcon">
+              <rect x="3" y="2" width="3" height="10" rx="0.5" fill="white"/>
+              <rect x="8" y="2" width="3" height="10" rx="0.5" fill="white"/>
+            </svg>
+          </div>
+          <span class="audio-time">12:47</span>
+          <div class="waveform-area" id="waveformArea">
+            <div class="waveform-played-region" id="waveformPlayed" style="width: 35%;"></div>
+            <svg id="waveformSvg" viewBox="0 0 680 44" preserveAspectRatio="none" fill="none">
+              <!-- Bar chart waveform (generated by JS) -->
+            </svg>
+            <div class="waveform-playhead" id="waveformPlayhead" style="left: 35%;"></div>
+            <div class="waveform-hover-line" id="waveformHoverLine"></div>
+            <div class="waveform-hover-time" id="waveformHoverTime">12:47</div>
+            <!-- Chapter ticks (injected by JS) -->
+            <!-- Zoom window with handles -->
+            <div class="waveform-outside-left" id="waveformOutsideLeft" style="left: 0; width: 0%;"></div>
+            <div class="waveform-zoom-window" id="waveformZoomWindow" style="left: 0%; width: 100%;">
+              <div class="zoom-handle zoom-handle-left" id="zoomHandleLeft"></div>
+              <div class="zoom-handle zoom-handle-right" id="zoomHandleRight"></div>
+            </div>
+            <div class="waveform-outside-right" id="waveformOutsideRight" style="right: 0; width: 0%;"></div>
+          </div>
+          <span class="audio-time remaining">-32:45</span>
+          <div class="volume-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+          </div>
+        </div>
+
+        <!-- Platform Bar -->
+        <div class="platform-bar">
+          <div class="platform-bar-left">
+            <div class="platform-item">
+              <span class="platform-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M39.1166 10.3242C38.8872 9.47634 38.4396 8.70335 37.8185 8.08223C37.1974 7.46111 36.4245 7.01353 35.5766 6.78406C32.4725 5.9375 19.9797 5.9375 19.9797 5.9375C19.9797 5.9375 7.48628 5.96312 4.38222 6.80969C3.53433 7.03917 2.76135 7.48677 2.14025 8.10792C1.51916 8.72907 1.07163 9.50209 0.842218 10.35C-0.0966887 15.8653-0.460908 24.2694 0.867999 29.5641C1.09743 30.4119 1.54498 31.1849 2.16607 31.806C2.78716 32.4272 3.56013 32.8747 4.408 33.1042C7.51206 33.9508 20.0052 33.9508 20.0052 33.9508C20.0052 33.9508 32.4982 33.9508 35.6021 33.1042C36.45 32.8748 37.223 32.4272 37.8441 31.8061C38.4652 31.185 38.9128 30.412 39.1422 29.5641C40.1325 24.0409 40.4377 15.642 39.1166 10.3242Z" fill="#FF2323"/><path d="M16.0039 26.0681L26.3677 20.0653L16.0039 14.0625V26.0681Z" fill="white"/></svg></span>
+              YouTube
+            </div>
+            <div class="platform-item">
+              <span class="platform-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 0C8.95437 0 0 8.95453 0 20C0 31.0462 8.95453 40 20 40C31.0464 40 40 31.0462 40 20C40 8.95531 31.0464 0.00109375 19.9997 0.00109375L20 0ZM29.1717 28.8459C28.8134 29.4334 28.0444 29.6197 27.4569 29.2591C22.7611 26.3908 16.8498 25.7411 9.88813 27.3317C9.56575 27.4051 9.22741 27.3475 8.94753 27.1715C8.66764 26.9955 8.46912 26.7155 8.39563 26.3931C8.35903 26.2336 8.35425 26.0683 8.38158 25.9069C8.4089 25.7455 8.46778 25.591 8.55486 25.4524C8.64194 25.3138 8.7555 25.1936 8.88904 25.0989C9.02258 25.0042 9.17349 24.9368 9.33313 24.9005C16.9519 23.1598 23.4867 23.9092 28.7586 27.1311C29.3461 27.4917 29.5323 28.2584 29.1717 28.8459ZM31.6197 23.4002C31.1681 24.1338 30.2081 24.3655 29.475 23.9141C24.0991 20.6097 15.9042 19.6527 9.54562 21.5828C8.72094 21.8319 7.85 21.3672 7.59969 20.5439C7.35125 19.7192 7.81625 18.8498 8.63953 18.5992C15.9028 16.3952 24.9325 17.4628 31.1063 21.2566C31.8394 21.7081 32.0711 22.668 31.6197 23.4002ZM31.8298 17.7294C25.3839 13.9006 14.7491 13.5484 8.59484 15.4166C7.60656 15.7163 6.56141 15.1583 6.26203 14.17C5.9625 13.1813 6.51984 12.1369 7.50891 11.8364C14.5734 9.69172 26.3178 10.1062 33.7389 14.5119C34.6298 15.0394 34.9211 16.1875 34.3933 17.0752C33.868 17.9642 32.7167 18.2572 31.8308 17.7294H31.8298Z" fill="#1DD75F"/></svg></span>
+              Spotify
+            </div>
+            <div class="platform-item">
+              <span class="platform-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.6673 28.3327C21.6673 27.8907 21.4917 27.4667 21.1792 27.1542C20.8666 26.8416 20.4427 26.666 20.0007 26.666C19.5586 26.666 19.1347 26.8416 18.8221 27.1542C18.5096 27.4667 18.334 27.8907 18.334 28.3327L19.1673 35.8327C19.1673 36.0537 19.2551 36.2657 19.4114 36.4219C19.5677 36.5782 19.7796 36.666 20.0007 36.666C20.2217 36.666 20.4336 36.5782 20.5899 36.4219C20.7462 36.2657 20.834 36.0537 20.834 35.8327L21.6673 28.3327Z" fill="#FB9E39" stroke="#FB9E39" stroke-width="2.66" stroke-linecap="round" stroke-linejoin="round"/><path d="M28.0833 30.9657C30.8157 29.2178 32.9078 26.6313 34.0461 23.594C35.1843 20.5567 35.3074 17.2322 34.3968 14.1191C33.4862 11.0059 31.591 8.2718 28.9954 6.32664C26.3998 4.38148 23.2436 3.33008 20 3.33008C16.7564 3.33008 13.6002 4.38148 11.0046 6.32664C8.40897 8.2718 6.5138 11.0059 5.60322 14.1191C4.69263 17.2322 4.81569 20.5567 5.95396 23.594C7.09222 26.6313 9.18434 29.2178 11.9167 30.9657" stroke="#FB9E39" stroke-width="2.66" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.3327 23.3314C12.4041 22.0933 11.8387 20.6211 11.6997 19.0798C11.5607 17.5384 11.8537 15.9888 12.5458 14.6046C13.2379 13.2204 14.3018 12.0562 15.6183 11.2426C16.9347 10.429 18.4518 9.99805 19.9994 9.99805C21.547 9.99805 23.064 10.429 24.3804 11.2426C25.6969 12.0562 26.7608 13.2204 27.4529 14.6046C28.145 15.9888 28.438 17.5384 28.299 19.0798C28.16 20.6211 27.5946 22.0933 26.666 23.3314" stroke="#FB9E39" stroke-width="2.66" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.0007 19.9993C20.9211 19.9993 21.6673 19.2532 21.6673 18.3327C21.6673 17.4122 20.9211 16.666 20.0007 16.666C19.0802 16.666 18.334 17.4122 18.334 18.3327C18.334 19.2532 19.0802 19.9993 20.0007 19.9993Z" fill="#FB9E39" stroke="#FB9E39" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              RSS
+            </div>
+          </div>
+          <div class="platform-bar-right">
+            <div class="zoom-indicator" id="zoomIndicator" style="display: none;">
+              <span class="zoom-indicator-range" id="zoomRange">10:00 – 25:00</span>
+              <button class="zoom-indicator-reset" id="zoomResetBtn">Reset</button>
+            </div>
+            <div class="view-toggle">
+              <button class="view-toggle-btn">7d</button>
+              <button class="view-toggle-btn">30d</button>
+              <button class="view-toggle-btn active">All</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Horizontal Resize Handle -->
+        <div class="resize-handle-h" id="resizeH">
+          <div class="resize-handle-h-line"></div>
+        </div>
+
+        <!-- Chart Panel Header -->
+        <div class="panel-header-bar" data-panel="chart">
+          <div class="panel-drag-handle" data-panel="chart">
+            <div class="panel-drag-handle-dot"></div><div class="panel-drag-handle-dot"></div><div class="panel-drag-handle-dot"></div>
+          </div>
+        </div>
+
+        <!-- Analysis Chart Area -->
+        <div class="analysis-area">
+          <div class="chart-container" id="chartContainer">
+            <div class="chart-y-axis">
+              <span class="chart-y-label">100%</span>
+              <span class="chart-y-label">75%</span>
+              <span class="chart-y-label">50%</span>
+              <span class="chart-y-label">25%</span>
+              <span class="chart-y-label">0%</span>
+            </div>
+            <div class="chart-main" id="chartMain">
+              <svg class="chart-svg" id="chartSvg" preserveAspectRatio="none">
+                <!-- Grid lines -->
+                <line class="grid-line" x1="0" x2="100%" stroke="#f0f0f0" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                <line class="grid-line" x1="0" x2="100%" stroke="#f0f0f0" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                <line class="grid-line" x1="0" x2="100%" stroke="#f0f0f0" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                <line class="grid-line" x1="0" x2="100%" stroke="#f0f0f0" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                <line class="grid-line" x1="0" x2="100%" stroke="#f0f0f0" stroke-width="1" vector-effect="non-scaling-stroke"/>
+
+                <!-- Chapter shading (injected by JS) -->
+                <g id="chapterShading"></g>
+                <!-- RSS curve fill -->
+                <path id="retentionFill" fill="#F5F3FC" stroke="none"/>
+                <!-- YouTube curve -->
+                <path id="ytStroke" fill="none" stroke="#FF2323" stroke-width="1.5" vector-effect="non-scaling-stroke" opacity="0.7"/>
+                <!-- RSS curve -->
+                <path id="retentionStroke" fill="none" stroke="#FB9E39" stroke-width="2" vector-effect="non-scaling-stroke"/>
+                <!-- Spotify curve -->
+                <path id="spStroke" fill="none" stroke="#1DD75F" stroke-width="1.5" vector-effect="non-scaling-stroke" opacity="0.7"/>
+                <!-- Average line -->
+                <line id="avgLine" stroke="none"/>
+              </svg>
+
+              <!-- Avg label -->
+              <div class="avg-label" id="avgLabel">Avg 32%</div>
+
+              <!-- Right Y-axis (listener counts) -->
+              <div class="chart-y-right">
+                <span class="chart-y-right-label">125K</span>
+                <span class="chart-y-right-label">94K</span>
+                <span class="chart-y-right-label">63K</span>
+                <span class="chart-y-right-label">31K</span>
+                <span class="chart-y-right-label">0</span>
+              </div>
+
+              <!-- Drop-off markers -->
+
+              <!-- Persistent playhead -->
+              <div class="chart-playhead-line" id="chartPlayheadLine" style="left: 35%;"></div>
+              <div class="chart-playhead-dot" id="chartPlayheadDot"></div>
+
+              <!-- Hover elements -->
+              <div class="chart-hover-line" id="hoverLine"></div>
+              <div class="chart-hover-h-line" id="hoverHLine"></div>
+              <div class="chart-hover-h-label" id="hoverHLabel"></div>
+              <div class="chart-hover-dot" id="hoverDot"></div>
+              <div class="chart-tooltip" id="tooltip">
+                <div class="tooltip-platforms">
+                  <div class="tooltip-platform" id="tooltipYT">
+                    <span class="tooltip-platform-pct">
+                      <span class="tooltip-platform-icon"><svg viewBox="0 0 40 40" fill="none"><path d="M39.1166 10.3242C38.8872 9.47634 38.4396 8.70335 37.8185 8.08223C37.1974 7.46111 36.4245 7.01353 35.5766 6.78406C32.4725 5.9375 19.9797 5.9375 19.9797 5.9375C19.9797 5.9375 7.48628 5.96312 4.38222 6.80969C3.53433 7.03917 2.76135 7.48677 2.14025 8.10792C1.51916 8.72907 1.07163 9.50209 0.842218 10.35C-0.0966887 15.8653-0.460908 24.2694 0.867999 29.5641C1.09743 30.4119 1.54498 31.1849 2.16607 31.806C2.78716 32.4272 3.56013 32.8747 4.408 33.1042C7.51206 33.9508 20.0052 33.9508 20.0052 33.9508C20.0052 33.9508 32.4982 33.9508 35.6021 33.1042C36.45 32.8748 37.223 32.4272 37.8441 31.8061C38.4652 31.185 38.9128 30.412 39.1422 29.5641C40.1325 24.0409 40.4377 15.642 39.1166 10.3242Z" fill="#FF2323"/><path d="M16.0039 26.0681L26.3677 20.0653L16.0039 14.0625V26.0681Z" fill="white"/></svg></span>
+                      <span class="tp-pct">46%</span>
+                    </span>
+                    <span class="tooltip-platform-count tp-count">57.5K listeners</span>
+                  </div>
+                  <div class="tooltip-platform" id="tooltipSP">
+                    <span class="tooltip-platform-pct">
+                      <span class="tooltip-platform-icon"><svg viewBox="0 0 40 40" fill="none"><path d="M20 0C8.95437 0 0 8.95453 0 20C0 31.0462 8.95453 40 20 40C31.0464 40 40 31.0462 40 20C40 8.95531 31.0464 0.00109375 19.9997 0.00109375L20 0ZM29.1717 28.8459C28.8134 29.4334 28.0444 29.6197 27.4569 29.2591C22.7611 26.3908 16.8498 25.7411 9.88813 27.3317C9.56575 27.4051 9.22741 27.3475 8.94753 27.1715C8.66764 26.9955 8.46912 26.7155 8.39563 26.3931C8.35903 26.2336 8.35425 26.0683 8.38158 25.9069C8.4089 25.7455 8.46778 25.591 8.55486 25.4524C8.64194 25.3138 8.7555 25.1936 8.88904 25.0989C9.02258 25.0042 9.17349 24.9368 9.33313 24.9005C16.9519 23.1598 23.4867 23.9092 28.7586 27.1311C29.3461 27.4917 29.5323 28.2584 29.1717 28.8459ZM31.6197 23.4002C31.1681 24.1338 30.2081 24.3655 29.475 23.9141C24.0991 20.6097 15.9042 19.6527 9.54562 21.5828C8.72094 21.8319 7.85 21.3672 7.59969 20.5439C7.35125 19.7192 7.81625 18.8498 8.63953 18.5992C15.9028 16.3952 24.9325 17.4628 31.1063 21.2566C31.8394 21.7081 32.0711 22.668 31.6197 23.4002ZM31.8298 17.7294C25.3839 13.9006 14.7491 13.5484 8.59484 15.4166C7.60656 15.7163 6.56141 15.1583 6.26203 14.17C5.9625 13.1813 6.51984 12.1369 7.50891 11.8364C14.5734 9.69172 26.3178 10.1062 33.7389 14.5119C34.6298 15.0394 34.9211 16.1875 34.3933 17.0752C33.868 17.9642 32.7167 18.2572 31.8308 17.7294H31.8298Z" fill="#1DD75F"/></svg></span>
+                      <span class="tp-pct">50%</span>
+                    </span>
+                    <span class="tooltip-platform-count tp-count">42.1K listeners</span>
+                  </div>
+                  <div class="tooltip-platform" id="tooltipRSS">
+                    <span class="tooltip-platform-pct">
+                      <span class="tooltip-platform-icon"><svg viewBox="0 0 40 40" fill="none"><path d="M21.6673 28.3327C21.6673 27.8907 21.4917 27.4667 21.1792 27.1542C20.8666 26.8416 20.4427 26.666 20.0007 26.666C19.5586 26.666 19.1347 26.8416 18.8221 27.1542C18.5096 27.4667 18.334 27.8907 18.334 28.3327L19.1673 35.8327C19.1673 36.0537 19.2551 36.2657 19.4114 36.4219C19.5677 36.5782 19.7796 36.666 20.0007 36.666C20.2217 36.666 20.4336 36.5782 20.5899 36.4219C20.7462 36.2657 20.834 36.0537 20.834 35.8327L21.6673 28.3327Z" fill="#FB9E39" stroke="#FB9E39" stroke-width="2.66" stroke-linecap="round" stroke-linejoin="round"/><path d="M28.0833 30.9657C30.8157 29.2178 32.9078 26.6313 34.0461 23.594C35.1843 20.5567 35.3074 17.2322 34.3968 14.1191C33.4862 11.0059 31.591 8.2718 28.9954 6.32664C26.3998 4.38148 23.2436 3.33008 20 3.33008C16.7564 3.33008 13.6002 4.38148 11.0046 6.32664C8.40897 8.2718 6.5138 11.0059 5.60322 14.1191C4.69263 17.2322 4.81569 20.5567 5.95396 23.594C7.09222 26.6313 9.18434 29.2178 11.9167 30.9657" stroke="#FB9E39" stroke-width="2.66" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.3327 23.3314C12.4041 22.0933 11.8387 20.6211 11.6997 19.0798C11.5607 17.5384 11.8537 15.9888 12.5458 14.6046C13.2379 13.2204 14.3018 12.0562 15.6183 11.2426C16.9347 10.429 18.4518 9.99805 19.9994 9.99805C21.547 9.99805 23.064 10.429 24.3804 11.2426C25.6969 12.0562 26.7608 13.2204 27.4529 14.6046C28.145 15.9888 28.438 17.5384 28.299 19.0798C28.16 20.6211 27.5946 22.0933 26.666 23.3314" stroke="#FB9E39" stroke-width="2.66" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.0007 19.9993C20.9211 19.9993 21.6673 19.2532 21.6673 18.3327C21.6673 17.4122 20.9211 16.666 20.0007 16.666C19.0802 16.666 18.334 17.4122 18.334 18.3327C18.334 19.2532 19.0802 19.9993 20.0007 19.9993Z" fill="#FB9E39" stroke="#FB9E39" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                      <span class="tp-pct">42%</span>
+                    </span>
+                    <span class="tooltip-platform-count tp-count">25.3K listeners</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- X-axis -->
+              <div class="chart-x-axis" id="chartXAxis">
+                <span class="chart-x-label">0:00</span>
+                <span class="chart-x-label">5:03</span>
+                <span class="chart-x-label">10:06</span>
+                <span class="chart-x-label">15:09</span>
+                <span class="chart-x-label">20:12</span>
+                <span class="chart-x-label">25:16</span>
+                <span class="chart-x-label">30:19</span>
+                <span class="chart-x-label">35:22</span>
+                <span class="chart-x-label">40:25</span>
+                <span class="chart-x-label">45:32</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Faye AI Panel (right sidebar) -->
+      <div class="faye-panel" id="fayePanel">
+        <div class="panel-header-bar" data-panel="faye">
+          <div class="panel-drag-handle" data-panel="faye">
+            <div class="panel-drag-handle-dot"></div><div class="panel-drag-handle-dot"></div><div class="panel-drag-handle-dot"></div>
+          </div>
+        </div>
+        <div class="faye-header">
+          <svg class="faye-sparkle" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#171717" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13 6.5 8.5 2 7l4.5-1.5z"/></svg>
+          <span class="faye-name">Fey</span>
+          <div style="flex:1"></div>
+        </div>
+
+        <div class="faye-body" id="fayeBody">
+          <div class="faye-chips" id="fayeChips">
+            <div class="faye-chip" data-prompt="Why the drop at 0:58?" data-response="The <strong>38% drop at 0:58</strong> is your intro-to-content transition. Listeners who clicked expecting the guest topic are bouncing when the cold open runs long.<br><br>Recommendation: move your <span class='faye-highlight'>hook statement</span> before the 45-second mark. Episodes where you do this show <span class='faye-highlight'>+12pp better</span> 60-second retention.">
+              <span class="faye-chip-text">Why the drop at</span>
+              <span class="faye-chip-val">0:58?</span>
+            </div>
+            <div class="faye-chip" data-prompt="Clip the hotspot at 34:00" data-response="The segment at <strong>34:00–36:20</strong> has your highest re-watch rate — <span class='faye-highlight'>3.2x the episode average</span>. It's the &ldquo;retention valleys&rdquo; playbook section.<br><br>I've queued a <span class='faye-highlight'>2:20 clip</span> for review. Based on similar clips, estimated reach: <strong>180K–240K views</strong> on short-form platforms.">
+              <span class="faye-chip-text">Clip the hotspot</span>
+              <span class="faye-chip-val">at 34:00</span>
+            </div>
+            <div class="faye-chip" data-prompt="Best performing segment?" data-response="<strong>Ch. 3 — Research</strong> (10:00–17:17) has the strongest retention of any chapter at <span class='faye-highlight'>94% relative retention</span>. Listeners who reach this section are 3x more likely to finish.<br><br>The key driver: you front-loaded the <span class='faye-highlight'>10,000-listener study stat</span> before the methodology. Data shows emotional stakes before evidence holds attention <strong>23% better</strong>.">
+              <span class="faye-chip-text">Best performing</span>
+              <span class="faye-chip-val">segment?</span>
+            </div>
+          </div>
+
+          <div class="faye-empty">
+            <div class="faye-empty-text">Ask Fey anything about<br>this episode's performance</div>
+          </div>
+        </div>
+
+        <div class="faye-input-area">
+          <div class="faye-input">
+            <span class="faye-input-placeholder">Ask about this episode...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Faye expand button (shown when Faye panel is collapsed) -->
+      <button class="sidebar-expand-btn sidebar-expand-right" id="fayeExpandBtn" style="display:none;" title="Show Fey AI">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="#7857d1"><path d="M8 1l1.5 3.5L13 6l-3.5 1.5L8 11 6.5 7.5 3 6l3.5-1.5z"/></svg>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function() {
+  // ── Retention data: array of [fraction 0-1 of episode, retention %] ──
+  // RSS/RSS (purple) — steep cliff to ~28%, then very flat plateau drifting to ~18%
+  const retentionData = [
+    [0, 100], [0.005, 95], [0.01, 82], [0.015, 65], [0.02, 52], [0.025, 43],
+    [0.03, 37], [0.035, 34], [0.04, 32], [0.045, 31], [0.05, 30],
+    [0.06, 29.5], [0.07, 29], [0.08, 28.5], [0.09, 28.2], [0.10, 28],
+    [0.12, 27.5], [0.14, 27.2], [0.16, 27], [0.18, 27.3], [0.20, 26.8],
+    [0.22, 26.5], [0.24, 26.8], [0.26, 26.2], [0.28, 26], [0.30, 25.8],
+    [0.32, 25.5], [0.34, 25.8], [0.36, 25.2], [0.38, 25],
+    [0.40, 24.8], [0.42, 24.5], [0.44, 24.8], [0.46, 24.2], [0.48, 24],
+    [0.50, 23.8], [0.52, 23.5], [0.54, 23.2], [0.56, 23.5], [0.58, 23],
+    [0.60, 22.8], [0.62, 22.5], [0.64, 22.2], [0.66, 22], [0.68, 21.8],
+    [0.70, 21.5], [0.72, 21.2], [0.74, 21.5], [0.76, 21], [0.78, 20.8],
+    [0.80, 20.5], [0.82, 20.2], [0.84, 20], [0.86, 19.5], [0.88, 19.2],
+    [0.90, 19], [0.92, 18.5], [0.94, 18.2], [0.96, 18], [0.98, 17.8], [1, 17.5]
+  ];
+
+  const EPISODE_DURATION = 2732; // 45:32 in seconds
+  const AVG_RETENTION = 32;
+
+  // Drop-off positions (fraction of episode)
+  const dropoffs = [
+    { frac: 0.28, time: '12:47' },
+    { frac: 0.55, time: '25:06' },
+    { frac: 0.79, time: '35:58' }
+  ];
+
+  // Chapters with enriched data
+  const CHAPTERS = [
+    { num: 1, label: 'Intro', startFrac: 0.00, endFrac: 0.08, startTime: 0, quality: '#30a84a' },
+    { num: 2, label: 'The Problem', startFrac: 0.08, endFrac: 0.22, startTime: 215, quality: '#f59e0b' },
+    { num: 3, label: 'Research', startFrac: 0.22, endFrac: 0.38, startTime: 600, quality: '#30a84a' },
+    { num: 4, label: 'For Creators', startFrac: 0.38, endFrac: 0.55, startTime: 1037, quality: '#d5432c' },
+    { num: 5, label: 'The Study', startFrac: 0.55, endFrac: 0.72, startTime: 1502, quality: '#30a84a' },
+    { num: 6, label: 'Solutions', startFrac: 0.72, endFrac: 0.88, startTime: 1966, quality: '#f59e0b' },
+    { num: 7, label: 'Outro', startFrac: 0.88, endFrac: 1.0, startTime: 2403, quality: '#a3a3a3' },
+  ];
+
+  // Expanded transcript lines (28 lines across all chapters)
+  const TRANSCRIPT_LINES = [
+    // Ch 1 — Intro (0:00–3:35)
+    { time: 0, text: 'Welcome back to another episode. Today we\'re diving into something that\'s been on everyone\'s mind...' },
+    { time: 28, text: 'TikTok has fundamentally changed how our brains process information and it\'s not just about attention spans.' },
+    { time: 55, text: 'The research coming out of Stanford is genuinely alarming. They found measurable changes in neural pathways.' },
+    { time: 84, text: 'So what does this mean practically? If you\'re a creator, you\'re competing with an algorithm that literally rewires your audience.' },
+    // Ch 2 — The Problem (3:35–10:00)
+    { time: 215, text: 'And brands are weaponizing this. The average TikTok ad now has 47 scene cuts in 30 seconds.' },
+    { time: 290, text: 'Here\'s where it gets interesting for podcasters specifically. Our medium is the antidote but also the victim.' },
+    { time: 380, text: 'I noticed my own reading habits changing dramatically over the past year. The dopamine cycle is the key mechanism.' },
+    { time: 480, text: 'Every swipe triggers a micro-reward that compounds over time. It\'s literally rewiring reward pathways in the brain.' },
+    // Ch 3 — Research (10:00–17:17)
+    { time: 600, text: 'We ran a study with 10,000 listeners. Those who use TikTok more than 2 hours daily had 34% lower podcast completion rates.' },
+    { time: 700, text: 'But here\'s the silver lining. The listeners who stick around? They\'re more engaged than ever. Quality over quantity.' },
+    { time: 767, text: 'This is the critical drop-off point we identified. Right at the 12-minute mark, something interesting happens...' },
+    { time: 900, text: 'The listeners who make it past this threshold are 3x more likely to finish the entire episode.' },
+    // Ch 4 — For Creators (17:17–25:06)
+    { time: 1037, text: 'Let\'s talk about the structural changes you can make. First, the hook needs to happen in the first 15 seconds.' },
+    { time: 1140, text: 'Second, what I call "micro-cliffhangers" — creating tension loops every 3 to 4 minutes keeps the rewired brain engaged.' },
+    { time: 1260, text: 'Third, and this is counterintuitive, slow down. The brain craves novelty but also craves depth it can\'t get elsewhere.' },
+    { time: 1380, text: 'A neuroscientist I spoke to described it as "cognitive nutrition." Fast content is junk food. Podcasts are the meal.' },
+    // Ch 5 — The Study (25:06–32:46)
+    { time: 1502, text: 'So we started experimenting with what we call "retention anchors" — deliberate structural moments designed to hold attention.' },
+    { time: 1620, text: 'The results were remarkable. Episode 44 saw a 23% improvement in the 10-to-15-minute retention window.' },
+    { time: 1740, text: 'We tested six different formats across three months. The data was unambiguous about what works.' },
+    { time: 1860, text: 'The highest-performing episodes all shared one trait: they front-loaded emotional stakes before introducing data.' },
+    // Ch 6 — Solutions (32:46–40:03)
+    { time: 1966, text: 'Here\'s the playbook we\'ve developed. Step one: identify your retention valleys using tools like Flightcast.' },
+    { time: 2060, text: 'Step two: map those valleys to your content structure. Are they happening at ad breaks? Topic transitions? Tangents?' },
+    { time: 2160, text: 'Step three: design "re-engagement hooks" at each valley. A teaser, a question, a surprising stat — anything that resets curiosity.' },
+    { time: 2280, text: 'The creators who implemented all three steps saw an average 31% lift in mid-episode retention.' },
+    // Ch 7 — Outro (40:03–45:32)
+    { time: 2403, text: 'So that\'s the full picture. TikTok is reshaping attention, but podcasting has unique advantages if we lean into them.' },
+    { time: 2500, text: 'Next week, we\'re bringing on Dr. Sarah Chen from the Stanford Digital Wellness Lab to go even deeper.' },
+    { time: 2600, text: 'If you found this valuable, share it with a fellow creator. And leave a review — it genuinely helps us reach more people.' },
+    { time: 2700, text: 'Thanks for listening, and I\'ll catch you in the next one.' },
+  ];
+
+  // Zoom state
+  let zoomStart = 0;
+  let zoomEnd = 1;
+  let activeChapterIndex = 2;
+
+  // ── Unified playhead state ──
+  let currentTimeSec = Math.round(0.35 * EPISODE_DURATION); // initial position
+
+  function setCurrentTime(seconds) {
+    seconds = Math.max(0, Math.min(EPISODE_DURATION, Math.round(seconds)));
+    currentTimeSec = seconds;
+    var frac = seconds / EPISODE_DURATION;
+
+    // 1. Update waveform playhead
+    var playhead = document.getElementById('waveformPlayhead');
+    if (playhead) playhead.style.left = (frac * 100) + '%';
+    updateWaveformBarColors(frac);
+
+    // 2. Update time displays
+    var timeStr = formatTime(seconds);
+    var remainStr = '-' + formatTime(EPISODE_DURATION - seconds);
+    var timeEl = document.querySelector('.audio-time:not(.remaining)');
+    var remainEl = document.querySelector('.audio-time.remaining');
+    if (timeEl) timeEl.textContent = timeStr;
+    if (remainEl) remainEl.textContent = remainStr;
+
+    // 3. Sync transcript
+    syncTranscript(seconds);
+
+    // 4. Update persistent chart playhead
+    updateChartPlayhead();
+
+    // 5. Update chapter dropdown if needed
+    var chIdx = getChapterIndexAt(frac);
+    if (chIdx !== activeChapterIndex) {
+      activeChapterIndex = chIdx;
+      updateChapterDropdownTrigger(chIdx);
+    }
+  }
+
+  // Add/remove smooth transition class for click-to-seek vs drag
+  function enablePlayheadSmooth() {
+    var line = document.getElementById('chartPlayheadLine');
+    var dot = document.getElementById('chartPlayheadDot');
+    if (line) line.classList.add('smooth');
+    if (dot) dot.classList.add('smooth');
+    // Remove after transition completes
+    setTimeout(function() {
+      if (line) line.classList.remove('smooth');
+      if (dot) dot.classList.remove('smooth');
+    }, 160);
+  }
+
+  function updateChartPlayhead() {
+    var frac = currentTimeSec / EPISODE_DURATION;
+    var line = document.getElementById('chartPlayheadLine');
+    var dot = document.getElementById('chartPlayheadDot');
+    if (!line || !dot || !chartMain) return;
+
+    var rect = chartMain.getBoundingClientRect();
+    var w = rect.width;
+    var h = rect.height - 24;
+    var topPad = 8;
+
+    // Check if current time is within zoom range
+    if (frac < zoomStart || frac > zoomEnd) {
+      line.style.display = 'none';
+      dot.style.display = 'none';
+      return;
+    }
+    line.style.display = '';
+    dot.style.display = '';
+
+    var zr = zoomEnd - zoomStart;
+    var normalizedFrac = (frac - zoomStart) / zr;
+    var x = normalizedFrac * w;
+
+    // Get retention value at this point for dot position
+    var retention = getRetentionAt(frac);
+    var retY = topPad + (h - topPad) * (1 - retention / 100);
+
+    line.style.left = x + 'px';
+    dot.style.left = x + 'px';
+    dot.style.top = retY + 'px';
+  }
+
+  // DOM references
+  const transcriptBody = document.getElementById('transcriptBody');
+  const chartMain = document.getElementById('chartMain');
+  const chartSvg = document.getElementById('chartSvg');
+  const retentionFill = document.getElementById('retentionFill');
+  const retentionStroke = document.getElementById('retentionStroke');
+  const ytStroke = document.getElementById('ytStroke');
+  const spStroke = document.getElementById('spStroke');
+  const chapterShadingGroup = document.getElementById('chapterShading');
+  const avgLine = document.getElementById('avgLine');
+  const avgLabel = document.getElementById('avgLabel');
+  const hoverLine = document.getElementById('hoverLine');
+  const hoverHLine = document.getElementById('hoverHLine');
+  const hoverHLabel = document.getElementById('hoverHLabel');
+  const hoverDot = document.getElementById('hoverDot');
+  const tooltip = document.getElementById('tooltip');
+  // Figma canon: tooltip is just 3 platform columns, no time/transcript/delta
+  const tooltipYT = document.getElementById('tooltipYT');
+  const tooltipSP = document.getElementById('tooltipSP');
+  const tooltipRSS = document.getElementById('tooltipRSS');
+  const chartXAxis = document.getElementById('chartXAxis');
+  const waveformArea = document.getElementById('waveformArea');
+  const waveformZoomWindow = document.getElementById('waveformZoomWindow');
+  const chapterDropdownTrigger = document.getElementById('chapterDropdownTrigger');
+  const chapterDropdownList = document.getElementById('chapterDropdownList');
+  const zoomHandleLeft = document.getElementById('zoomHandleLeft');
+  const zoomHandleRight = document.getElementById('zoomHandleRight');
+
+  const gridLines = chartSvg.querySelectorAll('.grid-line');
+
+  // ytRetention and spRetention are assigned after their raw arrays are defined below
+  const TOTAL_LISTENERS = 125000;
+
+  // Generate waveform bars — seeded random for consistency
+  const waveformBarData = [];
+  (function generateWaveformBars() {
+    const svg = document.getElementById('waveformSvg');
+    const numBars = 100;
+    const svgW = 680;
+    const svgH = 44;
+    const spacing = svgW / numBars;
+    let barsHtml = '';
+    // Seed-like pattern for natural audio feel
+    let prev = 14;
+    for (let i = 0; i < numBars; i++) {
+      const variation = (Math.sin(i * 0.7) * 6 + Math.sin(i * 1.3) * 4 + Math.sin(i * 2.1) * 3);
+      let h = Math.max(3, Math.min(svgH - 6, 14 + variation + (Math.random() - 0.5) * 8));
+      // Smooth with previous
+      h = prev * 0.3 + h * 0.7;
+      prev = h;
+      const x = i * spacing + (spacing - 2) / 2;
+      const y = (svgH - h) / 2;
+      waveformBarData.push({ x, y, h, frac: i / numBars });
+      barsHtml += '<rect class="wf-bar" data-idx="' + i + '" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="2" height="' + h.toFixed(1) + '" rx="1" fill="rgba(191,191,199,0.35)"/>';
+    }
+    svg.innerHTML = barsHtml;
+  })();
+
+  // Color bars based on playhead position
+  function updateWaveformBarColors(playFrac) {
+    const bars = document.querySelectorAll('.wf-bar');
+    bars.forEach((bar, i) => {
+      const barFrac = i / bars.length;
+      if (barFrac < playFrac) {
+        bar.setAttribute('fill', 'rgba(120, 87, 209, 0.45)');
+      } else {
+        bar.setAttribute('fill', 'rgba(191, 191, 199, 0.35)');
+      }
+    });
+    // Update played region
+    const playedRegion = document.getElementById('waveformPlayed');
+    if (playedRegion) playedRegion.style.width = (playFrac * 100) + '%';
+  }
+
+  // YouTube (red) — from actual SVG trace, organic wobbling tail
+  const ytRetentionRaw = [
+    [0, 100], [0.003, 90.8], [0.006, 69.2], [0.01, 61],
+    [0.045, 52.2], [0.063, 47.7], [0.073, 39.3],
+    [0.105, 30.5], [0.127, 25.8], [0.159, 20.9], [0.19, 18.4],
+    [0.221, 16.7], [0.238, 16.1], [0.296, 15.8],
+    [0.345, 16.1], [0.352, 17], [0.356, 17.5], [0.359, 17],
+    [0.377, 17.5], [0.385, 12.8], [0.39, 12.7], [0.404, 14.1],
+    [0.413, 11], [0.441, 11.9], [0.445, 12.5],
+    [0.46, 6.4], [0.461, 5.7],
+    [0.498, 6.7], [0.511, 8.2], [0.521, 7.7],
+    [0.542, 3.2], [0.571, 5.8], [0.608, 9.1],
+    [0.637, 7.1], [0.648, 9.1], [0.651, 11.5],
+    [0.687, 10.5], [0.72, 10.4], [0.74, 7.5], [0.754, 5.6],
+    [0.776, 1.7], [0.794, 3], [0.808, 0.8],
+    [0.842, 1.5], [0.881, 1], [0.906, 1.5],
+    [0.952, 5.6], [0.97, 7.9], [0.984, 6.2], [0.997, 4.6]
+  ];
+  function getYTRetentionAt(frac) {
+    frac = Math.max(0, Math.min(1, frac));
+    for (var i = 0; i < ytRetentionRaw.length - 1; i++) {
+      if (frac >= ytRetentionRaw[i][0] && frac <= ytRetentionRaw[i+1][0]) {
+        var t = (frac - ytRetentionRaw[i][0]) / (ytRetentionRaw[i+1][0] - ytRetentionRaw[i][0]);
+        return ytRetentionRaw[i][1] + t * (ytRetentionRaw[i+1][1] - ytRetentionRaw[i][1]);
+      }
+    }
+    return ytRetentionRaw[ytRetentionRaw.length-1][1];
+  }
+
+  // Spotify (green) — from actual SVG trace, organic shape with dips at transitions
+  const spRetentionRaw = [
+    [0, 100], [0.002, 99.6], [0.028, 90.7], [0.03, 90.4], [0.037, 85],
+    [0.045, 74], [0.056, 69.4], [0.067, 65.4], [0.076, 62.8], [0.084, 61],
+    [0.108, 54], [0.119, 51.7],
+    [0.15, 42.4], [0.155, 40.5], [0.158, 40.2],
+    [0.169, 36.1], [0.172, 32.4],
+    // Sharp dip (ad break / chapter transition)
+    [0.174, 23.1], [0.176, 16.9], [0.178, 7.7], [0.182, 1],
+    // Recovery
+    [0.184, 0.8], [0.187, 8], [0.189, 26], [0.192, 31.1], [0.199, 32],
+    // Long plateau
+    [0.226, 30.5], [0.256, 29.7],
+    [0.30, 29.5], [0.346, 29.4],
+    [0.396, 28.5], [0.406, 27.5],
+    // Second dip
+    [0.41, 23.4], [0.418, 14.8], [0.435, 6.2], [0.441, 4.2], [0.448, 1],
+    // Second recovery
+    [0.449, 4.7], [0.449, 22.9], [0.452, 27],
+    [0.462, 25.9], [0.464, 25.3],
+    // Gradual tail
+    [0.511, 23.4], [0.574, 23.1], [0.622, 22.2],
+    [0.667, 20.4], [0.717, 19.4], [0.757, 17.7],
+    [0.782, 17.1], [0.856, 17.1],
+    // Slight uptick at end
+    [0.888, 18.1], [0.919, 21.2], [0.954, 23], [0.983, 26.1], [1, 27.6]
+  ];
+  function getSPRetentionAt(frac) {
+    frac = Math.max(0, Math.min(1, frac));
+    for (var i = 0; i < spRetentionRaw.length - 1; i++) {
+      if (frac >= spRetentionRaw[i][0] && frac <= spRetentionRaw[i+1][0]) {
+        var t = (frac - spRetentionRaw[i][0]) / (spRetentionRaw[i+1][0] - spRetentionRaw[i][0]);
+        return spRetentionRaw[i][1] + t * (spRetentionRaw[i+1][1] - spRetentionRaw[i][1]);
+      }
+    }
+    return spRetentionRaw[spRetentionRaw.length-1][1];
+  }
+  // Assign platform curves from raw SVG-traced data
+  const ytRetention = ytRetentionRaw;
+  const spRetention = spRetentionRaw;
+
+  function formatListenerCount(count) {
+    if (count >= 1000) return (count / 1000).toFixed(1) + 'K';
+    return count.toString();
+  }
+
+  // ── Transcript snippets map for tooltip ──
+  const transcriptSnippets = {};
+  TRANSCRIPT_LINES.forEach(line => {
+    transcriptSnippets[line.time] = line.text;
+  });
+
+  // ── Build transcript body with chapter breaks ──
+  function buildTranscript() {
+    transcriptBody.innerHTML = '';
+    let currentChapterIndex = -1;
+
+    TRANSCRIPT_LINES.forEach(line => {
+      // Determine which chapter this line belongs to
+      let chIdx = 0;
+      for (let i = CHAPTERS.length - 1; i >= 0; i--) {
+        if (line.time >= CHAPTERS[i].startTime) {
+          chIdx = i;
+          break;
+        }
+      }
+
+      // Insert chapter break if new chapter
+      if (chIdx !== currentChapterIndex) {
+        currentChapterIndex = chIdx;
+        const ch = CHAPTERS[chIdx];
+        const breakDiv = document.createElement('div');
+        breakDiv.className = 'transcript-chapter-break';
+        breakDiv.dataset.chapter = chIdx;
+        breakDiv.innerHTML =
+          '<div class="transcript-chapter-line"></div>' +
+          '<span class="transcript-chapter-label" style="color: ' + ch.quality + ';">' +
+          'Ch. ' + ch.num + ' \u2014 ' + ch.label + '</span>' +
+          '<div class="transcript-chapter-line"></div>';
+        transcriptBody.appendChild(breakDiv);
+      }
+
+      // Add transcript line
+      const div = document.createElement('div');
+      div.className = 'transcript-line';
+      div.dataset.time = line.time;
+      const m = Math.floor(line.time / 60);
+      const s = line.time % 60;
+      div.innerHTML =
+        '<span class="ts">' + m + ':' + String(s).padStart(2, '0') + '</span>' +
+        '<span class="txt">' + line.text + '</span>';
+      transcriptBody.appendChild(div);
+    });
+  }
+  buildTranscript();
+
+  // Live reference to transcript lines
+  let transcriptLines = transcriptBody.querySelectorAll('.transcript-line');
+
+  // ── Chapter dropdown ──
+  function buildChapterDropdown() {
+    chapterDropdownList.innerHTML = '';
+    CHAPTERS.forEach((ch, i) => {
+      const endTime = i < CHAPTERS.length - 1 ? CHAPTERS[i + 1].startTime : EPISODE_DURATION;
+      const item = document.createElement('div');
+      item.className = 'chapter-dropdown-item' + (i === activeChapterIndex ? ' active' : '');
+      item.dataset.index = i;
+      item.innerHTML =
+        '<span class="ch-num">Ch. ' + ch.num + '</span>' +
+        '<span class="ch-name">' + ch.label + '</span>' +
+        '<span class="ch-time">' + formatTime(ch.startTime) + '\u2013' + formatTime(endTime) + '</span>' +
+        '<div class="ch-quality" style="background: ' + ch.quality + ';"></div>';
+      item.addEventListener('click', function(e) {
+        e.stopPropagation();
+        selectChapter(i);
+        closeChapterDropdown();
+      });
+      chapterDropdownList.appendChild(item);
+    });
+  }
+
+  function updateChapterDropdownTrigger(index) {
+    const ch = CHAPTERS[index];
+    chapterDropdownTrigger.querySelector('.ch-num').textContent = ch.num + '.';
+    chapterDropdownTrigger.querySelector('.ch-name').textContent = ch.label;
+    chapterDropdownTrigger.querySelector('.ch-time').textContent = formatTime(ch.startTime);
+    // Update active state in list
+    chapterDropdownList.querySelectorAll('.chapter-dropdown-item').forEach((item, i) => {
+      item.classList.toggle('active', i === index);
+    });
+  }
+
+  function selectChapter(index) {
+    activeChapterIndex = index;
+    const ch = CHAPTERS[index];
+    updateChapterDropdownTrigger(index);
+
+    // Zoom to chapter range
+    zoomStart = ch.startFrac;
+    zoomEnd = ch.endFrac;
+    updateZoomVisuals();
+    drawChart();
+    renderChartChapterLines();
+
+    // Find the first transcript line in this chapter and activate it
+    var firstLine = null;
+    var firstLineIndex = -1;
+    var allLines = transcriptBody.querySelectorAll('.transcript-line');
+    allLines.forEach(function(line, i) {
+      var t = parseInt(line.dataset.time);
+      if (t >= ch.startTime && !firstLine) {
+        firstLine = line;
+        firstLineIndex = i;
+      }
+    });
+
+    // Activate that line
+    if (firstLine) {
+      allLines.forEach(function(l) { l.classList.remove('active'); });
+      firstLine.classList.add('active');
+
+      // Apply opacity graduation
+      allLines.forEach(function(line, i) {
+        var dist = Math.abs(i - firstLineIndex);
+        if (dist === 0 || dist <= 1) line.style.opacity = '1';
+        else if (dist <= 3) line.style.opacity = '0.7';
+        else if (dist <= 6) line.style.opacity = '0.45';
+        else line.style.opacity = '0.3';
+      });
+
+      // Scroll to center
+      firstLine.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+
+    // Also scroll chapter break into view
+    var chapterBreak = transcriptBody.querySelector('.transcript-chapter-break[data-chapter="' + index + '"]');
+    if (chapterBreak && !firstLine) {
+      chapterBreak.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+
+    hideHoverElements();
+  }
+
+  function openChapterDropdown() {
+    chapterDropdownTrigger.classList.add('open');
+    chapterDropdownList.classList.add('open');
+  }
+
+  function closeChapterDropdown() {
+    chapterDropdownTrigger.classList.remove('open');
+    chapterDropdownList.classList.remove('open');
+  }
+
+  chapterDropdownTrigger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (chapterDropdownList.classList.contains('open')) {
+      closeChapterDropdown();
+    } else {
+      openChapterDropdown();
+    }
+  });
+
+  document.addEventListener('click', function() {
+    closeChapterDropdown();
+  });
+
+  buildChapterDropdown();
+  updateChapterDropdownTrigger(2);
+
+  // ── Chapter ticks on waveform (small lines, no text) ──
+  function renderChapterTicks() {
+    waveformArea.querySelectorAll('.chapter-tick').forEach(el => el.remove());
+    CHAPTERS.forEach(ch => {
+      if (ch.startFrac === 0) return; // skip very first
+      const tick = document.createElement('div');
+      tick.className = 'chapter-tick';
+      tick.style.left = (ch.startFrac * 100) + '%';
+      waveformArea.appendChild(tick);
+    });
+  }
+  renderChapterTicks();
+
+  // ── Chapter lines on retention chart ──
+  function renderChartChapterLines() {
+    chartMain.querySelectorAll('.chart-chapter-line, .chart-chapter-label').forEach(el => el.remove());
+    const zoomRange = zoomEnd - zoomStart;
+    const w = chartMain.getBoundingClientRect().width;
+
+    CHAPTERS.forEach((ch, i) => {
+      if (i === 0) return; // skip first boundary (0)
+      if (ch.startFrac < zoomStart || ch.startFrac > zoomEnd) return;
+      const normalizedFrac = (ch.startFrac - zoomStart) / zoomRange;
+      const x = normalizedFrac * w;
+
+      const line = document.createElement('div');
+      line.className = 'chart-chapter-line';
+      line.style.left = x + 'px';
+      chartMain.appendChild(line);
+
+      const label = document.createElement('div');
+      label.className = 'chart-chapter-label';
+      label.style.left = x + 'px';
+      label.textContent = 'Ch.' + ch.num;
+      chartMain.appendChild(label);
+    });
+  }
+
+  // ── Helpers ──
+  function getChapterAt(frac) {
+    let chapter = CHAPTERS[0].label;
+    for (let i = CHAPTERS.length - 1; i >= 0; i--) {
+      if (frac >= CHAPTERS[i].startFrac) {
+        chapter = CHAPTERS[i].label;
+        break;
+      }
+    }
+    return chapter;
+  }
+
+  function getChapterIndexAt(frac) {
+    let idx = 0;
+    for (let i = CHAPTERS.length - 1; i >= 0; i--) {
+      if (frac >= CHAPTERS[i].startFrac) {
+        idx = i;
+        break;
+      }
+    }
+    return idx;
+  }
+
+  function getTranscriptSnippet(seconds) {
+    const times = Object.keys(transcriptSnippets).map(Number).sort((a, b) => a - b);
+    let best = times[0];
+    for (const t of times) {
+      if (t <= seconds) best = t;
+      else break;
+    }
+    const text = transcriptSnippets[best] || '';
+    if (text.length > 80) return '"...' + text.substring(0, 77) + '..."';
+    return '"' + text + '"';
+  }
+
+  function getRetentionAt(frac) {
+    frac = Math.max(0, Math.min(1, frac));
+    for (let i = 0; i < retentionData.length - 1; i++) {
+      if (frac >= retentionData[i][0] && frac <= retentionData[i + 1][0]) {
+        const t = (frac - retentionData[i][0]) / (retentionData[i + 1][0] - retentionData[i][0]);
+        return retentionData[i][1] + t * (retentionData[i + 1][1] - retentionData[i][1]);
+      }
+    }
+    return retentionData[retentionData.length - 1][1];
+  }
+
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return m + ':' + String(s).padStart(2, '0');
+  }
+
+  function updateZoomWindow() {
+    waveformZoomWindow.style.left = (zoomStart * 100) + '%';
+    waveformZoomWindow.style.width = ((zoomEnd - zoomStart) * 100) + '%';
+    // Dim outside areas
+    var outsideL = document.getElementById('waveformOutsideLeft');
+    var outsideR = document.getElementById('waveformOutsideRight');
+    if (outsideL) { outsideL.style.width = (zoomStart * 100) + '%'; }
+    if (outsideR) { outsideR.style.left = (zoomEnd * 100) + '%'; outsideR.style.width = ((1 - zoomEnd) * 100) + '%'; }
+  }
+
+  function hideHoverElements() {
+    hoverLine.style.opacity = '0';
+    hoverDot.style.opacity = '0';
+    hoverHLine.style.opacity = '0';
+    hoverHLabel.style.opacity = '0';
+    tooltip.style.opacity = '0';
+  }
+
+  // ── Draw chart ──
+  function drawChart() {
+    const rect = chartMain.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height - 24;
+    const topPad = 8;
+
+    for (let i = 0; i < 5; i++) {
+      const y = topPad + (h - topPad) * (i / 4);
+      gridLines[i].setAttribute('y1', y);
+      gridLines[i].setAttribute('y2', y);
+    }
+
+    const zoomRange = zoomEnd - zoomStart;
+
+    // Build zoomed data for all 3 platforms
+    function buildZoomedData(sourceData, getAtFrac) {
+      const zoomed = [];
+      for (let i = 0; i < sourceData.length; i++) {
+        const frac = sourceData[i][0];
+        if (frac >= zoomStart && frac <= zoomEnd) {
+          const normalizedFrac = (frac - zoomStart) / zoomRange;
+          zoomed.push([normalizedFrac, sourceData[i][1]]);
+        }
+      }
+      if (zoomed.length === 0 || zoomed[0][0] > 0) {
+        zoomed.unshift([0, getAtFrac(zoomStart)]);
+      }
+      if (zoomed[zoomed.length - 1][0] < 1) {
+        zoomed.push([1, getAtFrac(zoomEnd)]);
+      }
+      return zoomed;
+    }
+
+    const zoomedData = buildZoomedData(retentionData, getRetentionAt);
+    const zoomedYT = buildZoomedData(ytRetention, getYTRetentionAt);
+    const zoomedSP = buildZoomedData(spRetention, getSPRetentionAt);
+
+    function buildCurvePath(data) {
+      let path = 'M0,' + (topPad + (h - topPad) * (1 - data[0][1] / 100));
+      for (let i = 1; i < data.length; i++) {
+        const x = data[i][0] * w;
+        const y = topPad + (h - topPad) * (1 - data[i][1] / 100);
+        const prevX = data[i - 1][0] * w;
+        const prevY = topPad + (h - topPad) * (1 - data[i - 1][1] / 100);
+        const cpx1 = prevX + (x - prevX) * 0.4;
+        const cpx2 = prevX + (x - prevX) * 0.6;
+        path += ' C' + cpx1 + ',' + prevY + ' ' + cpx2 + ',' + y + ' ' + x + ',' + y;
+      }
+      return path;
+    }
+
+    const mainStrokePath = buildCurvePath(zoomedData);
+    const fillPath = mainStrokePath + ' L' + w + ',' + h + ' L0,' + h + ' Z';
+
+    // Chapter shading removed — single clean background
+    chapterShadingGroup.innerHTML = '';
+
+    retentionFill.setAttribute('d', fillPath);
+    ytStroke.setAttribute('d', buildCurvePath(zoomedYT));
+    retentionStroke.setAttribute('d', mainStrokePath);
+    spStroke.setAttribute('d', buildCurvePath(zoomedSP));
+    chartSvg.setAttribute('viewBox', '0 0 ' + w + ' ' + (h + 24));
+
+    const avgY = topPad + (h - topPad) * (1 - AVG_RETENTION / 100);
+    avgLine.setAttribute('x1', 0);
+    avgLine.setAttribute('x2', w);
+    avgLine.setAttribute('y1', avgY);
+    avgLine.setAttribute('y2', avgY);
+    avgLabel.style.right = '8px';
+    avgLabel.style.top = (avgY / (h + 24) * 100) - 1.5 + '%';
+
+    // dropoff markers removed
+
+    updateXAxisLabels();
+    renderChartChapterLines();
+    updateChartPlayhead();
+  }
+
+  function updateXAxisLabels() {
+    const startSec = zoomStart * EPISODE_DURATION;
+    const endSec = zoomEnd * EPISODE_DURATION;
+    const labels = chartXAxis.querySelectorAll('.chart-x-label');
+    const count = labels.length;
+    for (let i = 0; i < count; i++) {
+      const sec = startSec + (endSec - startSec) * (i / (count - 1));
+      labels[i].textContent = formatTime(sec);
+    }
+  }
+
+  // Initial draw
+  drawChart();
+  setCurrentTime(currentTimeSec); // sync all UI to initial position
+  window.addEventListener('resize', function() { drawChart(); });
+
+  // ── Draggable zoom handles ──
+  let dragging = null; // 'left' or 'right'
+
+  zoomHandleLeft.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    dragging = 'left';
+    zoomHandleLeft.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  zoomHandleRight.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    dragging = 'right';
+    zoomHandleRight.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!dragging) return;
+    const waveRect = waveformArea.getBoundingClientRect();
+    const frac = Math.max(0, Math.min(1, (e.clientX - waveRect.left) / waveRect.width));
+    const minWidth = 0.10;
+
+    if (dragging === 'left') {
+      zoomStart = Math.min(frac, zoomEnd - minWidth);
+      zoomStart = Math.max(0, zoomStart);
+    } else {
+      zoomEnd = Math.max(frac, zoomStart + minWidth);
+      zoomEnd = Math.min(1, zoomEnd);
+    }
+
+    updateZoomVisuals();
+    drawChart();
+    hideHoverElements();
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (!dragging) return;
+    zoomHandleLeft.classList.remove('dragging');
+    zoomHandleRight.classList.remove('dragging');
+    dragging = null;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+
+  // ── Pan / drag state (declared early so hover handler can check) ──
+  let isPanning = false;
+
+  // ── Chart hover ──
+  let chartHovering = false;
+
+  function updateHover(x, w, h, topPad) {
+    const zoomRange = zoomEnd - zoomStart;
+    const normalizedFrac = Math.max(0, Math.min(1, x / w));
+    const frac = zoomStart + normalizedFrac * zoomRange;
+    const retention = getRetentionAt(frac);
+    const retY = topPad + (h - topPad) * (1 - retention / 100);
+
+    hoverLine.style.opacity = '1';
+    hoverLine.style.left = x + 'px';
+
+    hoverDot.style.opacity = '1';
+    hoverDot.style.left = x + 'px';
+    hoverDot.style.top = retY + 'px';
+
+    hoverHLine.style.opacity = '1';
+    hoverHLine.style.top = retY + 'px';
+    hoverHLine.style.left = '0';
+    hoverHLine.style.width = x + 'px';
+
+    hoverHLabel.style.opacity = '1';
+    hoverHLabel.style.top = retY + 'px';
+    hoverHLabel.style.left = '-2px';
+    hoverHLabel.textContent = retention.toFixed(1) + '%';
+
+    const tooltipW = 300;
+    const tooltipH = tooltip.offsetHeight || 60;
+    tooltip.style.opacity = '1';
+    tooltip.style.right = '';
+    let tooltipLeft = x - tooltipW / 2;
+    if (tooltipLeft < 0) tooltipLeft = 0;
+    if (tooltipLeft + tooltipW > w) tooltipLeft = w - tooltipW;
+    tooltip.style.left = tooltipLeft + 'px';
+
+    // Always position above the dot
+    tooltip.style.top = Math.max(0, retY - tooltipH - 16) + 'px';
+
+    const timeSeconds = frac * EPISODE_DURATION;
+
+    // Platform values
+    const ytRet = getYTRetentionAt(frac);
+    const spRet = getSPRetentionAt(frac);
+    const mgRet = retention;
+
+    tooltipYT.querySelector('.tp-pct').textContent = Math.round(ytRet) + '%';
+    tooltipYT.querySelector('.tp-count').textContent = formatListenerCount(Math.round(TOTAL_LISTENERS * ytRet / 100)) + ' listeners';
+    tooltipSP.querySelector('.tp-pct').textContent = Math.round(spRet) + '%';
+    tooltipSP.querySelector('.tp-count').textContent = formatListenerCount(Math.round(TOTAL_LISTENERS * spRet / 100)) + ' listeners';
+    tooltipRSS.querySelector('.tp-pct').textContent = Math.round(mgRet) + '%';
+    tooltipRSS.querySelector('.tp-count').textContent = formatListenerCount(Math.round(TOTAL_LISTENERS * mgRet / 100)) + ' listeners';
+
+    // Update chapter dropdown to reflect current hover chapter
+    const hoveredChapterIdx = getChapterIndexAt(frac);
+    if (hoveredChapterIdx !== activeChapterIndex) {
+      activeChapterIndex = hoveredChapterIdx;
+      updateChapterDropdownTrigger(hoveredChapterIdx);
+    }
+
+    return { frac, timeSeconds };
+  }
+
+  chartMain.addEventListener('mousemove', function(e) {
+    if (isPanning) return;
+    const rect = chartMain.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const w = rect.width;
+    const h = rect.height - 24;
+    const topPad = 8;
+
+    updateHover(x, w, h, topPad);
+    chartHovering = true;
+    // Hover is read-only inspector — does NOT move playhead or transcript
+  });
+
+  chartMain.addEventListener('mouseleave', function() {
+    hideHoverElements();
+    chartHovering = false;
+  });
+
+  // Click chart to set playhead
+  chartMain.addEventListener('click', function(e) {
+    if (isPanning) return;
+    const rect = chartMain.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const w = rect.width;
+    const zr = zoomEnd - zoomStart;
+    const frac = zoomStart + (x / w) * zr;
+    const seconds = Math.round(frac * EPISODE_DURATION);
+    enablePlayheadSmooth();
+    setCurrentTime(seconds);
+  });
+
+  // ── Transcript sync ──
+  function syncTranscript(seconds) {
+    // Re-query in case DOM changed
+    transcriptLines = transcriptBody.querySelectorAll('.transcript-line');
+    let activeIndex = 0;
+    transcriptLines.forEach((line, i) => {
+      const t = parseInt(line.dataset.time);
+      if (seconds >= t) activeIndex = i;
+    });
+    transcriptLines.forEach((line, i) => {
+      line.classList.toggle('active', i === activeIndex);
+      const dist = Math.abs(i - activeIndex);
+      if (dist === 0) line.style.opacity = '1';
+      else if (dist <= 1) line.style.opacity = '1';
+      else if (dist <= 3) line.style.opacity = '0.7';
+      else if (dist <= 6) line.style.opacity = '0.45';
+      else line.style.opacity = '0.3';
+    });
+    const activeLine = transcriptLines[activeIndex];
+    if (activeLine) {
+      activeLine.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }
+
+  // ── Transcript click → sets playhead ──
+  transcriptBody.addEventListener('click', function(e) {
+    const line = e.target.closest('.transcript-line');
+    if (!line) return;
+
+    const seconds = parseInt(line.dataset.time);
+    const frac = seconds / EPISODE_DURATION;
+
+    // Reset zoom if outside visible range
+    if (frac < zoomStart || frac > zoomEnd) {
+      zoomStart = 0;
+      zoomEnd = 1;
+      updateZoomVisuals();
+      drawChart();
+    }
+
+    enablePlayheadSmooth();
+    setCurrentTime(seconds);
+  });
+
+  // ── Play/Pause toggle ──
+  let isPlaying = false;
+  const playBtn = document.getElementById('playBtn');
+  const playIcon = document.getElementById('playIcon');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const pauseIcon = document.getElementById('pauseIcon');
+
+  function setPlaying(playing) {
+    isPlaying = playing;
+    if (playing) {
+      if (playIcon) playIcon.innerHTML = '<rect x="10" y="8" width="4" height="16" rx="1" fill="white"/><rect x="18" y="8" width="4" height="16" rx="1" fill="white"/>';
+      if (pauseIcon) pauseIcon.innerHTML = '<polygon points="5,2 12,7 5,12" fill="white"/>';
+    } else {
+      if (playIcon) playIcon.innerHTML = '<polygon points="12,8 26,16 12,24" fill="white"/>';
+      if (pauseIcon) pauseIcon.innerHTML = '<rect x="3" y="2" width="3" height="10" rx="0.5" fill="white"/><rect x="8" y="2" width="3" height="10" rx="0.5" fill="white"/>';
+    }
+  }
+
+  if (playBtn) playBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    setPlaying(!isPlaying);
+  });
+  if (pauseBtn) pauseBtn.addEventListener('click', function() {
+    setPlaying(!isPlaying);
+  });
+
+  // ── Tab switching ──
+  const tabs = document.querySelectorAll('.top-nav-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function(e) {
+      if (this.getAttribute('href') === '#') {
+        e.preventDefault();
+        tabs.forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+      }
+    });
+  });
+
+  // ── Zoom indicator ──
+  const zoomIndicator = document.getElementById('zoomIndicator');
+  const zoomRangeEl = document.getElementById('zoomRange');
+  const zoomResetBtn = document.getElementById('zoomResetBtn');
+
+  function updateZoomVisuals() {
+    updateZoomWindow();
+    if (zoomStart === 0 && zoomEnd === 1) {
+      zoomIndicator.style.display = 'none';
+      chartMain.classList.remove('zoomed');
+    } else {
+      zoomIndicator.style.display = 'flex';
+      const startTime = formatTime(Math.round(zoomStart * EPISODE_DURATION));
+      const endTime = formatTime(Math.round(zoomEnd * EPISODE_DURATION));
+      // Check if segment aligns with a chapter
+      var chapterLabel = '';
+      for (var i = 0; i < CHAPTERS.length; i++) {
+        if (Math.abs(zoomStart - CHAPTERS[i].startFrac) < 0.02 && Math.abs(zoomEnd - CHAPTERS[i].endFrac) < 0.02) {
+          chapterLabel = 'Ch.' + CHAPTERS[i].num + ' \u2014 ';
+          break;
+        }
+      }
+      zoomRangeEl.textContent = chapterLabel + startTime + ' \u2013 ' + endTime;
+      chartMain.classList.add('zoomed');
+    }
+  }
+
+  function resetZoom() {
+    zoomStart = 0;
+    zoomEnd = 1;
+    updateZoomVisuals();
+    drawChart();
+    hideHoverElements();
+  }
+
+  zoomResetBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    resetZoom();
+  });
+
+  // ── Chart pan (click-and-drag) ──
+  let panStartX = 0;
+  let panStartZoomStart = 0;
+  let panStartZoomEnd = 0;
+
+  chartMain.addEventListener('mousedown', function(e) {
+    if (zoomStart === 0 && zoomEnd === 1) return;
+    isPanning = true;
+    panStartX = e.clientX;
+    panStartZoomStart = zoomStart;
+    panStartZoomEnd = zoomEnd;
+    chartMain.classList.add('panning');
+    e.preventDefault();
+  });
+
+  window.addEventListener('mousemove', function(e) {
+    if (!isPanning) return;
+    const rect = waveformArea.getBoundingClientRect();
+    const dx = e.clientX - panStartX;
+    const dxFrac = dx / rect.width;
+    const range = panStartZoomEnd - panStartZoomStart;
+
+    let newStart = panStartZoomStart - dxFrac;
+    let newEnd = newStart + range;
+
+    if (newStart < 0) { newStart = 0; newEnd = range; }
+    if (newEnd > 1) { newEnd = 1; newStart = 1 - range; }
+
+    zoomStart = newStart;
+    zoomEnd = newEnd;
+    updateZoomVisuals();
+    drawChart();
+  });
+
+  window.addEventListener('mouseup', function() {
+    if (isPanning) {
+      isPanning = false;
+      chartMain.classList.remove('panning');
+      if (zoomStart === 0 && zoomEnd === 1) {
+        chartMain.classList.remove('zoomed');
+      }
+    }
+  });
+
+  // ── Chart pan (mouse wheel) ──
+  chartMain.addEventListener('wheel', function(e) {
+    if (zoomStart === 0 && zoomEnd === 1) return;
+    e.preventDefault();
+    const range = zoomEnd - zoomStart;
+    const step = range * 0.1;
+    const delta = e.deltaX !== 0 ? e.deltaX : e.deltaY;
+    const dir = delta > 0 ? 1 : -1;
+
+    let newStart = zoomStart + step * dir;
+    let newEnd = newStart + range;
+    if (newStart < 0) { newStart = 0; newEnd = range; }
+    if (newEnd > 1) { newEnd = 1; newStart = 1 - range; }
+
+    zoomStart = newStart;
+    zoomEnd = newEnd;
+    updateZoomVisuals();
+    drawChart();
+  }, { passive: false });
+
+  // ── Waveform hover ──
+  const waveformHoverLine = document.getElementById('waveformHoverLine');
+  const waveformHoverTime = document.getElementById('waveformHoverTime');
+
+  waveformArea.addEventListener('mousemove', function(e) {
+    if (isDraggingPlayhead) return;
+    const rect = waveformArea.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const frac = Math.max(0, Math.min(1, x / rect.width));
+
+    waveformHoverLine.style.left = x + 'px';
+    waveformHoverLine.style.opacity = '1';
+
+    const seconds = Math.round(frac * EPISODE_DURATION);
+    waveformHoverTime.textContent = formatTime(seconds);
+    waveformHoverTime.style.left = x + 'px';
+    waveformHoverTime.style.opacity = '1';
+
+    // Clamp hover time tooltip to waveform bounds
+    const tipW = waveformHoverTime.offsetWidth || 40;
+    if (x - tipW / 2 < 0) waveformHoverTime.style.left = (tipW / 2) + 'px';
+    if (x + tipW / 2 > rect.width) waveformHoverTime.style.left = (rect.width - tipW / 2) + 'px';
+  });
+
+  waveformArea.addEventListener('mouseleave', function() {
+    if (!isDraggingPlayhead) {
+      waveformHoverLine.style.opacity = '0';
+      waveformHoverTime.style.opacity = '0';
+    }
+  });
+
+  // ── Waveform playhead drag ──
+  let isDraggingPlayhead = false;
+
+  waveformArea.addEventListener('mousedown', function(e) {
+    if (e.target.closest('.zoom-handle')) return;
+
+    isDraggingPlayhead = true;
+    updatePlayhead(e);
+    e.preventDefault();
+  });
+
+  window.addEventListener('mousemove', function(e) {
+    if (!isDraggingPlayhead) return;
+    updatePlayhead(e);
+  });
+
+  window.addEventListener('mouseup', function() {
+    if (isDraggingPlayhead) {
+      isDraggingPlayhead = false;
+      waveformHoverLine.style.opacity = '0';
+      waveformHoverTime.style.opacity = '0';
+    }
+  });
+
+  function updatePlayhead(e) {
+    const rect = waveformArea.getBoundingClientRect();
+    let frac = (e.clientX - rect.left) / rect.width;
+    frac = Math.max(0, Math.min(1, frac));
+
+    const seconds = Math.round(frac * EPISODE_DURATION);
+    setCurrentTime(seconds);
+
+    // Show hover indicator during drag
+    const x = e.clientX - rect.left;
+    waveformHoverLine.style.left = x + 'px';
+    waveformHoverLine.style.opacity = '1';
+    waveformHoverTime.textContent = formatTime(seconds);
+    waveformHoverTime.style.left = x + 'px';
+    waveformHoverTime.style.opacity = '1';
+  }
+
+  // Initial bar coloring
+  updateWaveformBarColors(0.35);
+
+  // showChartHoverAt removed — playhead and hover are now separate
+
+  // Update zoom visual state on initial load
+  updateZoomVisuals();
+
+  // Retention subtab switching removed — overview always visible
+
+  // ═══ SEGMENTS VIEW ═══
+
+  const SEGMENT_DATA = {
+    listener: {
+      title: 'Retention by Listener Type',
+      segments: [
+        { name: 'Superfans (10+ eps)', color: '#7857d1', listeners: '3.2K', avgRetention: 78, completion: 41, peakDrop: '14:20',
+          curve: retentionData.map(d => [d[0], Math.min(100, d[1] * 1.15 + 8)]) },
+        { name: 'Returning (2-9 eps)', color: '#229f60', listeners: '5.8K', avgRetention: 58, completion: 24, peakDrop: '8:40',
+          curve: retentionData.map(d => [d[0], d[1] * 0.95]) },
+        { name: 'New Listeners', color: '#d5432c', listeners: '5.9K', avgRetention: 34, completion: 9, peakDrop: '3:15',
+          curve: retentionData.map(d => [d[0], Math.max(3, d[1] * 0.6 - 5)]) },
+      ],
+      diffs: [
+        { icon: '\u2191', text: 'Superfans retain <strong>23% better</strong> through the mid-section (15:00\u201330:00) than new listeners.' },
+        { icon: '\u26A1', text: 'New listeners drop off <strong>2x faster</strong> in the first 5 minutes \u2014 the intro is the key battleground.' },
+        { icon: '\uD83C\uDFAF', text: 'Returning listeners who make it past 10:00 behave almost identically to superfans.' },
+      ],
+      insights: [
+        { title: 'Superfan Retention', value: '78%', desc: 'Superfans average 78% retention \u2014 44pp higher than new listeners. They rarely drop off before the halfway point.', highlight: true },
+        { title: 'New Listener Drop-off', value: '3:15', desc: 'The average new listener drops off at 3:15. Consider a stronger hook or preview of what\'s coming.' },
+        { title: 'Conversion Window', value: '10:00', desc: 'If a new listener makes it past 10 minutes, they\'re 3x more likely to become a returning listener.' },
+      ]
+    },
+    platform: {
+      title: 'Retention by Platform',
+      segments: [
+        { name: 'YouTube', color: '#d5432c', listeners: '7.4K', avgRetention: 46, completion: 15, peakDrop: '2:30',
+          curve: retentionData.map(d => [d[0], Math.max(5, d[1] * 0.75 - 8)]) },
+        { name: 'Spotify', color: '#229f60', listeners: '4.2K', avgRetention: 62, completion: 28, peakDrop: '12:00',
+          curve: retentionData.map(d => [d[0], Math.min(100, d[1] * 0.9 + 5)]) },
+        { name: 'Apple Podcasts', color: '#fc3c44', listeners: '2.1K', avgRetention: 71, completion: 35, peakDrop: '22:10',
+          curve: retentionData.map(d => [d[0], Math.min(100, d[1] * 1.05 + 3)]) },
+        { name: 'RSS/RSS', color: '#7857d1', listeners: '1.2K', avgRetention: 54, completion: 22, peakDrop: '8:50',
+          curve: retentionData },
+      ],
+      diffs: [
+        { icon: '\uD83D\uDCFA', text: 'YouTube has the <strong>lowest retention</strong> at 46% \u2014 visual content sees steeper early drop-offs.' },
+        { icon: '\uD83C\uDFA7', text: 'Apple Podcasts listeners retain <strong>25pp better</strong> than YouTube \u2014 audio-first audiences go deeper.' },
+        { icon: '\uD83D\uDCCA', text: 'Spotify and Apple converge after 30:00 \u2014 the loyal core behaves similarly across audio platforms.' },
+      ],
+      insights: [
+        { title: 'YouTube Gap', value: '-25pp', desc: 'YouTube retention trails audio platforms by 25pp on average. Consider platform-specific hooks for video.', highlight: true },
+        { title: 'Audio Loyalty', value: '71%', desc: 'Apple Podcasts leads with 71% avg retention. Audio-first listeners are your most engaged audience.' },
+        { title: 'Platform Parity', value: '30:00', desc: 'After the 30-minute mark, all audio platforms show nearly identical retention curves.' },
+      ]
+    },
+    source: {
+      title: 'Retention by Traffic Source',
+      segments: [
+        { name: 'Direct / Subscribed', color: '#7857d1', listeners: '8.1K', avgRetention: 68, completion: 32, peakDrop: '18:00',
+          curve: retentionData.map(d => [d[0], Math.min(100, d[1] * 1.1 + 5)]) },
+        { name: 'Shared Link', color: '#229f60', listeners: '3.4K', avgRetention: 42, completion: 14, peakDrop: '4:20',
+          curve: retentionData.map(d => [d[0], Math.max(3, d[1] * 0.7)]) },
+        { name: 'Algorithm / Rec', color: '#f59e0b', listeners: '2.8K', avgRetention: 35, completion: 8, peakDrop: '2:10',
+          curve: retentionData.map(d => [d[0], Math.max(2, d[1] * 0.55 - 3)]) },
+      ],
+      diffs: [
+        { icon: '\uD83D\uDD17', text: 'Shared link traffic retains <strong>26pp worse</strong> than direct subscribers \u2014 they lack context.' },
+        { icon: '\uD83E\uDD16', text: 'Algorithmic recommendations have the <strong>steepest 60-second drop</strong> \u2014 most bounce immediately.' },
+        { icon: '\uD83C\uDFE0', text: 'Direct subscribers are your foundation: 68% avg retention with 32% completion.' },
+      ],
+      insights: [
+        { title: 'Subscriber Advantage', value: '+33pp', desc: 'Direct subscribers retain 33pp better than algorithmically surfaced listeners. Subscriptions are everything.', highlight: true },
+        { title: 'Shared Link Window', value: '4:20', desc: 'Shared link listeners decide within 4:20 whether to stay. The opening needs to justify the click.' },
+        { title: 'Algo Bounce Rate', value: '65%', desc: '65% of algorithmically recommended listeners leave within 60 seconds.' },
+      ]
+    },
+    device: {
+      title: 'Retention by Device',
+      segments: [
+        { name: 'Mobile', color: '#7857d1', listeners: '9.2K', avgRetention: 52, completion: 20, peakDrop: '8:00',
+          curve: retentionData.map(d => [d[0], d[1] * 0.92]) },
+        { name: 'Desktop', color: '#229f60', listeners: '3.8K', avgRetention: 61, completion: 28, peakDrop: '15:00',
+          curve: retentionData.map(d => [d[0], Math.min(100, d[1] * 1.05 + 3)]) },
+        { name: 'Smart Speaker', color: '#f59e0b', listeners: '1.9K', avgRetention: 74, completion: 38, peakDrop: '25:00',
+          curve: retentionData.map(d => [d[0], Math.min(100, d[1] * 1.2 + 5)]) },
+      ],
+      diffs: [
+        { icon: '\uD83D\uDCF1', text: 'Mobile listeners make up <strong>62%</strong> of your audience but have the lowest retention.' },
+        { icon: '\uD83D\uDD0A', text: 'Smart speaker listeners retain <strong>22pp better</strong> \u2014 passive listening = fewer exit points.' },
+        { icon: '\uD83D\uDCBB', text: 'Desktop listeners show a <strong>more gradual curve</strong> \u2014 fewer sharp drops, steadier decline.' },
+      ],
+      insights: [
+        { title: 'Mobile Majority', value: '62%', desc: 'Mobile is your largest audience at 62% \u2014 optimizing the mobile experience has the biggest impact.', highlight: true },
+        { title: 'Smart Speaker Win', value: '74%', desc: 'Smart speaker listeners average 74% retention. No screen = no distractions = deeper listening.' },
+        { title: 'Desktop Pattern', value: '15:00', desc: 'Desktop listeners\' peak drop-off is at 15:00 \u2014 likely a work-break listening pattern.' },
+      ]
+    },
+    geo: {
+      title: 'Retention by Geography',
+      segments: [
+        { name: 'United States', color: '#7857d1', listeners: '8.5K', avgRetention: 56, completion: 23, peakDrop: '10:00',
+          curve: retentionData.map(d => [d[0], d[1] * 0.98]) },
+        { name: 'United Kingdom', color: '#229f60', listeners: '2.8K', avgRetention: 62, completion: 28, peakDrop: '14:00',
+          curve: retentionData.map(d => [d[0], Math.min(100, d[1] * 1.05 + 3)]) },
+        { name: 'Canada', color: '#d5432c', listeners: '1.5K', avgRetention: 58, completion: 25, peakDrop: '12:00',
+          curve: retentionData.map(d => [d[0], d[1] * 1.0 + 2]) },
+        { name: 'Australia', color: '#f59e0b', listeners: '0.9K', avgRetention: 64, completion: 30, peakDrop: '16:00',
+          curve: retentionData.map(d => [d[0], Math.min(100, d[1] * 1.08 + 4)]) },
+      ],
+      diffs: [
+        { icon: '\uD83C\uDDFA\uD83C\uDDF8', text: 'US listeners make up <strong>57%</strong> of your audience but have the lowest retention per capita.' },
+        { icon: '\uD83C\uDDE6\uD83C\uDDFA', text: 'Australia has the <strong>highest retention</strong> at 64% despite being the smallest audience.' },
+        { icon: '\uD83C\uDF0D', text: 'International audiences (UK, CA, AU) retain <strong>6-8pp better</strong> on average than US.' },
+      ],
+      insights: [
+        { title: 'US Volume', value: '8.5K', desc: 'The US dominates in volume but trails in retention. Content resonates globally \u2014 consider time-zone-aware publishing.', highlight: true },
+        { title: 'UK Engagement', value: '62%', desc: 'UK listeners average 62% retention with 28% completion \u2014 your second most engaged market.' },
+        { title: 'AU Quality', value: '64%', desc: 'Australian listeners punch above their weight with the highest retention despite the smallest audience.' },
+      ]
+    }
+  };
+
+  let currentDimension = 'listener';
+
+  function renderSegments() {
+    const data = SEGMENT_DATA[currentDimension];
+
+    // Update chart title
+    document.querySelector('.segments-chart-title').textContent = data.title;
+
+    // Legend
+    const legendEl = document.getElementById('segmentsLegend');
+    legendEl.innerHTML = data.segments.map(s =>
+      '<div class="segments-legend-item"><span class="segments-legend-dot" style="background:' + s.color + '"></span>' + s.name + '</div>'
+    ).join('');
+
+    // Draw chart using Canvas
+    const chartEl = document.getElementById('segmentsChart');
+    let canvas = chartEl.querySelector('canvas');
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      chartEl.appendChild(canvas);
+    }
+    const dpr = window.devicePixelRatio || 1;
+    const rect = chartEl.getBoundingClientRect();
+    const W = rect.width;
+    const H = rect.height;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, W, H);
+
+    const padL = 0, padR = 0, padT = 0, padB = 20;
+    const cW = W - padL - padR;
+    const cH = H - padT - padB;
+
+    // Grid lines
+    ctx.strokeStyle = '#f0f0f0';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const y = padT + cH * (i / 4);
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL + cW, y);
+      ctx.stroke();
+    }
+
+    // Y-axis labels
+    ctx.font = '500 10px Manrope, sans-serif';
+    ctx.fillStyle = '#a3a3a3';
+    ctx.textAlign = 'right';
+    ['100%','75%','50%','25%','0%'].forEach(function(label, i) {
+      ctx.fillText(label, padL - 6, padT + cH * (i / 4) + 4);
+    });
+
+    // Draw each segment curve
+    data.segments.forEach(function(seg) {
+      const curve = seg.curve;
+      ctx.beginPath();
+      curve.forEach(function(pt, i) {
+        const x = padL + pt[0] * cW;
+        const y = padT + cH * (1 - Math.max(0, Math.min(100, pt[1])) / 100);
+        if (i === 0) ctx.moveTo(x, y);
+        else {
+          const prev = curve[i-1];
+          const px = padL + prev[0] * cW;
+          const py = padT + cH * (1 - Math.max(0, Math.min(100, prev[1])) / 100);
+          const cpx1 = px + (x - px) * 0.4;
+          const cpx2 = px + (x - px) * 0.6;
+          ctx.bezierCurveTo(cpx1, py, cpx2, y, x, y);
+        }
+      });
+      ctx.strokeStyle = seg.color;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    });
+
+    // X-axis labels
+    ctx.fillStyle = '#a3a3a3';
+    ctx.font = '500 10px Manrope, sans-serif';
+    ctx.textAlign = 'center';
+    for (let m = 0; m <= 45; m += 5) {
+      const frac = (m * 60) / EPISODE_DURATION;
+      const x = padL + frac * cW;
+      ctx.fillText(m + ':00', x, H - 4);
+    }
+
+    // Segment Cards
+    const cardsEl = document.getElementById('segmentsCards');
+    cardsEl.innerHTML = data.segments.map(function(s, i) {
+      return '<div class="segment-card-item' + (i === 0 ? ' highlighted' : '') + '">' +
+        '<div class="segment-card-top">' +
+          '<div class="segment-card-name">' +
+            '<span class="segment-card-dot" style="background:' + s.color + '"></span>' +
+            s.name +
+          '</div>' +
+          '<span class="segment-card-listeners">' + s.listeners + ' listeners</span>' +
+        '</div>' +
+        '<div class="segment-card-stats">' +
+          '<div class="segment-card-stat">' +
+            '<span class="segment-card-stat-label">Avg. Retention</span>' +
+            '<span class="segment-card-stat-value">' + s.avgRetention + '%</span>' +
+          '</div>' +
+          '<div class="segment-card-stat">' +
+            '<span class="segment-card-stat-label">Completion</span>' +
+            '<span class="segment-card-stat-value">' + s.completion + '%</span>' +
+          '</div>' +
+          '<div class="segment-card-stat">' +
+            '<span class="segment-card-stat-label">Peak Drop</span>' +
+            '<span class="segment-card-stat-value down">' + s.peakDrop + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="segment-card-minibar">' +
+          '<div class="segment-card-minibar-fill" style="width:' + s.avgRetention + '%;background:' + s.color + '"></div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    // Key Differences
+    const diffsEl = document.getElementById('segmentsDiffs');
+    diffsEl.innerHTML = data.diffs.map(function(d) {
+      return '<div class="segment-diff-item">' +
+        '<span class="segment-diff-icon">' + d.icon + '</span>' +
+        '<span>' + d.text + '</span>' +
+      '</div>';
+    }).join('');
+
+    // Insight Cards
+    const insightsEl = document.getElementById('segmentsInsights');
+    insightsEl.innerHTML = data.insights.map(function(ins) {
+      return '<div class="segment-insight-card' + (ins.highlight ? ' highlight' : '') + '">' +
+        '<div class="segment-insight-title">' + ins.title + '</div>' +
+        '<div class="segment-insight-value">' + ins.value + '</div>' +
+        '<div class="segment-insight-desc">' + ins.desc + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // Dimension tab switching (segments view removed)
+
+  // ═══ COMPARISONS VIEW ═══
+  var compInitialized = false;
+
+  var COMP_EPISODES = [
+    {
+      name: 'Ep. 47: Dopamine Expert', format: 'Interview', color: '#7857d1',
+      avgRetention: 32, completion: 18, peakDrop: '0:52', watchTime: '52m 34s', deltaVsAvg: +4,
+      curve: retentionData
+    },
+    {
+      name: 'Ep. 46: Sleep Expert', format: 'Interview', color: '#229f60',
+      avgRetention: 38, completion: 22, peakDrop: '1:15', watchTime: '1h 08m', deltaVsAvg: +10,
+      curve: retentionData.map(function(d) {
+        var f = d[0], v = d[1];
+        if (f < 0.05) return [f, Math.max(50, v + 5)];
+        return [f, Math.min(100, v * 1.15 + 6)];
+      })
+    },
+    {
+      name: 'Ep. 45: Money Expert', format: 'Solo + Guest', color: '#f59e0b',
+      avgRetention: 28, completion: 15, peakDrop: '0:45', watchTime: '44m 08s', deltaVsAvg: 0,
+      curve: retentionData.map(function(d) {
+        var f = d[0], v = d[1];
+        if (f < 0.05) return [f, Math.max(20, v - 5)];
+        return [f, Math.max(5, v * 0.88 - 2)];
+      })
+    },
+    {
+      name: 'Ep. 44: Retention Anchors', format: 'Solo', color: '#d5432c',
+      avgRetention: 22, completion: 11, peakDrop: '0:38', watchTime: '38m 50s', deltaVsAvg: -6,
+      curve: retentionData.map(function(d) {
+        var f = d[0], v = d[1];
+        if (f < 0.04) return [f, Math.max(15, v - 10)];
+        return [f, Math.max(3, v * 0.7 - 5)];
+      })
+    },
+    {
+      name: 'Ep. 43: Body Language', format: 'Interview', color: '#3b82f6',
+      avgRetention: 42, completion: 26, peakDrop: '1:30', watchTime: '55m 20s', deltaVsAvg: +14,
+      curve: retentionData.map(function(d) {
+        var f = d[0], v = d[1];
+        if (f < 0.05) return [f, Math.min(100, v + 8)];
+        return [f, Math.min(100, v * 1.3 + 8)];
+      })
+    },
+  ];
+
+  var selectedCompEps = [0, 1, 4];
+
+  function renderComparisons() {
+    compInitialized = true;
+    renderCompPicker();
+    renderCompChart();
+    renderCompTable();
+    renderCompInsights();
+  }
+
+  function renderCompPicker() {
+    var el = document.getElementById('compPickerEps');
+    el.innerHTML = selectedCompEps.map(function(idx) {
+      var ep = COMP_EPISODES[idx];
+      return '<div class="comp-ep-tag selected" style="border-color:' + ep.color + '">' +
+        '<span class="comp-ep-dot" style="background:' + ep.color + '"></span>' +
+        ep.name +
+        '<span class="comp-ep-x" onclick="event.stopPropagation();removeCompEp(' + idx + ')">&#215;</span>' +
+        '</div>';
+    }).join('');
+  }
+
+  function renderCompChart() {
+    var container = document.getElementById('compChartArea');
+    var canvas = document.getElementById('compCanvas');
+    var dpr = window.devicePixelRatio || 1;
+    var rect = container.getBoundingClientRect();
+    var W = rect.width, H = rect.height;
+    if (W === 0 || H === 0) return;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    var ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr); ctx.clearRect(0, 0, W, H);
+
+    var padL = 40, padR = 16, padT = 8, padB = 28;
+    var cW = W - padL - padR, cH = H - padT - padB;
+
+    // Grid
+    ctx.strokeStyle = '#f0f0f0'; ctx.lineWidth = 1;
+    for (var i = 0; i <= 4; i++) {
+      var gy = padT + cH * (i / 4);
+      ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(padL + cW, gy); ctx.stroke();
+    }
+
+    // Y labels
+    ctx.font = '500 10px Manrope, sans-serif'; ctx.fillStyle = '#a3a3a3'; ctx.textAlign = 'right';
+    ['100%','75%','50%','25%','0%'].forEach(function(l, i) { ctx.fillText(l, padL - 6, padT + cH * (i/4) + 4); });
+
+    // X labels
+    ctx.textAlign = 'center';
+    for (var m = 0; m <= 60; m += 10) {
+      var xf = (m * 60) / EPISODE_DURATION;
+      if (xf > 1) break;
+      ctx.fillText(m + ':00', padL + xf * cW, H - 6);
+    }
+
+    // Average line
+    var showAvg = 28;
+    var avgY = padT + cH * (1 - showAvg / 100);
+    ctx.strokeStyle = '#d4d4d4'; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(padL, avgY); ctx.lineTo(padL + cW, avgY); ctx.stroke();
+    ctx.setLineDash([]); ctx.font = '500 9px Manrope, sans-serif'; ctx.fillStyle = '#a3a3a3';
+    ctx.textAlign = 'left'; ctx.fillText('Show avg 28%', padL + cW - 60, avgY - 6);
+
+    // Draw curves
+    selectedCompEps.forEach(function(idx) {
+      var ep = COMP_EPISODES[idx];
+      ctx.beginPath();
+      ep.curve.forEach(function(pt, i) {
+        var x = padL + pt[0] * cW;
+        var y = padT + cH * (1 - Math.max(0, Math.min(100, pt[1])) / 100);
+        if (i === 0) ctx.moveTo(x, y);
+        else {
+          var prev = ep.curve[i-1];
+          var px = padL + prev[0] * cW;
+          var py = padT + cH * (1 - Math.max(0, Math.min(100, prev[1])) / 100);
+          ctx.bezierCurveTo(px + (x-px)*0.4, py, px + (x-px)*0.6, y, x, y);
+        }
+      });
+      ctx.strokeStyle = ep.color; ctx.lineWidth = 2; ctx.stroke();
+    });
+
+    // Legend
+    document.getElementById('compLegend').innerHTML = selectedCompEps.map(function(idx) {
+      var ep = COMP_EPISODES[idx];
+      return '<div class="comp-chart-legend-item"><span class="comp-chart-legend-dot" style="background:' + ep.color + '"></span>' + ep.name + '</div>';
+    }).join('');
+  }
+
+  function renderCompTable() {
+    var tbody = document.getElementById('compTableBody');
+    var selected = selectedCompEps.map(function(idx) { return COMP_EPISODES[idx]; });
+    var bestRet = Math.max.apply(null, selected.map(function(e) { return e.avgRetention; }));
+    var worstRet = Math.min.apply(null, selected.map(function(e) { return e.avgRetention; }));
+
+    tbody.innerHTML = selectedCompEps.map(function(idx) {
+      var ep = COMP_EPISODES[idx];
+      var retClass = ep.avgRetention === bestRet ? 'comp-val-best' : (ep.avgRetention === worstRet ? 'comp-val-worst' : '');
+      var deltaClass = ep.deltaVsAvg >= 0 ? 'up' : 'down';
+      var deltaSign = ep.deltaVsAvg >= 0 ? '+' : '';
+
+      var sparkPath = 'M';
+      ep.curve.forEach(function(pt, i) {
+        sparkPath += (i === 0 ? '' : ' L') + (pt[0] * 60).toFixed(1) + ',' + (20 - pt[1] / 100 * 18).toFixed(1);
+      });
+
+      return '<tr>' +
+        '<td><div class="comp-ep-name-cell"><span class="comp-ep-dot" style="background:' + ep.color + '"></span>' + ep.name + '</div></td>' +
+        '<td><span class="comp-format-tag">' + ep.format + '</span></td>' +
+        '<td class="' + retClass + '">' + ep.avgRetention + '%</td>' +
+        '<td>' + ep.completion + '%</td>' +
+        '<td>' + ep.peakDrop + '</td>' +
+        '<td>' + ep.watchTime + '</td>' +
+        '<td><svg class="comp-mini-spark" viewBox="0 0 60 20" fill="none"><path d="' + sparkPath + '" stroke="' + ep.color + '" stroke-width="1.5" fill="none"/></svg></td>' +
+        '<td><span class="comp-val-delta ' + deltaClass + '">' + deltaSign + ep.deltaVsAvg + 'pp</span></td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  function renderCompInsights() {
+    document.getElementById('compInsights').innerHTML =
+      '<div class="comp-insight highlight"><div class="comp-insight-title">Best Format</div><div class="comp-insight-value">Interview</div><div class="comp-insight-desc">Interview episodes average 37% retention — 15pp higher than solo format. Guests create natural engagement hooks that sustain the plateau.</div></div>' +
+      '<div class="comp-insight"><div class="comp-insight-title">Optimal Window</div><div class="comp-insight-value">8:00–13:00</div><div class="comp-insight-desc">Your best-performing 5-minute window across all episodes. Listeners who reach 8:00 are 3x more likely to finish.</div></div>' +
+      '<div class="comp-insight"><div class="comp-insight-title">Biggest Opportunity</div><div class="comp-insight-value">0:00–1:00</div><div class="comp-insight-desc">All episodes lose 50-60% of listeners in the first minute. A stronger cold open could recover 500K+ listeners per episode.</div></div>';
+  }
+
+  window.removeCompEp = function(idx) {
+    selectedCompEps = selectedCompEps.filter(function(i) { return i !== idx; });
+    if (selectedCompEps.length === 0) selectedCompEps = [0];
+    renderComparisons();
+  };
+  window.addCompEp = function(idx) {
+    if (selectedCompEps.indexOf(idx) < 0 && selectedCompEps.length < 5) {
+      selectedCompEps.push(idx);
+      renderComparisons();
+    }
+  };
+
+  var compAddBtnEl = document.getElementById('compAddBtn');
+  if (compAddBtnEl) compAddBtnEl.addEventListener('click', function(e) {
+    var existing = document.getElementById('compAddDropdown');
+    if (existing) { existing.remove(); return; }
+    var btn = this;
+    var dropdown = document.createElement('div');
+    dropdown.id = 'compAddDropdown';
+    dropdown.style.cssText = 'position:absolute;top:100%;left:0;min-width:240px;background:white;border:1px solid #e5e5e5;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,0.1);z-index:30;overflow:hidden;margin-top:4px;';
+    var items = '';
+    COMP_EPISODES.forEach(function(ep, i) {
+      if (selectedCompEps.indexOf(i) >= 0) return;
+      items += '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:500;color:#525252;" ' +
+        'onmouseover="this.style.background=\'#fafafa\'" onmouseout="this.style.background=\'white\'" ' +
+        'onclick="addCompEp(' + i + ');this.parentElement.remove();">' +
+        '<span style="width:8px;height:8px;border-radius:50%;background:' + ep.color + ';flex-shrink:0"></span>' +
+        ep.name + '<span style="margin-left:auto;font-size:13px;color:#a3a3a3">' + ep.format + '</span></div>';
+    });
+    if (!items) items = '<div style="padding:8px 12px;font-size:13px;color:#a3a3a3;">All episodes selected</div>';
+    dropdown.innerHTML = items;
+    btn.appendChild(dropdown);
+    setTimeout(function() {
+      document.addEventListener('click', function handler(ev) {
+        if (!dropdown.contains(ev.target) && ev.target !== btn) { dropdown.remove(); document.removeEventListener('click', handler); }
+      });
+    }, 10);
+  });
+
+  // ═══ RESIZABLE VERTICAL DIVIDER (transcript width) ═══
+  const resizeV = document.getElementById('resizeV');
+  const transcriptPanel = document.querySelector('.transcript-panel');
+  const rightContent = document.querySelector('.right-content');
+  let isResizingV = false;
+
+  resizeV.addEventListener('mousedown', function(e) {
+    isResizingV = true;
+    e.preventDefault();
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  window.addEventListener('mousemove', function(e) {
+    if (!isResizingV) return;
+    const bodyRect = document.querySelector('.body-area').getBoundingClientRect();
+    let newWidth = e.clientX - bodyRect.left;
+    newWidth = Math.max(200, Math.min(500, newWidth));
+    transcriptPanel.style.width = newWidth + 'px';
+    transcriptPanel.style.minWidth = newWidth + 'px';
+  });
+
+  window.addEventListener('mouseup', function() {
+    if (isResizingV) {
+      isResizingV = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+  });
+
+  // ═══ RESIZABLE HORIZONTAL DIVIDER (video height) ═══
+  const resizeH = document.getElementById('resizeH');
+  const videoSection = document.getElementById('videoSection');
+  let isResizingH = false;
+
+  resizeH.addEventListener('mousedown', function(e) {
+    isResizingH = true;
+    e.preventDefault();
+    document.body.style.cursor = 'row-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  window.addEventListener('mousemove', function(e) {
+    if (!isResizingH) return;
+    const rightRect = rightContent.getBoundingClientRect();
+    let newMaxH = e.clientY - rightRect.top - 28;
+    newMaxH = Math.max(60, Math.min(rightRect.height * 0.7, newMaxH));
+    // Keep 16:9 aspect ratio, just constrain max-height
+    videoSection.style.aspectRatio = '16/9';
+    videoSection.style.maxHeight = newMaxH + 'px';
+    drawChart();
+  });
+
+  window.addEventListener('mouseup', function() {
+    if (isResizingH) {
+      isResizingH = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      drawChart();
+    }
+  });
+
+  // ═══ COLLAPSE/EXPAND VIDEO & TRANSCRIPT ═══
+  document.querySelectorAll('.panel-collapse-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var target = this.dataset.target;
+      this.classList.toggle('collapsed');
+      if (target === 'video') {
+        if (this.classList.contains('collapsed')) {
+          videoSection.style.maxHeight = '0';
+          videoSection.style.overflow = 'hidden';
+        } else {
+          videoSection.style.maxHeight = 'calc(50vh - 80px)';
+          videoSection.style.overflow = '';
+        }
+        setTimeout(drawChart, 50);
+      }
+      if (target === 'transcript') {
+        var tp = document.querySelector('.transcript-panel');
+        var expandBtn = document.getElementById('transcriptExpandBtn');
+        if (this.classList.contains('collapsed')) {
+          tp.classList.add('collapsed');
+          expandBtn.style.display = 'flex';
+        } else {
+          tp.classList.remove('collapsed');
+          expandBtn.style.display = 'none';
+        }
+        setTimeout(drawChart, 220);
+      }
+    });
+  });
+
+  // ═══ TRANSCRIPT EXPAND BUTTON ═══
+  document.getElementById('transcriptExpandBtn').addEventListener('click', function() {
+    var tp = document.querySelector('.transcript-panel');
+    tp.classList.remove('collapsed');
+    this.style.display = 'none';
+    // Reset the collapse button state
+    var collapseBtn = document.querySelector('.panel-collapse-btn[data-target="transcript"]');
+    if (collapseBtn) collapseBtn.classList.remove('collapsed');
+    setTimeout(drawChart, 220);
+  });
+
+  // ═══ FAYE CHIP CHAT DEMO ═══
+  (function() {
+    var chips = document.querySelectorAll('.faye-chip');
+    var fayeBody = document.getElementById('fayeBody');
+    var emptyState = fayeBody.querySelector('.faye-empty');
+    var sparkleSvg = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#7857d1" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13 6.5 8.5 2 7l4.5-1.5z"/></svg>';
+
+    chips.forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        var prompt = this.getAttribute('data-prompt');
+        var response = this.getAttribute('data-response');
+        if (!prompt || !response) return;
+
+        // Hide empty state
+        if (emptyState) emptyState.style.display = 'none';
+
+        // Get or create messages container
+        var msgs = fayeBody.querySelector('.faye-messages');
+        if (!msgs) {
+          msgs = document.createElement('div');
+          msgs.className = 'faye-messages';
+          fayeBody.appendChild(msgs);
+        }
+
+        // Add user message
+        var userMsg = document.createElement('div');
+        userMsg.className = 'faye-msg';
+        userMsg.innerHTML = '<div class="faye-msg-user">' + prompt + '</div>';
+        msgs.appendChild(userMsg);
+        fayeBody.scrollTop = fayeBody.scrollHeight;
+
+        // Add typing indicator after short delay
+        setTimeout(function() {
+          var typing = document.createElement('div');
+          typing.className = 'faye-msg faye-typing-wrap';
+          typing.innerHTML = '<div class="faye-msg-ai"><div class="faye-msg-ai-icon">' + sparkleSvg + '</div><div class="faye-typing"><div class="faye-typing-dot"></div><div class="faye-typing-dot"></div><div class="faye-typing-dot"></div></div></div>';
+          msgs.appendChild(typing);
+          fayeBody.scrollTop = fayeBody.scrollHeight;
+
+          // Replace typing with streaming response
+          setTimeout(function() {
+            typing.remove();
+            var aiMsg = document.createElement('div');
+            aiMsg.className = 'faye-msg';
+            var contentEl = document.createElement('div');
+            contentEl.className = 'faye-msg-ai-content';
+            aiMsg.innerHTML = '<div class="faye-msg-ai"><div class="faye-msg-ai-icon">' + sparkleSvg + '</div></div>';
+            aiMsg.querySelector('.faye-msg-ai').appendChild(contentEl);
+            msgs.appendChild(aiMsg);
+
+            // Stream text word by word, preserving HTML tags
+            var fullHTML = response;
+            var words = [];
+            var tmp = document.createElement('div');
+            tmp.innerHTML = fullHTML;
+            var textContent = tmp.textContent;
+            // Split into chunks (words) but we need to map back to HTML
+            // Simpler: reveal character by character in chunks
+            var chars = fullHTML.split('');
+            var revealed = '';
+            var i = 0;
+            var inTag = false;
+            function streamNext() {
+              var chunkSize = 2 + Math.floor(Math.random() * 3);
+              for (var c = 0; c < chunkSize && i < chars.length; c++) {
+                revealed += chars[i];
+                if (chars[i] === '<') inTag = true;
+                if (chars[i] === '>') inTag = false;
+                i++;
+                // If inside a tag, keep going until tag closes
+                while (inTag && i < chars.length) {
+                  revealed += chars[i];
+                  if (chars[i] === '>') inTag = false;
+                  i++;
+                }
+              }
+              contentEl.innerHTML = revealed;
+              fayeBody.scrollTop = fayeBody.scrollHeight;
+              if (i < chars.length) {
+                setTimeout(streamNext, 18 + Math.random() * 22);
+              }
+            }
+            streamNext();
+          }, 1200);
+        }, 400);
+      });
+    });
+  })();
+
+  // ═══ FAYE PANEL COLLAPSE ═══
+  var fayeCollapseBtnEl = document.getElementById('fayeCollapseBtn');
+  if (fayeCollapseBtnEl) fayeCollapseBtnEl.addEventListener('click', function() {
+    var panel = document.getElementById('fayePanel');
+    var expandBtn = document.getElementById('fayeExpandBtn');
+    panel.classList.toggle('collapsed');
+    this.querySelector('svg').style.transform = panel.classList.contains('collapsed') ? 'rotate(180deg)' : '';
+    expandBtn.style.display = panel.classList.contains('collapsed') ? 'flex' : 'none';
+    setTimeout(drawChart, 220);
+  });
+
+  // ═══ FAYE EXPAND BUTTON (sidebar) ═══
+  document.getElementById('fayeExpandBtn').addEventListener('click', function() {
+    var panel = document.getElementById('fayePanel');
+    panel.classList.remove('collapsed');
+    this.style.display = 'none';
+    var collapseBtn = document.getElementById('fayeCollapseBtn');
+    if (collapseBtn) collapseBtn.querySelector('svg').style.transform = '';
+    setTimeout(drawChart, 220);
+  });
+
+  // ═══ FAYE OPEN BUTTON (in analysis header) ═══
+  var fayeOpenBtnEl = document.getElementById('fayeOpenBtn');
+  if (fayeOpenBtnEl) {
+    fayeOpenBtnEl.addEventListener('click', function() {
+      var panel = document.getElementById('fayePanel');
+      panel.classList.remove('collapsed');
+      document.getElementById('fayeExpandBtn').style.display = 'none';
+      var collapseBtn = document.getElementById('fayeCollapseBtn');
+      if (collapseBtn) collapseBtn.querySelector('svg').style.transform = '';
+      setTimeout(drawChart, 220);
+    });
+  }
+
+  // ═══ PANEL DRAG REORDER ═══
+  function swapSidebars() {
+    var bodyArea = document.querySelector('.body-area');
+    var tp = bodyArea.querySelector('.transcript-panel');
+    var fp = bodyArea.querySelector('.faye-panel');
+    var rv = bodyArea.querySelector('.resize-handle-v');
+
+    if (parseInt(tp.style.order || 0) === 0) {
+      // Move transcript to right, faye to left
+      tp.style.order = '4';
+      tp.style.borderRight = 'none';
+      tp.style.borderLeft = '1px solid #e5e5e5';
+      fp.style.order = '-1';
+      fp.style.borderLeft = 'none';
+      fp.style.borderRight = '1px solid #e5e5e5';
+      rv.style.order = '3';
+    } else {
+      // Reset to default
+      tp.style.order = '0';
+      tp.style.borderRight = '';
+      tp.style.borderLeft = '';
+      fp.style.order = '';
+      fp.style.borderLeft = '1px solid #e5e5e5';
+      fp.style.borderRight = '';
+      rv.style.order = '1';
+    }
+    setTimeout(drawChart, 100);
+  }
+
+  function swapVideoChart() {
+    var video = document.querySelector('.video-section');
+    var videoHeader = document.querySelector('.panel-header-bar[data-panel="video"]');
+    var audio = document.querySelector('.audio-controls');
+    var resizeHEl = document.getElementById('resizeH');
+    var analysis = document.querySelector('.analysis-area');
+
+    if (!video.style.order || video.style.order === '0' || video.style.order === '') {
+      if (videoHeader) videoHeader.style.order = '3';
+      video.style.order = '4';
+      audio.style.order = '5';
+      if (resizeHEl) resizeHEl.style.order = '2';
+      analysis.style.order = '0';
+    } else {
+      if (videoHeader) videoHeader.style.order = '';
+      video.style.order = '';
+      audio.style.order = '';
+      if (resizeHEl) resizeHEl.style.order = '';
+      analysis.style.order = '';
+    }
+    setTimeout(drawChart, 100);
+  }
+
+  document.querySelectorAll('.panel-drag-handle').forEach(function(handle) {
+    var isDragHandleDragging = false;
+    var startX = 0;
+    var ghost = null;
+    var panelName = handle.dataset.panel;
+
+    handle.addEventListener('mousedown', function(e) {
+      isDragHandleDragging = true;
+      startX = e.clientX;
+      document.body.style.cursor = 'grabbing';
+      document.body.style.userSelect = 'none';
+
+      // Create ghost element
+      ghost = document.createElement('div');
+      ghost.className = 'drag-ghost';
+      ghost.textContent = panelName === 'transcript' ? 'Transcript' : panelName === 'faye' ? 'Faye AI' : panelName === 'video' ? 'Video' : 'Chart';
+      ghost.style.left = e.clientX + 'px';
+      ghost.style.top = e.clientY + 'px';
+      document.body.appendChild(ghost);
+
+      // Show drop zones
+      document.querySelectorAll('.drop-zone').forEach(function(z) { z.style.display = 'flex'; });
+
+      e.preventDefault();
+      e.stopPropagation();
+    });
+
+    window.addEventListener('mousemove', function(e) {
+      if (!isDragHandleDragging || !ghost) return;
+      ghost.style.left = e.clientX + 'px';
+      ghost.style.top = e.clientY + 'px';
+
+      // Highlight nearest drop zone
+      document.querySelectorAll('.drop-zone').forEach(function(zone) {
+        var r = zone.getBoundingClientRect();
+        var inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+        zone.classList.toggle('drop-zone-active', inside);
+      });
+    });
+
+    window.addEventListener('mouseup', function(e) {
+      if (!isDragHandleDragging) return;
+      isDragHandleDragging = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      if (ghost) { ghost.remove(); ghost = null; }
+
+      // Find active drop zone
+      var active = document.querySelector('.drop-zone.drop-zone-active');
+      if (active) {
+        var target = active.dataset.target;
+        if (panelName === 'transcript' && target === 'right') swapSidebars();
+        if (panelName === 'faye' && target === 'left') swapSidebars();
+        if (panelName === 'video' && target === 'bottom') swapVideoChart();
+        if (panelName === 'chart' && target === 'top') swapVideoChart();
+      }
+
+      document.querySelectorAll('.drop-zone').forEach(function(z) { z.style.display = 'none'; z.classList.remove('drop-zone-active'); });
+    });
+  });
+
+  // ═══ LAYOUT PRESETS ═══
+  document.querySelectorAll('.layout-preset').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.layout-preset').forEach(function(b) { b.classList.remove('active'); });
+      this.classList.add('active');
+      var layout = this.dataset.layout;
+      var bodyArea = document.querySelector('.body-area');
+
+      // Reset collapse button state
+      var collapseBtn = document.querySelector('.panel-collapse-btn[data-target="video"]');
+      if (collapseBtn) collapseBtn.classList.remove('collapsed');
+
+      // Reset video to default state
+      videoSection.style.aspectRatio = '16/9';
+      videoSection.style.overflow = '';
+
+      if (layout === 'default') {
+        bodyArea.style.flexDirection = 'row';
+        transcriptPanel.style.order = '0';
+        resizeV.style.order = '1';
+        rightContent.style.order = '2';
+        transcriptPanel.style.width = '280px';
+        transcriptPanel.style.minWidth = '280px';
+        videoSection.style.maxHeight = 'calc(50vh - 80px)';
+      } else if (layout === 'chart-focus') {
+        bodyArea.style.flexDirection = 'row';
+        transcriptPanel.style.order = '0';
+        resizeV.style.order = '1';
+        rightContent.style.order = '2';
+        videoSection.style.maxHeight = '0';
+        videoSection.style.overflow = 'hidden';
+        if (collapseBtn) collapseBtn.classList.add('collapsed');
+      } else if (layout === 'video-focus') {
+        bodyArea.style.flexDirection = 'row';
+        transcriptPanel.style.order = '0';
+        resizeV.style.order = '1';
+        rightContent.style.order = '2';
+        videoSection.style.maxHeight = '70vh';
+      } else if (layout === 'transcript-right') {
+        bodyArea.style.flexDirection = 'row';
+        transcriptPanel.style.order = '2';
+        resizeV.style.order = '1';
+        rightContent.style.order = '0';
+        videoSection.style.maxHeight = 'calc(50vh - 80px)';
+      }
+
+      setTimeout(drawChart, 100);
+    });
+  });
+
+  function enforce16x9() {
+    var vid = document.getElementById('videoSection');
+    if (!vid) return;
+    var parent = vid.parentElement;
+    var maxW = parent ? parent.offsetWidth : 800;
+    if (maxW === 0) maxW = 800;
+    var maxH = window.innerHeight * 0.45;
+    var h = maxW / (16/9);
+    var w = maxW;
+    if (h > maxH) {
+      h = maxH;
+      w = h * (16/9);
+    }
+    vid.style.width = w + 'px';
+    vid.style.height = h + 'px';
+    vid.style.alignSelf = (w < maxW) ? 'center' : '';
+  }
+  // Run immediately + on load (in case images haven't loaded yet)
+  enforce16x9(); drawChart();
+  window.addEventListener('load', function() { enforce16x9(); drawChart(); });
+
+  // ═══ TRANSCRIPT SEARCH ═══
+  var searchBar = document.getElementById('transcriptSearchBar');
+  var searchInput = document.getElementById('transcriptSearchInput');
+  var searchCount = document.getElementById('transcriptSearchCount');
+  var searchIcon = document.querySelector('.transcript-search-icon');
+  var searchMatches = [];
+  var searchCurrentIdx = 0;
+
+  if (searchIcon) searchIcon.addEventListener('click', function() {
+    searchBar.classList.toggle('open');
+    if (searchBar.classList.contains('open')) {
+      searchInput.focus();
+    } else {
+      searchInput.value = '';
+      clearSearch();
+    }
+  });
+
+  if (searchInput) searchInput.addEventListener('input', function() {
+    var query = this.value.trim().toLowerCase();
+    clearSearch();
+    if (query.length < 2) { searchCount.textContent = ''; return; }
+
+    var lines = transcriptBody.querySelectorAll('.transcript-line');
+    searchMatches = [];
+    lines.forEach(function(line) {
+      var txt = line.querySelector('.txt');
+      if (txt && txt.textContent.toLowerCase().includes(query)) {
+        line.classList.add('search-match');
+        searchMatches.push(line);
+      }
+    });
+
+    if (searchMatches.length > 0) {
+      searchCurrentIdx = 0;
+      searchMatches[0].classList.add('search-current');
+      searchMatches[0].scrollIntoView({ block: 'center', behavior: 'smooth' });
+      searchCount.textContent = '1 / ' + searchMatches.length;
+    } else {
+      searchCount.textContent = 'No results';
+    }
+  });
+
+  if (searchInput) searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && searchMatches.length > 0) {
+      searchMatches[searchCurrentIdx].classList.remove('search-current');
+      searchCurrentIdx = (searchCurrentIdx + 1) % searchMatches.length;
+      searchMatches[searchCurrentIdx].classList.add('search-current');
+      searchMatches[searchCurrentIdx].scrollIntoView({ block: 'center', behavior: 'smooth' });
+      searchCount.textContent = (searchCurrentIdx + 1) + ' / ' + searchMatches.length;
+      e.preventDefault();
+    }
+    if (e.key === 'Escape') {
+      searchBar.classList.remove('open');
+      searchInput.value = '';
+      clearSearch();
+    }
+  });
+
+  function clearSearch() {
+    searchMatches = [];
+    searchCurrentIdx = 0;
+    transcriptBody.querySelectorAll('.search-match').forEach(function(el) {
+      el.classList.remove('search-match', 'search-current');
+    });
+  }
+  window.addEventListener('resize', function() { enforce16x9(); drawChart(); });
+
+})();
+</script>
+</body>
+</html>

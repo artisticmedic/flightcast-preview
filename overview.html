@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flightcast — Preview: Analytics Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --font: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  --text-primary: #171717;
+  --text-secondary: #525252;
+  --text-tertiary: #7f7f7f;
+  --text-inverse: #ffffff;
+  --bg-page: #ffffff;
+  --bg-card: #ffffff;
+  --bg-hover: #fafafa;
+  --bg-active: #f5f5f5;
+  --bg-muted: #f5f5f5;
+  --accent: #7857d1;
+  --accent-hover: #6a4abf;
+  --accent-light: #f3f0fb;
+  --accent-muted: #ebe5f7;
+  --success: #30a84a;
+  --success-light: #f0fdf4;
+  --danger: #d5432c;
+  --danger-light: #fef2f2;
+  --warning: #e5a00d;
+  --warning-light: #fffbeb;
+  --info: #3b82f6;
+  --info-light: #eff6ff;
+  --border: #e5e5e5;
+  --border-hover: #a3a3a3;
+  --border-light: #f0f0f0;
+  --radius: 4px;
+  --radius-sm: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --ease: 150ms ease;
+  /* Chart colors */
+  --chart-1: #7857d1;
+  --chart-2: #3b82f6;
+  --chart-3: #f97316;
+  --chart-4: #ef4444;
+  --chart-5: #22c55e;
+  --chart-6: #a855f7;
+}
+/* ── Preview Nav ── */
+.preview-nav {
+  height: 40px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; background: #ffffff; border-bottom: 1px solid #e5e5e5;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  flex-shrink: 0; z-index: 100; position: relative;
+}
+.preview-nav-left { display: flex; align-items: center; gap: 10px; }
+.preview-nav-wordmark { font-size: 16px; font-weight: 700; color: #525252; letter-spacing: -0.3px; }
+.preview-nav-sep { width: 1px; height: 16px; background: #d4d4d4; }
+.preview-nav-label { font-size: 14px; font-weight: 600; color: #7f7f7f; letter-spacing: 0.5px; text-transform: uppercase; }
+.preview-nav-links { display: flex; gap: 2px; }
+.preview-nav-link {
+  font-size: 15px; font-weight: 500; color: #7f7f7f; padding: 8px 12px;
+  border-radius: 4px; text-decoration: none; transition: all 150ms ease;
+  letter-spacing: -0.1px;
+}
+.preview-nav-link:hover { color: #171717; background: #f5f5f5; }
+.preview-nav-link.active { color: #7857d1; font-weight: 600; }
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { height: 100%; }
+body {
+  font-family: var(--font); font-size: 16px; color: var(--text-primary);
+  background: var(--bg-page); -webkit-font-smoothing: antialiased;
+  height: 100vh; overflow: hidden; letter-spacing: -0.15px;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; font-size: inherit; color: inherit; }
+a { text-decoration: none; color: inherit; }
+
+/* ── App Shell ── */
+.app { display: flex; flex-direction: column; height: calc(100vh - 40px); overflow: hidden; }
+
+.sidebar {
+  width: 270px; min-width: 270px; background: white;
+  border-right: 1px solid #d9dbe2; display: flex; flex-direction: column;
+  gap: 16px; padding: 18px 16px 24px; z-index: 10;
+}
+.sidebar-logo { display: flex; align-items: center; justify-content: space-between; padding: 12px 12px 12px 6px; }
+.sidebar-logo-left { display: flex; align-items: center; gap: 8px; }
+.sidebar-logo-text { font-size: 22px; font-weight: 700; color: #525252; }
+.sidebar-collapse { width: 20px; height: 20px; color: #7f7f7f; cursor: pointer; }
+
+.sidebar-dropdown {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 8px 4px 4px; border: 1px solid #d4d4d4; border-radius: 4px; background: white; cursor: pointer;
+}
+.sidebar-dropdown:hover { border-color: #a3a3a3; }
+.sidebar-dropdown-art {
+  width: 28px; height: 28px; border-radius: 2px; flex-shrink: 0;
+  background: linear-gradient(135deg, #7857d1, #5a3dad);
+  display: flex; align-items: center; justify-content: center; font-size: 13px; color: white; font-weight: 700;
+}
+.sidebar-dropdown-name { font-size: 16px; font-weight: 600; color: #3f3f47; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar-dropdown-chevron { width: 16px; height: 16px; color: #7f7f7f; flex-shrink: 0; }
+
+.sidebar-cta {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 12px; background: black; color: #f1f5f9;
+  border-radius: 4px; font-size: 16px; font-weight: 500; letter-spacing: -0.15px; cursor: pointer; width: 100%;
+}
+.sidebar-cta:hover { background: #1a1a1a; }
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 2px; padding-bottom: 8px; }
+.sidebar-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: 2px; font-size: 16px; font-weight: 500; color: #525252;
+  letter-spacing: -0.15px; cursor: pointer; transition: all 150ms ease;
+}
+.sidebar-nav-item:hover { background: #fafafa; color: #171717; }
+.sidebar-nav-item.active { background: #f5f5f5; color: #171717; }
+.sidebar-nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+.sidebar-nav-chip { margin-left: auto; font-size: 14px; font-weight: 500; color: #525252; background: #f5f5f5; padding: 2px 6px; border-radius: 4px; }
+
+.sidebar-bottom-nav { display: flex; flex-direction: column; gap: 2px; }
+.sidebar-bottom-item {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 6px;
+  font-size: 16px; font-weight: 600; color: #525252; cursor: pointer; transition: all 150ms ease;
+}
+.sidebar-bottom-item:hover { background: #fafafa; color: #171717; }
+.sidebar-bottom-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+.sidebar-separator { border: none; border-top: 1px solid #d9dbe2; margin: 0; }
+
+.sidebar-footer { display: flex; flex-direction: column; gap: 8px; }
+.sidebar-search {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border: 1px solid #d4d4d4; border-radius: 6px; cursor: pointer; transition: border-color 150ms ease;
+}
+.sidebar-search:hover { border-color: #a3a3a3; }
+.sidebar-search svg { width: 16px; height: 16px; flex-shrink: 0; color: #525252; }
+.sidebar-search-text { flex: 1; font-size: 16px; font-weight: 500; color: #525252; }
+.sidebar-search-kbd { font-size: 14px; font-weight: 500; color: #7f7f7f; padding: 0 6px; }
+.sidebar-team {
+  display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; border-radius: 8px; background: white; cursor: pointer;
+}
+.sidebar-team:hover { background: #fafafa; }
+.sidebar-team-avatar {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; background: #d15759;
+  display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: white;
+}
+.sidebar-team-name { flex: 1; font-size: 16px; font-weight: 600; color: #3f3f47; }
+.sidebar-team-chevron { width: 16px; height: 16px; color: #7f7f7f; flex-shrink: 0; }
+
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+.content { flex: 1; overflow-y: auto; padding: 28px; display: flex; flex-direction: column; gap: 20px; }
+
+/* ── Date Filter Bar ── */
+.date-bar {
+  display: flex; align-items: center; gap: 12px;
+}
+.date-select {
+  display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+  border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;
+  font-size: 15px; font-weight: 500; color: var(--text-primary); background: white;
+}
+.date-select:hover { border-color: var(--border-hover); }
+.date-select svg { width: 14px; height: 14px; color: var(--text-tertiary); }
+.date-hint { font-size: 14px; color: var(--text-tertiary); }
+.date-hint strong { font-weight: 600; color: var(--text-secondary); }
+
+/* ── Section ── */
+.section { display: flex; flex-direction: column; gap: 16px; }
+.section-title { font-size: 16px; font-weight: 600; letter-spacing: -0.2px; }
+
+/* ── Section headers + dividers (Pencil pattern) ── */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 12px;
+}
+.section-header-title { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; color: var(--text-primary); }
+.section-divider { border: none; border-top: 1px solid #e6e6e6; margin: 8px 0; }
+
+/* ── KPI Cards ── */
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.kpi-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.kpi-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 16px 18px;
+}
+.kpi-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.kpi-label { font-size: 13px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.4px; }
+.kpi-icon { width: 16px; height: 16px; color: var(--text-tertiary); }
+.kpi-value { font-size: 26px; font-weight: 700; letter-spacing: -0.8px; line-height: 1.1; }
+.kpi-sub { display: flex; align-items: center; gap: 4px; margin-top: 4px; font-size: 13px; color: var(--text-tertiary); }
+.kpi-change { display: inline-flex; align-items: center; gap: 2px; font-weight: 600; font-size: 13px; }
+.kpi-change.up { color: var(--success); }
+.kpi-change.down { color: var(--danger); }
+.kpi-change.neutral { color: var(--text-tertiary); }
+.kpi-sparkline { margin-top: 8px; }
+.kpi-sparkline svg { width: 100%; height: 32px; }
+
+/* ── Card (generic) ── */
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 24px;
+}
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.card-title { font-size: 16px; font-weight: 600; letter-spacing: -0.2px; }
+.card-desc { font-size: 14px; color: var(--text-tertiary); margin-top: 2px; }
+.card-actions { display: flex; align-items: center; gap: 8px; }
+.card-btn {
+  padding: 5px 12px; border-radius: var(--radius); font-size: 14px; font-weight: 500;
+  color: var(--text-secondary); border: 1px solid var(--border); background: white; cursor: pointer;
+}
+.card-btn:hover { border-color: var(--border-hover); color: var(--text-primary); }
+.card-btn.active { background: var(--bg-active); color: var(--text-primary); }
+
+/* ── Chart area (placeholder) ── */
+.chart-placeholder {
+  height: 240px; display: flex; flex-direction: column; position: relative;
+}
+.chart-placeholder svg { width: 100%; height: 100%; }
+
+/* Chart legend */
+.chart-legend { display: flex; align-items: center; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+.chart-legend-item { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; color: var(--text-secondary); cursor: pointer; }
+.chart-legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* Filter pills */
+.filter-pills { display: flex; align-items: center; gap: 4px; margin-bottom: 12px; }
+.filter-pill {
+  padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: 500;
+  color: var(--text-tertiary); cursor: pointer; transition: all var(--ease); border: 1px solid transparent;
+}
+.filter-pill:hover { color: var(--text-primary); background: var(--bg-muted); }
+.filter-pill.active { color: var(--accent); background: var(--accent-light); border-color: var(--accent-muted); }
+
+/* ── Grid layouts ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+
+/* ── Data Table ── */
+.table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.table-meta { display: flex; align-items: center; gap: 12px; }
+.table-count { font-size: 14px; color: var(--text-tertiary); }
+.table-count strong { font-weight: 600; color: var(--text-secondary); }
+.table-search {
+  display: flex; align-items: center; gap: 6px; padding: 6px 12px;
+  border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--text-tertiary);
+  min-width: 180px;
+}
+.table-search svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left; font-size: 13px; font-weight: 600; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: 0.3px; padding: 8px 12px;
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+th.right { text-align: right; }
+td {
+  padding: 10px 12px; font-size: 15px; border-bottom: 1px solid var(--border-light);
+  font-variant-numeric: tabular-nums;
+}
+td.right { text-align: right; }
+td.muted { color: var(--text-tertiary); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg-hover); }
+@keyframes rowFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.reveal.visible tbody tr { animation: rowFadeIn 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+.reveal.visible tbody tr:nth-child(1) { animation-delay: 50ms; }
+.reveal.visible tbody tr:nth-child(2) { animation-delay: 100ms; }
+.reveal.visible tbody tr:nth-child(3) { animation-delay: 150ms; }
+.reveal.visible tbody tr:nth-child(4) { animation-delay: 200ms; }
+.reveal.visible tbody tr:nth-child(5) { animation-delay: 250ms; }
+.reveal.visible tbody tr:nth-child(6) { animation-delay: 300ms; }
+.reveal:not(.visible) tbody tr { opacity: 0; }
+.table-episode-title { font-weight: 500; max-width: 340px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.table-episode-date { font-size: 13px; color: var(--text-tertiary); margin-top: 1px; }
+.table-pagination {
+  display: flex; align-items: center; justify-content: space-between; margin-top: 12px;
+  font-size: 14px; color: var(--text-tertiary);
+}
+.table-pagination-btns { display: flex; gap: 4px; }
+.table-page-btn {
+  width: 28px; height: 28px; border-radius: var(--radius); font-size: 14px; font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer;
+}
+.table-page-btn.active { background: #171717; color: white; border-color: #171717; }
+.table-page-btn:hover:not(.active) { background: var(--bg-muted); }
+
+/* ── Horizontal Bar Chart ── */
+.hbar-list { display: flex; flex-direction: column; gap: 10px; }
+.reveal.visible .hbar-item { animation: rowFadeIn 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+.reveal.visible .hbar-item:nth-child(1) { animation-delay: 50ms; }
+.reveal.visible .hbar-item:nth-child(2) { animation-delay: 100ms; }
+.reveal.visible .hbar-item:nth-child(3) { animation-delay: 150ms; }
+.reveal.visible .hbar-item:nth-child(4) { animation-delay: 200ms; }
+.reveal.visible .hbar-item:nth-child(5) { animation-delay: 250ms; }
+.reveal:not(.visible) .hbar-item { opacity: 0; }
+.hbar-item { display: flex; align-items: center; gap: 12px; }
+.hbar-rank { font-size: 13px; font-weight: 600; color: var(--text-tertiary); width: 16px; text-align: right; }
+.hbar-icon { width: 20px; height: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.hbar-label { width: 80px; font-size: 15px; font-weight: 500; flex-shrink: 0; }
+.hbar-track { flex: 1; height: 8px; background: var(--bg-muted); border-radius: 4px; overflow: hidden; }
+.hbar-fill { height: 100%; border-radius: 4px; transition: width 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+.reveal:not(.visible) .hbar-fill { width: 0 !important; }
+.hbar-val { width: 48px; text-align: right; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ── Stat row ── */
+.stat-row { display: flex; gap: 24px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-light); }
+.stat-item { }
+.stat-item-label { font-size: 13px; color: var(--text-tertiary); font-weight: 500; }
+.stat-item-value { font-size: 18px; font-weight: 700; margin-top: 2px; }
+
+/* ── Empty state ── */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 32px; color: var(--text-tertiary); text-align: center;
+  background: var(--bg-muted); border-radius: var(--radius-lg); min-height: 120px;
+}
+.empty-state-icon { font-size: 26px; margin-bottom: 8px; opacity: 0.5; }
+.empty-state-text { font-size: 15px; font-weight: 500; }
+.empty-state-sub { font-size: 13px; margin-top: 2px; }
+
+/* ── Badge/tag ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;
+  border-radius: 20px; font-size: 13px; font-weight: 600;
+}
+.badge.purple { background: var(--accent-light); color: var(--accent); }
+.badge.gray { background: var(--bg-muted); color: var(--text-secondary); }
+.badge.green { background: var(--success-light); color: var(--success); }
+.badge.red { background: var(--danger-light); color: var(--danger); }
+.badge.blue { background: var(--info-light); color: var(--info); }
+
+/* ── Listener Loyalty Funnel ── */
+.loyalty-section { display: flex; flex-direction: column; gap: 12px; }
+.loyalty-section .section-title { margin-bottom: 4px; }
+
+.milestone-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.milestone-card {
+  border-radius: var(--radius-lg); padding: 24px;
+  display: flex; gap: 16px; border: 1px solid var(--border);
+  background: var(--bg-card); position: relative; overflow: hidden;
+}
+.milestone-accent {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+}
+.milestone-accent.purple { background: var(--accent); }
+.milestone-accent.green { background: var(--success); }
+.milestone-icon {
+  width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.milestone-icon.purple { background: var(--accent-light); }
+.milestone-icon.green { background: #f0fdf4; }
+.milestone-content { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+.milestone-top { display: flex; align-items: baseline; gap: 8px; }
+.milestone-number { font-size: 28px; font-weight: 800; letter-spacing: -0.8px; line-height: 1; }
+.milestone-number.purple { color: var(--accent); }
+.milestone-number.green { color: var(--success); }
+.milestone-tag {
+  font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px;
+  padding: 2px 7px; border-radius: 20px;
+}
+.milestone-tag.purple { background: var(--accent-light); color: var(--accent); }
+.milestone-tag.green { background: #f0fdf4; color: var(--success); }
+.milestone-desc { font-size: 14px; font-weight: 500; color: var(--text-tertiary); margin-top: 4px; line-height: 1.4; }
+.milestone-desc strong { color: var(--text-secondary); }
+
+.funnel-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 24px;
+}
+.funnel-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.funnel-card-header-left { }
+.funnel-card-title { font-size: 16px; font-weight: 600; letter-spacing: -0.2px; }
+.funnel-card-desc { font-size: 14px; color: var(--text-tertiary); margin-top: 2px; }
+.funnel-card-header-right { display: flex; align-items: center; gap: 12px; }
+.funnel-stat-pill {
+  display: flex; align-items: center; gap: 6px; padding: 4px 12px;
+  background: var(--bg-muted); border-radius: 20px; font-size: 13px; font-weight: 600;
+  color: var(--text-secondary);
+}
+.funnel-stat-pill .pill-val { color: var(--text-primary); }
+
+/* Funnel filters */
+.funnel-filters {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+  padding-bottom: 14px; border-bottom: 1px solid var(--border-light);
+}
+.funnel-filter-group { display: flex; align-items: center; gap: 6px; }
+.funnel-filter-label {
+  font-size: 13px; font-weight: 600; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: 0.3px; margin-right: 2px;
+}
+.funnel-filter-select {
+  display: flex; align-items: center; gap: 6px; padding: 5px 10px;
+  border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;
+  font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--text-primary);
+  background: white; transition: all var(--ease); appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237f7f7f' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+  padding-right: 26px;
+}
+.funnel-filter-select:hover { border-color: var(--border-hover); }
+.funnel-filter-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
+.funnel-filter-sep {
+  width: 1px; height: 20px; background: var(--border-light); margin: 0 4px;
+}
+.funnel-active-filters { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.funnel-active-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px 3px 10px; border-radius: 20px; font-size: 13px; font-weight: 600;
+  background: var(--accent-light); color: var(--accent);
+}
+.funnel-active-tag-x {
+  width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 13px; color: var(--accent); transition: background var(--ease);
+}
+.funnel-active-tag-x:hover { background: var(--accent-muted); }
+
+.funnel-layout { display: flex; gap: 0; align-items: flex-start; }
+.funnel-chart-area { flex: 2; position: relative; min-width: 0; }
+
+.funnel-svg-wrap { position: relative; }
+.funnel-svg-wrap svg { width: 100%; height: auto; display: block; }
+.funnel-svg-wrap svg .funnel-seg { cursor: pointer; transition: filter 150ms ease; }
+/* Funnel hover — dim siblings, pop active */
+.funnel-svg-wrap svg .funnel-seg { cursor: pointer; transition: opacity 180ms ease, filter 180ms ease; }
+.funnel-svg-wrap svg.has-hover .funnel-seg { opacity: 0.35; filter: none; }
+.funnel-svg-wrap svg.has-hover .funnel-seg.highlighted { opacity: 1; filter: brightness(1.06) saturate(1.1); }
+.funnel-svg-wrap svg .funnel-seg:hover { filter: brightness(1.06) saturate(1.1); }
+.funnel-svg-wrap svg text { font-family: var(--font); }
+.funnel-svg-wrap svg .funnel-label-text { pointer-events: none; }
+
+.funnel-tooltip {
+  position: absolute; background: white; color: var(--text-primary);
+  padding: 0; border-radius: 8px; font-size: 14px;
+  pointer-events: none; opacity: 0; transition: opacity 150ms ease, transform 150ms ease;
+  transform: translateY(6px);
+  z-index: 20; white-space: nowrap;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06);
+  min-width: 200px; overflow: hidden;
+}
+.funnel-tooltip.visible { opacity: 1; transform: translateY(0); }
+.funnel-tooltip-top {
+  padding: 12px 14px 10px; display: flex; align-items: center; gap: 10px;
+}
+.funnel-tooltip-dot {
+  width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0;
+}
+.funnel-tooltip-top-text { flex: 1; }
+.funnel-tooltip-count { font-weight: 700; font-size: 18px; letter-spacing: -0.3px; line-height: 1.1; color: var(--text-primary); }
+.funnel-tooltip-label { color: var(--text-tertiary); font-size: 13px; margin-top: 2px; }
+.funnel-tooltip-pct-bar {
+  height: 2px; background: #f0f0f0; margin: 0 14px;
+}
+.funnel-tooltip-pct-fill {
+  height: 100%; border-radius: 2px; transition: width 200ms ease;
+}
+.funnel-tooltip-stats {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+  margin-top: 0; border-top: 1px solid #f0f0f0;
+}
+.funnel-tooltip-stat {
+  padding: 8px 14px; display: flex; flex-direction: column; gap: 1px;
+}
+.funnel-tooltip-stat:first-child { border-right: 1px solid #f0f0f0; }
+.funnel-tooltip-stat-val { font-weight: 700; font-size: 15px; letter-spacing: -0.2px; color: var(--text-primary); }
+.funnel-tooltip-stat-val.green { color: var(--success); }
+.funnel-tooltip-stat-val.red { color: var(--danger); }
+.funnel-tooltip-stat-label { font-size: 13px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.3px; font-weight: 500; }
+
+.funnel-legend { flex: 1; min-width: 0; border-left: 1px solid var(--border-light); padding-left: 20px; margin-left: 20px; }
+.funnel-legend-title { font-size: 13px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.funnel-legend-header {
+  display: flex; align-items: center; gap: 10px; padding: 4px 8px; margin-bottom: 2px;
+  font-size: 13px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.3px;
+}
+.funnel-legend-header .lh-label { flex: 1; padding-left: 18px; }
+.funnel-legend-header .lh-val { width: 52px; text-align: right; }
+.funnel-legend-header .lh-pct { width: 34px; text-align: right; }
+.funnel-legend-header .lh-drop { width: 40px; text-align: right; }
+.funnel-legend-row {
+  display: flex; align-items: center; gap: 10px; padding: 5px 8px;
+  border-radius: var(--radius-sm); font-size: 14px; transition: background 150ms ease; cursor: default;
+}
+.funnel-legend-row:hover, .funnel-legend-row.highlighted { background: var(--bg-muted); }
+.funnel-legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.funnel-legend-label { flex: 1; color: var(--text-secondary); font-weight: 500; }
+.funnel-legend-val { font-weight: 600; font-variant-numeric: tabular-nums; width: 52px; text-align: right; }
+.funnel-legend-pct { color: var(--text-tertiary); width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
+.funnel-legend-drop { width: 40px; text-align: right; font-size: 13px; font-weight: 600; color: var(--danger); font-variant-numeric: tabular-nums; }
+
+/* Drop-off list — Style D (background bar) */
+.dropoff-list { display: flex; flex-direction: column; gap: 6px; }
+.reveal.visible .dropoff-item { animation: rowFadeIn 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+.reveal.visible .dropoff-item:nth-child(1) { animation-delay: 50ms; }
+.reveal.visible .dropoff-item:nth-child(2) { animation-delay: 100ms; }
+.reveal.visible .dropoff-item:nth-child(3) { animation-delay: 150ms; }
+.reveal.visible .dropoff-item:nth-child(4) { animation-delay: 200ms; }
+.reveal.visible .dropoff-item:nth-child(5) { animation-delay: 250ms; }
+.reveal:not(.visible) .dropoff-item { opacity: 0; }
+.dropoff-item {
+  position: relative; display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: var(--radius-lg); overflow: hidden;
+}
+.dropoff-bg {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  background: var(--danger-light); border-radius: var(--radius-lg); z-index: 0;
+  transition: width 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.reveal:not(.visible) .dropoff-bg { width: 0 !important; }
+.dropoff-rank { font-size: 13px; font-weight: 600; color: var(--text-tertiary); width: 16px; text-align: right; position: relative; z-index: 1; }
+.dropoff-label { font-size: 15px; font-weight: 500; color: var(--text-primary); flex-shrink: 0; position: relative; z-index: 1; }
+.dropoff-lost { flex: 1; font-size: 13px; color: var(--text-tertiary); position: relative; z-index: 1; }
+.dropoff-val { font-size: 14px; font-weight: 700; color: var(--danger); font-variant-numeric: tabular-nums; position: relative; z-index: 1; }
+
+/* Timing insights */
+.timing-insights { display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; }
+.reveal.visible .timing-row { animation: rowFadeIn 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+.reveal.visible .timing-row:nth-child(1) { animation-delay: 50ms; }
+.reveal.visible .timing-row:nth-child(2) { animation-delay: 100ms; }
+.reveal.visible .timing-row:nth-child(3) { animation-delay: 150ms; }
+.reveal.visible .timing-row:nth-child(4) { animation-delay: 200ms; }
+.reveal:not(.visible) .timing-row { opacity: 0; }
+.timing-row {
+  display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--text-secondary);
+  padding: 8px 12px; border-radius: var(--radius); transition: background var(--ease);
+}
+.timing-row:hover { background: var(--bg-hover); }
+.timing-row strong { color: var(--text-primary); font-weight: 600; }
+.timing-icon-wrap {
+  width: 28px; height: 28px; border-radius: var(--radius); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-muted);
+}
+.timing-icon { width: 14px; height: 14px; color: var(--text-tertiary); }
+.timing-badge {
+  margin-left: auto; font-size: 13px; font-weight: 600; padding: 2px 8px;
+  border-radius: 20px; white-space: nowrap;
+}
+.timing-badge.green { background: var(--success-light); color: var(--success); }
+.timing-badge.purple { background: var(--accent-light); color: var(--accent); }
+
+/* Day-of-week chart */
+.day-chart { display: flex; align-items: flex-end; gap: 6px; height: 96px; padding: 0 4px; }
+.reveal.visible .day-bar-wrap { animation: rowFadeIn 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+.reveal.visible .day-bar-wrap:nth-child(1) { animation-delay: 50ms; }
+.reveal.visible .day-bar-wrap:nth-child(2) { animation-delay: 90ms; }
+.reveal.visible .day-bar-wrap:nth-child(3) { animation-delay: 130ms; }
+.reveal.visible .day-bar-wrap:nth-child(4) { animation-delay: 170ms; }
+.reveal.visible .day-bar-wrap:nth-child(5) { animation-delay: 210ms; }
+.reveal.visible .day-bar-wrap:nth-child(6) { animation-delay: 250ms; }
+.reveal.visible .day-bar-wrap:nth-child(7) { animation-delay: 290ms; }
+.reveal:not(.visible) .day-bar-wrap { opacity: 0; }
+.day-bar-wrap {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%;
+  cursor: default; position: relative;
+}
+.day-bar-track { flex: 1; width: 100%; display: flex; align-items: flex-end; }
+.day-bar {
+  width: 100%; border-radius: 4px;
+  transition: height 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 150ms ease;
+}
+.reveal:not(.visible) .day-bar { height: 0 !important; }
+.day-bar-wrap:hover .day-bar { filter: brightness(0.92); }
+.day-bar.peak { background: var(--accent); }
+.day-bar.high { background: #a290e5; }
+.day-bar.normal { background: var(--accent-muted); }
+.day-bar.low { background: #e5e5e5; }
+.day-pct {
+  font-size: 13px; font-weight: 700; color: var(--text-tertiary);
+  position: absolute; top: -2px; left: 50%; transform: translateX(-50%);
+  opacity: 0; transition: opacity 150ms;
+  font-variant-numeric: tabular-nums;
+}
+.day-bar-wrap:hover .day-pct { opacity: 1; }
+.day-bar-wrap:hover .day-pct.peak-pct { color: var(--accent); }
+.day-label { font-size: 13px; font-weight: 600; color: var(--text-tertiary); }
+.day-label.peak { color: var(--accent); font-weight: 700; }
+
+.loyalty-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.loyalty-detail-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 24px;
+}
+.loyalty-detail-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+.loyalty-detail-badge {
+  font-size: 13px; font-weight: 600; padding: 3px 8px; border-radius: 20px;
+  background: var(--accent-light); color: var(--accent); white-space: nowrap;
+}
+/* Style D — background bar rows */
+.loyalty-bar-list { display: flex; flex-direction: column; gap: 6px; }
+.reveal.visible .loyalty-bar-item { animation: rowFadeIn 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+.reveal.visible .loyalty-bar-item:nth-child(1) { animation-delay: 50ms; }
+.reveal.visible .loyalty-bar-item:nth-child(2) { animation-delay: 100ms; }
+.reveal.visible .loyalty-bar-item:nth-child(3) { animation-delay: 150ms; }
+.reveal.visible .loyalty-bar-item:nth-child(4) { animation-delay: 200ms; }
+.reveal.visible .loyalty-bar-item:nth-child(5) { animation-delay: 250ms; }
+.reveal.visible .loyalty-bar-item:nth-child(6) { animation-delay: 300ms; }
+.reveal:not(.visible) .loyalty-bar-item { opacity: 0; }
+.loyalty-bar-item {
+  position: relative; display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: var(--radius-lg); overflow: hidden;
+}
+.loyalty-bar-bg {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  background: var(--accent-light); border-radius: var(--radius-lg); z-index: 0;
+  transition: width 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.reveal:not(.visible) .loyalty-bar-bg { width: 0 !important; }
+.loyalty-bar-rank { font-size: 13px; font-weight: 600; color: var(--text-tertiary); width: 16px; text-align: right; position: relative; z-index: 1; }
+.loyalty-bar-label { flex: 1; font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; z-index: 1; }
+.loyalty-bar-meta { font-size: 13px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; position: relative; z-index: 1; }
+.loyalty-bar-value { font-size: 14px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; position: relative; z-index: 1; }
+
+.loyalty-trend-wrap { position: relative; height: 200px; }
+.loyalty-trend-wrap svg { width: 100%; height: 100%; }
+@keyframes drawLine { from { stroke-dashoffset: var(--line-len); } to { stroke-dashoffset: 0; } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.loyalty-trend-wrap .trend-line { stroke-dasharray: var(--line-len); stroke-dashoffset: var(--line-len); }
+.loyalty-trend-wrap .trend-area { opacity: 0; }
+.loyalty-trend-wrap .trend-dot { opacity: 0; }
+.loyalty-trend-wrap .trend-val { opacity: 0; }
+.reveal.visible .trend-line { animation: drawLine 900ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+.reveal.visible .trend-area { animation: fadeInUp 600ms 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+.reveal.visible .trend-dot { animation: fadeInUp 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+.reveal.visible .trend-val { animation: fadeInUp 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+
+/* ── Animations ── */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 400ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes segFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.animate-seg { animation: segFadeIn 400ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* ── Scroll reveal ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+</style>
+</head>
+<body>
+<nav class="preview-nav">
+  <div class="preview-nav-left">
+    <span class="preview-nav-wordmark">Flightcast</span>
+    <div class="preview-nav-sep"></div>
+    <span class="preview-nav-label">Preview</span>
+  </div>
+  <div class="preview-nav-links">
+    <a href="./overview.html" class="preview-nav-link active">Overview</a>
+    <a href="./retention.html" class="preview-nav-link">Retention</a>
+    <a href="./clusters.html" class="preview-nav-link">Listener Clusters</a>
+  </div>
+</nav>
+<div class="app">
+  <div class="main">
+    <div class="content">
+
+      <!-- Date Filter Bar -->
+      <div class="date-bar reveal">
+        <div class="date-select">
+          <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Last 7 days
+          <svg viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="date-hint">Showing data for <strong>Mar 24 – Mar 31, 2026</strong></div>
+      </div>
+
+
+      <!-- ═══ LISTENER LOYALTY FUNNEL ═══ -->
+      <div class="loyalty-section">
+
+        <div class="funnel-card reveal">
+          <div class="funnel-card-header">
+            <div class="funnel-card-header-left">
+              <div class="funnel-card-title">Loyalty Funnel</div>
+              <div class="funnel-card-desc">Unique listeners who have watched at least N episodes</div>
+            </div>
+            <div class="funnel-card-header-right">
+              <div class="funnel-stat-pill">Biggest drop: <span class="pill-val" id="pillBigDrop">—</span></div>
+              <div class="funnel-stat-pill">Best retention: <span class="pill-val" id="pillBestRet">—</span></div>
+            </div>
+          </div>
+          <div class="funnel-filters">
+            <div class="funnel-filter-group">
+              <span class="funnel-filter-label">Episode</span>
+              <select class="funnel-filter-select" id="funnelEpisodeFilter" onchange="applyFunnelFilters()">
+                <option value="all">All Episodes</option>
+                <option value="ep214">E382: Simon Sinek — Why Leaders Eat Last</option>
+                <option value="ep213">E381: The Neuroscientist Who Decoded Anxiety</option>
+                <option value="ep212">E380: Gary Vee — The Truth About Social Media</option>
+                <option value="ep211">E379: Dr. Rangan Chatterjee — The 4 Pillars</option>
+                <option value="ep210">E378: Alex Hormozi — Building a $100M Business</option>
+                <option value="ep209">E377: Mo Gawdat — Why AI Changes Everything</option>
+              </select>
+            </div>
+            <div class="funnel-filter-sep"></div>
+            <div class="funnel-filter-group">
+              <span class="funnel-filter-label">Audience</span>
+              <select class="funnel-filter-select" id="funnelAudienceFilter" onchange="applyFunnelFilters()">
+                <option value="all">All Listeners</option>
+                <optgroup label="Region">
+                  <option value="us">United States</option>
+                  <option value="uk">United Kingdom</option>
+                  <option value="ca">Canada</option>
+                  <option value="au">Australia</option>
+                  <option value="de">Germany</option>
+                </optgroup>
+                <optgroup label="Platform">
+                  <option value="youtube">YouTube</option>
+                  <option value="spotify">Spotify</option>
+                  <option value="apple">Apple Podcasts</option>
+                  <option value="rss">RSS / Direct</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="funnel-active-filters" id="funnelActiveTags"></div>
+          </div>
+          <div class="funnel-layout">
+            <div class="funnel-chart-area">
+              <div class="funnel-svg-wrap" id="funnelSvg">
+                <div class="funnel-tooltip" id="funnelTooltip"></div>
+              </div>
+            </div>
+            <div class="funnel-legend" id="funnelLegend"></div>
+          </div>
+        </div>
+
+        <!-- Drop-off + Timing panels -->
+        <div class="grid-2 reveal">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Biggest Drop-off Points</div>
+                <div class="card-desc">Where listeners are leaving your funnel</div>
+              </div>
+            </div>
+            <div class="dropoff-list" id="dropoffList"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Best Times &amp; Seasons</div>
+                <div class="card-desc">When your audience listens most</div>
+              </div>
+            </div>
+            <div class="timing-insights">
+              <div class="timing-row">
+                <div class="timing-icon-wrap"><svg class="timing-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <span>Peak listening: <strong>7–9 AM weekdays</strong></span>
+                <span class="timing-badge purple">Commute window</span>
+              </div>
+              <div class="timing-row">
+                <div class="timing-icon-wrap"><svg class="timing-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 6h12M5 2v2M11 2v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+                <span>Best day: <strong>Tuesday</strong> (+18% vs avg)</span>
+                <span class="timing-badge green">+18%</span>
+              </div>
+              <div class="timing-row">
+                <div class="timing-icon-wrap"><svg class="timing-icon" viewBox="0 0 16 16" fill="none"><polyline points="2,12 5,6 8,9 11,3 14,7" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <span>Best season: <strong>Autumn</strong> (+24% retention)</span>
+                <span class="timing-badge green">+24%</span>
+              </div>
+              <div class="timing-row">
+                <div class="timing-icon-wrap"><svg class="timing-icon" viewBox="0 0 16 16" fill="none"><path d="M13 3l-5 5M8 3h5v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 8l3 3M3 8h3v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/></svg></div>
+                <span>Fastest growth: <strong>Jan 2026</strong> (+42%)</span>
+                <span class="timing-badge green">+42%</span>
+              </div>
+            </div>
+            <div class="day-chart" id="dayChart"></div>
+          </div>
+        </div>
+
+        <div class="loyalty-detail-grid reveal">
+          <div class="loyalty-detail-card">
+            <div class="loyalty-detail-header">
+              <div>
+                <div class="card-title">Top Episodes Driving Loyalty</div>
+                <div class="card-desc">Most consumed by 5+ episode viewers</div>
+              </div>
+              <div class="loyalty-detail-badge">5+ ep cohort</div>
+            </div>
+            <div class="loyalty-bar-list" id="loyaltyBarList"></div>
+          </div>
+          <div class="loyalty-detail-card">
+            <div class="loyalty-detail-header">
+              <div>
+                <div class="card-title">Loyalty Trend</div>
+                <div class="card-desc">Superfan audience (5+ ep) over 6 months</div>
+              </div>
+              <div class="loyalty-detail-badge">+6.8pp</div>
+            </div>
+            <div class="loyalty-trend-wrap" id="loyaltyTrendChart"></div>
+          </div>
+        </div>
+      </div>
+
+
+
+      <!-- ═══ EPISODE BREAKDOWN ═══ -->
+      <div class="card reveal">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Episode Breakdown</div>
+            <div class="card-desc">Mar 24, 2026 – Mar 31, 2026</div>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn">Export CSV</button>
+            <button class="card-btn">Detailed Export</button>
+          </div>
+        </div>
+        <div class="table-header">
+          <div class="table-meta">
+            <div class="badge gray">14 episodes</div>
+            <div class="badge green">3 new</div>
+            <div class="badge red">1 below avg</div>
+          </div>
+          <div class="table-search">
+            <svg viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4" stroke="currentColor" stroke-width="1.3"/><path d="M10 10l4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Search episodes...
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Episode</th>
+              <th class="right">Published</th>
+              <th class="right">Listens</th>
+              <th class="right">Streams</th>
+              <th class="right">Views</th>
+              <th class="right">Downloads</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="table-episode-title">E382: Simon Sinek — Why Leaders Eat Last</div><div class="table-episode-date">DOAC-E382</div></td>
+              <td class="right muted">Mar 28, 2026</td>
+              <td class="right">42,800</td>
+              <td class="right">128,400</td>
+              <td class="right">684,200</td>
+              <td class="right">18,900</td>
+            </tr>
+            <tr>
+              <td><div class="table-episode-title">E381: The Neuroscientist Who Decoded Anxiety</div><div class="table-episode-date">DOAC-E381</div></td>
+              <td class="right muted">Mar 25, 2026</td>
+              <td class="right">38,100</td>
+              <td class="right">104,600</td>
+              <td class="right">512,800</td>
+              <td class="right">15,200</td>
+            </tr>
+            <tr>
+              <td><div class="table-episode-title">E380: Gary Vee — The Truth About Social Media</div><div class="table-episode-date">DOAC-E380</div></td>
+              <td class="right muted">Mar 21, 2026</td>
+              <td class="right">31,400</td>
+              <td class="right">86,200</td>
+              <td class="right">398,600</td>
+              <td class="right">12,100</td>
+            </tr>
+            <tr>
+              <td><div class="table-episode-title">E379: Dr. Rangan Chatterjee — The 4 Pillars</div><div class="table-episode-date">DOAC-E379</div></td>
+              <td class="right muted">Mar 18, 2026</td>
+              <td class="right">28,600</td>
+              <td class="right">72,100</td>
+              <td class="right">341,200</td>
+              <td class="right">10,800</td>
+            </tr>
+            <tr>
+              <td><div class="table-episode-title">E378: Alex Hormozi — Building a $100M Business</div><div class="table-episode-date">DOAC-E378</div></td>
+              <td class="right muted">Mar 14, 2026</td>
+              <td class="right">24,100</td>
+              <td class="right">58,400</td>
+              <td class="right">289,400</td>
+              <td class="right">9,200</td>
+            </tr>
+            <tr>
+              <td><div class="table-episode-title">E377: Mo Gawdat — Why AI Changes Everything</div><div class="table-episode-date">DOAC-E377</div></td>
+              <td class="right muted">Mar 11, 2026</td>
+              <td class="right">21,800</td>
+              <td class="right">48,900</td>
+              <td class="right">246,100</td>
+              <td class="right">7,800</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="table-pagination">
+          <span>Showing 1–6 of 14 episodes</span>
+          <div class="table-pagination-btns">
+            <div class="table-page-btn">&#8249;</div>
+            <div class="table-page-btn active">1</div>
+            <div class="table-page-btn">2</div>
+            <div class="table-page-btn">3</div>
+            <div class="table-page-btn">&#8250;</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TOP PLATFORMS + GEOGRAPHY ═══ -->
+      <div class="grid-2 reveal">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Top Platforms</div>
+              <div class="card-desc">Most popular listening platforms</div>
+            </div>
+          </div>
+          <div class="hbar-list">
+            <div class="hbar-item">
+              <div class="hbar-rank">1</div>
+              <div class="hbar-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M19.5583 5.16211C19.4436 4.73817 19.2198 4.35168 18.9093 4.04112C18.5987 3.73056 18.2122 3.50677 17.7883 3.39203C16.2363 2.96875 9.98986 2.96875 9.98986 2.96875C9.98986 2.96875 3.74314 2.98156 2.19111 3.40484C1.76716 3.51959 1.38067 3.74339 1.07013 4.05396C0.759581 4.36454 0.535813 4.75104 0.421109 5.175C-0.0483444 7.93266 -0.230454 12.1347 0.433999 14.782C0.548716 15.206 0.772489 15.5925 1.08303 15.903C1.39358 16.2136 1.78006 16.4374 2.204 16.5521C3.75603 16.9754 10.0026 16.9754 10.0026 16.9754C10.0026 16.9754 16.2491 16.9754 17.801 16.5521C18.225 16.4374 18.6115 16.2136 18.922 15.903C19.2326 15.5925 19.4564 15.206 19.5711 14.782C20.0663 12.0205 20.2188 7.82102 19.5583 5.16211Z" fill="#FF2323"/><path d="M8.00163 13.0341L13.1835 10.0327L8.00163 7.03125V13.0341Z" fill="white"/></svg></div>
+              <div class="hbar-label">YouTube</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:76%;background:#FF2323"></div></div>
+              <div class="hbar-val">1.82M</div>
+            </div>
+            <div class="hbar-item">
+              <div class="hbar-rank">2</div>
+              <div class="hbar-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 0C4.47719 0 0 4.47727 0 10C0 15.5231 4.47727 20 10 20C15.5232 20 20 15.5231 20 10C20 4.47766 15.5232 0.000546875 9.99984 0.000546875L10 0ZM14.5859 14.423C14.4067 14.7167 14.0222 14.8098 13.7284 14.6295C11.3805 13.1954 8.42492 12.8705 4.94406 13.6659C4.78287 13.7026 4.61371 13.6737 4.47376 13.5857C4.33382 13.4977 4.23456 13.3577 4.19781 13.1966C4.17951 13.1168 4.17713 13.0342 4.19079 12.9535C4.20445 12.8727 4.23389 12.7955 4.27743 12.7262C4.32097 12.6569 4.37775 12.5968 4.44452 12.5495C4.51129 12.5021 4.58674 12.4684 4.66656 12.4502C8.47594 11.5799 11.7434 11.9546 14.3793 13.5655C14.673 13.7459 14.7662 14.1292 14.5859 14.423ZM15.8098 11.7001C15.5841 12.0669 15.1041 12.1827 14.7375 11.957C12.0495 10.3048 7.95211 9.82633 4.77281 10.7914C4.36047 10.9159 3.925 10.6836 3.79984 10.272C3.67563 9.85961 3.90812 9.42492 4.31977 9.29961C7.95141 8.19758 12.4663 8.73141 15.5531 10.6283C15.9197 10.8541 16.0355 11.334 15.8098 11.7001ZM15.9149 8.86469C12.692 6.95031 7.37453 6.77422 4.29742 7.70828C3.80328 7.85813 3.2807 7.57914 3.13102 7.085C2.98125 6.59063 3.25992 6.06844 3.75445 5.9182C7.28672 4.84586 13.1589 5.05313 16.8695 7.25594C17.3149 7.51969 17.4605 8.09375 17.1966 8.53758C16.934 8.98211 16.3584 9.12859 15.9154 8.86469H15.9149Z" fill="#1DD75F"/></svg></div>
+              <div class="hbar-label">Spotify</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:17%;background:#1DD75F"></div></div>
+              <div class="hbar-val">416K</div>
+            </div>
+            <div class="hbar-item">
+              <div class="hbar-rank">3</div>
+              <div class="hbar-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10.8333 14.1666C10.8333 13.9456 10.7455 13.7336 10.5893 13.5773C10.433 13.421 10.221 13.3333 10 13.3333C9.77898 13.3333 9.56702 13.421 9.41074 13.5773C9.25446 13.7336 9.16666 13.9456 9.16666 14.1666L9.58333 17.9166C9.58333 18.0271 9.62723 18.1331 9.70537 18.2112C9.78351 18.2894 9.88949 18.3333 10 18.3333C10.1105 18.3333 10.2165 18.2894 10.2946 18.2112C10.3728 18.1331 10.4167 18.0271 10.4167 17.9166L10.8333 14.1666Z" fill="#FB9E39" stroke="#FB9E39" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.0417 15.4833C15.4078 14.6093 16.4539 13.316 17.023 11.7974C17.5922 10.2787 17.6537 8.61652 17.1984 7.05994C16.7431 5.50336 15.7955 4.13631 14.4977 3.16373C13.1999 2.19115 11.6218 1.66545 10 1.66545C8.37821 1.66545 6.8001 2.19115 5.5023 3.16373C4.20449 4.13631 3.2569 5.50336 2.80161 7.05994C2.34632 8.61652 2.40785 10.2787 2.97698 11.7974C3.54611 13.316 4.59217 14.6093 5.95833 15.4833" stroke="#FB9E39" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.66667 11.6666C6.20239 11.0475 5.91967 10.3114 5.85017 9.54078C5.78068 8.7701 5.92717 7.9953 6.27322 7.3032C6.61928 6.61109 7.15122 6.02902 7.80946 5.62221C8.46769 5.2154 9.2262 4.99992 10 4.99992C10.7738 4.99992 11.5323 5.2154 12.1906 5.62221C12.8488 6.02902 13.3807 6.61109 13.7268 7.3032C14.0728 7.9953 14.2193 8.7701 14.1498 9.54078C14.0803 10.3114 13.7976 11.0475 13.3333 11.6666" stroke="#FB9E39" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 9.99992C10.4602 9.99992 10.8333 9.62682 10.8333 9.16659C10.8333 8.70635 10.4602 8.33325 10 8.33325C9.53976 8.33325 9.16666 8.70635 9.16666 9.16659C9.16666 9.62682 9.53976 9.99992 10 9.99992Z" fill="#FB9E39" stroke="#FB9E39" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div class="hbar-label">RSS</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:7%;background:#FB9E39"></div></div>
+              <div class="hbar-val">174K</div>
+            </div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-item"><div class="stat-item-label">Total plays</div><div class="stat-item-value">2.41M</div></div>
+            <div class="stat-item"><div class="stat-item-label">Platforms</div><div class="stat-item-value">3</div></div>
+            <div class="stat-item"><div class="stat-item-label">RSS listeners</div><div class="stat-item-value">174K</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Geography</div>
+              <div class="card-desc">Where your listeners are</div>
+            </div>
+            <div class="card-actions">
+              <button class="card-btn active">Country</button>
+              <button class="card-btn">Format</button>
+              <button class="card-btn">Platform</button>
+            </div>
+          </div>
+          <div class="hbar-list">
+            <div class="hbar-item">
+              <div class="hbar-rank">1</div>
+              <div class="hbar-label">UK</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:38%;background:rgba(23,23,23,1)"></div></div>
+              <div class="hbar-val">38%</div>
+            </div>
+            <div class="hbar-item">
+              <div class="hbar-rank">2</div>
+              <div class="hbar-label">USA</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:31%;background:rgba(23,23,23,0.75)"></div></div>
+              <div class="hbar-val">31%</div>
+            </div>
+            <div class="hbar-item">
+              <div class="hbar-rank">3</div>
+              <div class="hbar-label">Australia</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:9%;background:rgba(23,23,23,0.55)"></div></div>
+              <div class="hbar-val">9%</div>
+            </div>
+            <div class="hbar-item">
+              <div class="hbar-rank">4</div>
+              <div class="hbar-label">Canada</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:7%;background:rgba(23,23,23,0.40)"></div></div>
+              <div class="hbar-val">7%</div>
+            </div>
+            <div class="hbar-item">
+              <div class="hbar-rank">5</div>
+              <div class="hbar-label">India</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:5%;background:rgba(23,23,23,0.30)"></div></div>
+              <div class="hbar-val">5%</div>
+            </div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-item"><div class="stat-item-label">Countries</div><div class="stat-item-value">148</div></div>
+            <div class="stat-item"><div class="stat-item-label">Top region</div><div class="stat-item-value">Europe</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ DEMOGRAPHICS + AUDIENCE OVERLAP ═══ -->
+      <div class="grid-2 reveal">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Demographics &amp; Traffic</div>
+              <div class="card-desc">Device and source breakdown (Mar 24 – Mar 31)</div>
+            </div>
+            <div class="card-actions">
+              <button class="card-btn active">Device</button>
+              <button class="card-btn">App</button>
+              <button class="card-btn">Google</button>
+              <button class="card-btn">Services</button>
+              <button class="card-btn">YouTube</button>
+            </div>
+          </div>
+          <div class="hbar-list">
+            <div class="hbar-item">
+              <div class="hbar-label">Mobile</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:58%;background:rgba(23,23,23,1)"></div></div>
+              <div class="hbar-val">58%</div>
+            </div>
+            <div class="hbar-item">
+              <div class="hbar-label">Desktop</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:28%;background:rgba(23,23,23,0.75)"></div></div>
+              <div class="hbar-val">28%</div>
+            </div>
+            <div class="hbar-item">
+              <div class="hbar-label">Smart TV</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:9%;background:rgba(23,23,23,0.55)"></div></div>
+              <div class="hbar-val">9%</div>
+            </div>
+            <div class="hbar-item">
+              <div class="hbar-label">Tablet</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:5%;background:rgba(23,23,23,0.40)"></div></div>
+              <div class="hbar-val">5%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Audience Overlap</div>
+              <div class="card-desc">Cross-episode listener retention</div>
+            </div>
+          </div>
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="12" cy="16" r="8" stroke="currentColor" stroke-width="1.5" opacity="0.3"/><circle cx="20" cy="16" r="8" stroke="currentColor" stroke-width="1.5" opacity="0.3"/></svg>
+            </div>
+            <div class="empty-state-text">Requires 3+ published episodes</div>
+            <div class="empty-state-sub">Overlap data will appear once enough episodes are available</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script>
+// ── Loyalty Funnel Data ──
+const FUNNEL_DATA = {
+  '7d': [
+    { label: '1', count: 2400000, pct: 100 }, { label: '2', count: 1704000, pct: 71 },
+    { label: '3', count: 1248000, pct: 52 }, { label: '4', count: 912000, pct: 38 },
+    { label: '5', count: 600000, pct: 25 }, { label: '6', count: 408000, pct: 17 },
+    { label: '7', count: 264000, pct: 11 }, { label: '8', count: 168000, pct: 7 },
+    { label: '9', count: 96000, pct: 4 }, { label: '10+', count: 48000, pct: 2 },
+  ],
+};
+
+const LOYALTY_EPISODES = [
+  { title: 'E382: Simon Sinek — Why Leaders Eat Last', pct: 94, plays: '1.8M' },
+  { title: 'E378: Alex Hormozi — $100M Business', pct: 89, plays: '1.6M' },
+  { title: 'E381: The Neuroscientist Who Decoded Anxiety', pct: 84, plays: '1.4M' },
+  { title: 'E377: Mo Gawdat — Why AI Changes Everything', pct: 79, plays: '1.3M' },
+  { title: 'E380: Gary Vee — The Truth About Social Media', pct: 74, plays: '1.2M' },
+  { title: 'E379: Dr. Rangan Chatterjee — The 4 Pillars', pct: 68, plays: '1.1M' },
+];
+
+const LOYALTY_TREND = [
+  { month: 'Oct', value: 18.2 }, { month: 'Nov', value: 19.8 },
+  { month: 'Dec', value: 21.1 }, { month: 'Jan', value: 22.5 },
+  { month: 'Feb', value: 24.0 }, { month: 'Mar', value: 25.0 },
+];
+
+const FUNNEL_COLORS = [
+  '#6B46C9', '#7857d1', '#866ad8', '#947ddf', '#a290e5',
+  '#b0a3ec', '#beb6f0', '#ccc9f4', '#d6d2f6', '#e0ddf8',
+];
+
+function fmt(n) {
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(0) + 'K';
+  return n.toLocaleString();
+}
+function fmtFull(n) { return n.toLocaleString(); }
+
+function animateNumber(elId, target) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const duration = 600, start = performance.now();
+  function tick(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - t, 3);
+    el.textContent = fmtFull(Math.round(target * eased));
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ── Per-filter funnel datasets (hand-crafted for realistic storytelling) ──
+const FILTER_DATA = {
+  // Episodes — each has a unique retention curve shape
+  // All episodes, all listeners — DOAC scale
+  'all|all': [
+    { label:'1', count:2400000, pct:100 }, { label:'2', count:1704000, pct:71 },
+    { label:'3', count:1248000, pct:52 }, { label:'4', count:912000, pct:38 },
+    { label:'5', count:600000, pct:25 }, { label:'6', count:408000, pct:17 },
+    { label:'7', count:264000, pct:11 }, { label:'8', count:168000, pct:7 },
+    { label:'9', count:96000, pct:4 }, { label:'10+', count:48000, pct:2 },
+  ],
+  // E382: Simon Sinek — viral, exceptional retention
+  'ep214|all': [
+    { label:'1', count:684000, pct:100 }, { label:'2', count:581400, pct:85 },
+    { label:'3', count:478800, pct:70 }, { label:'4', count:389880, pct:57 },
+    { label:'5', count:307800, pct:45 }, { label:'6', count:232560, pct:34 },
+    { label:'7', count:171000, pct:25 }, { label:'8', count:116280, pct:17 },
+    { label:'9', count:75240, pct:11 }, { label:'10+', count:41040, pct:6 },
+  ],
+  // E381: Neuroscientist — niche but very sticky audience
+  'ep213|all': [
+    { label:'1', count:512800, pct:100 }, { label:'2', count:410200, pct:80 },
+    { label:'3', count:333300, pct:65 }, { label:'4', count:266700, pct:52 },
+    { label:'5', count:210200, pct:41 }, { label:'6', count:158900, pct:31 },
+    { label:'7', count:117900, pct:23 }, { label:'8', count:82000, pct:16 },
+    { label:'9', count:51300, pct:10 }, { label:'10+', count:30800, pct:6 },
+  ],
+  // E380: Gary Vee — big reach, average retention
+  'ep212|all': [
+    { label:'1', count:398600, pct:100 }, { label:'2', count:271000, pct:68 },
+    { label:'3', count:183400, pct:46 }, { label:'4', count:127600, pct:32 },
+    { label:'5', count:83700, pct:21 }, { label:'6', count:55800, pct:14 },
+    { label:'7', count:35900, pct:9 }, { label:'8', count:19900, pct:5 },
+    { label:'9', count:12000, pct:3 }, { label:'10+', count:6000, pct:2 },
+  ],
+  // US audience — 31% of total, slightly better retention (business content resonates)
+  'all|us': [
+    { label:'1', count:744000, pct:100 }, { label:'2', count:542900, pct:73 },
+    { label:'3', count:409200, pct:55 }, { label:'4', count:305000, pct:41 },
+    { label:'5', count:208300, pct:28 }, { label:'6', count:141400, pct:19 },
+    { label:'7', count:96700, pct:13 }, { label:'8', count:59500, pct:8 },
+    { label:'9', count:37200, pct:5 }, { label:'10+', count:22300, pct:3 },
+  ],
+  // UK audience — 38% of total, home market, best loyalty
+  'all|uk': [
+    { label:'1', count:912000, pct:100 }, { label:'2', count:693100, pct:76 },
+    { label:'3', count:528960, pct:58 }, { label:'4', count:401280, pct:44 },
+    { label:'5', count:291840, pct:32 }, { label:'6', count:209760, pct:23 },
+    { label:'7', count:145920, pct:16 }, { label:'8', count:100320, pct:11 },
+    { label:'9', count:63840, pct:7 }, { label:'10+', count:36480, pct:4 },
+  ],
+  // YouTube — 76% of plays, strong mid-funnel
+  'all|youtube': [
+    { label:'1', count:1824000, pct:100 }, { label:'2', count:1368000, pct:75 },
+    { label:'3', count:1039700, pct:57 }, { label:'4', count:784300, pct:43 },
+    { label:'5', count:565400, pct:31 }, { label:'6', count:401300, pct:22 },
+    { label:'7', count:273600, pct:15 }, { label:'8', count:182400, pct:10 },
+    { label:'9', count:109400, pct:6 }, { label:'10+', count:54700, pct:3 },
+  ],
+  // Spotify — smaller but loyal core, best 10+ conversion
+  'all|spotify': [
+    { label:'1', count:416000, pct:100 }, { label:'2', count:303700, pct:73 },
+    { label:'3', count:228800, pct:55 }, { label:'4', count:174700, pct:42 },
+    { label:'5', count:129000, pct:31 }, { label:'6', count:95700, pct:23 },
+    { label:'7', count:70700, pct:17 }, { label:'8', count:49900, pct:12 },
+    { label:'9', count:33300, pct:8 }, { label:'10+', count:20800, pct:5 },
+  ],
+  // Simon Sinek + YouTube — the killer combo, 90% ep2 retention
+  'ep214|youtube': [
+    { label:'1', count:520000, pct:100 }, { label:'2', count:468000, pct:90 },
+    { label:'3', count:400400, pct:77 }, { label:'4', count:332800, pct:64 },
+    { label:'5', count:270400, pct:52 }, { label:'6', count:208000, pct:40 },
+    { label:'7', count:156000, pct:30 }, { label:'8', count:109200, pct:21 },
+    { label:'9', count:72800, pct:14 }, { label:'10+', count:41600, pct:8 },
+  ],
+  // Simon Sinek + UK — home market loves leadership content
+  'ep214|uk': [
+    { label:'1', count:260000, pct:100 }, { label:'2', count:226200, pct:87 },
+    { label:'3', count:192400, pct:74 }, { label:'4', count:161200, pct:62 },
+    { label:'5', count:132600, pct:51 }, { label:'6', count:104000, pct:40 },
+    { label:'7', count:78000, pct:30 }, { label:'8', count:54600, pct:21 },
+    { label:'9', count:36400, pct:14 }, { label:'10+', count:20800, pct:8 },
+  ],
+  // Simon Sinek + US
+  'ep214|us': [
+    { label:'1', count:212000, pct:100 }, { label:'2', count:180200, pct:85 },
+    { label:'3', count:150500, pct:71 }, { label:'4', count:125100, pct:59 },
+    { label:'5', count:99600, pct:47 }, { label:'6', count:76300, pct:36 },
+    { label:'7', count:55100, pct:26 }, { label:'8', count:38200, pct:18 },
+    { label:'9', count:25400, pct:12 }, { label:'10+', count:14800, pct:7 },
+  ],
+};
+
+function getFilteredData() {
+  const epVal = document.getElementById('funnelEpisodeFilter').value;
+  const audVal = document.getElementById('funnelAudienceFilter').value;
+  const key = epVal + '|' + audVal;
+
+  // Try exact match first, then episode-only, then audience-only, then default
+  if (FILTER_DATA[key]) return FILTER_DATA[key];
+  if (FILTER_DATA[epVal + '|all']) {
+    // Scale episode data by audience ratio
+    const epData = FILTER_DATA[epVal + '|all'];
+    const audData = FILTER_DATA['all|' + audVal];
+    if (audData) {
+      const ratio = audData[0].count / FILTER_DATA['all|all'][0].count;
+      return epData.map((row, i) => ({
+        label: row.label,
+        count: Math.round(row.count * ratio),
+        pct: Math.max(1, Math.round(row.pct * (audData[i] ? audData[i].pct / FILTER_DATA['all|all'][i].pct : ratio))),
+      }));
+    }
+    return epData;
+  }
+  if (FILTER_DATA['all|' + audVal]) return FILTER_DATA['all|' + audVal];
+  return FILTER_DATA['all|all'];
+}
+
+function applyFunnelFilters() {
+  renderFunnel();
+  renderDropoffs();
+  updateFilterTags();
+}
+
+function updateFilterTags() {
+  const epEl = document.getElementById('funnelEpisodeFilter');
+  const audEl = document.getElementById('funnelAudienceFilter');
+  const tagsWrap = document.getElementById('funnelActiveTags');
+  let tags = '';
+
+  if (epEl.value !== 'all') {
+    const label = epEl.options[epEl.selectedIndex].text;
+    tags += `<div class="funnel-active-tag">${label}<span class="funnel-active-tag-x" onclick="document.getElementById('funnelEpisodeFilter').value='all';applyFunnelFilters()">&#215;</span></div>`;
+  }
+  if (audEl.value !== 'all') {
+    const label = audEl.options[audEl.selectedIndex].text;
+    tags += `<div class="funnel-active-tag">${label}<span class="funnel-active-tag-x" onclick="document.getElementById('funnelAudienceFilter').value='all';applyFunnelFilters()">&#215;</span></div>`;
+  }
+  tagsWrap.innerHTML = tags;
+}
+
+// ── Render Funnel ──
+function trapezoidPath(x, segW, leftH, rightH, midY, r) {
+  const lt = midY - leftH/2, lb = midY + leftH/2, rt = midY - rightH/2, rb = midY + rightH/2;
+  return `M${x+r},${lt} L${x+segW-r},${rt} Q${x+segW},${rt} ${x+segW},${rt+r} L${x+segW},${rb-r} Q${x+segW},${rb} ${x+segW-r},${rb} L${x+r},${lb} Q${x},${lb} ${x},${lb-r} L${x},${lt+r} Q${x},${lt} ${x+r},${lt} Z`;
+}
+
+function renderFunnel() {
+  const data = getFilteredData();
+  const allData = FILTER_DATA['all|all'];
+  const isFiltered = document.getElementById('funnelEpisodeFilter').value !== 'all' ||
+                     document.getElementById('funnelAudienceFilter').value !== 'all';
+  const tooltip = document.getElementById('funnelTooltip');
+  const svgWrap = document.getElementById('funnelSvg');
+  const legendWrap = document.getElementById('funnelLegend');
+
+  const W = 680, funnelH = 240, headerY = 14, funnelTop = 28;
+  const dropoffY = funnelTop + funnelH + 16, pctY = dropoffY + 16, totalH = pctY + 8;
+  const gap = 4, segW = (W - (data.length - 1) * gap) / data.length, minH = 22;
+  const midY = funnelTop + funnelH / 2, r = 2;
+
+  const dropoffs = data.map((row, i) => i === 0 ? null : Math.round((1 - row.count / data[i - 1].count) * 100));
+
+  let biggestDropIdx = 1, bestRetIdx = 1;
+  for (let i = 2; i < dropoffs.length; i++) {
+    if (dropoffs[i] > dropoffs[biggestDropIdx]) biggestDropIdx = i;
+    if (dropoffs[i] < dropoffs[bestRetIdx]) bestRetIdx = i;
+  }
+  document.getElementById('pillBigDrop').textContent = `${dropoffs[biggestDropIdx]}% at ep ${data[biggestDropIdx].label}`;
+  document.getElementById('pillBestRet').textContent = `${100 - dropoffs[bestRetIdx]}% at ep ${data[bestRetIdx].label}`;
+
+  // Compute absolute pct (relative to allData total) for filtered shapes
+  const absPcts = data.map(row => (row.count / allData[0].count) * 100);
+
+  let svgContent = '';
+
+  // Headers
+  data.forEach((d, i) => {
+    const cx = i * (segW + gap) + segW / 2;
+    svgContent += `<text x="${cx}" y="${headerY}" text-anchor="middle" fill="#525252" font-size="13" font-weight="600">${d.label}</text>`;
+  });
+
+  // Reference outlines (all|all) — only when filtered
+  if (isFiltered) {
+    allData.forEach((row, i) => {
+      const leftH = minH + (funnelH - minH) * (row.pct / 100);
+      const nextPct = allData[i + 1] ? allData[i + 1].pct : Math.max(row.pct * 0.35, 0.5);
+      const rightH = minH + (funnelH - minH) * (nextPct / 100);
+      const x = i * (segW + gap);
+      const path = trapezoidPath(x, segW, leftH, rightH, midY, r);
+      svgContent += `<path d="${path}" fill="#f5f5f5" stroke="#d4d4d4" stroke-width="1" stroke-dasharray="4 3" />`;
+    });
+  }
+
+  // Active segments — use absolute pcts when filtered, normal pcts when not
+  data.forEach((row, i) => {
+    const pctForHeight = isFiltered ? absPcts[i] : row.pct;
+    const nextPctForHeight = isFiltered
+      ? (absPcts[i + 1] !== undefined ? absPcts[i + 1] : Math.max(pctForHeight * 0.35, 0.5))
+      : (data[i + 1] ? data[i + 1].pct : Math.max(row.pct * 0.35, 0.5));
+
+    const leftH = minH + (funnelH - minH) * (pctForHeight / 100);
+    const rightH = minH + (funnelH - minH) * (nextPctForHeight / 100);
+    const x = i * (segW + gap);
+    const path = trapezoidPath(x, segW, leftH, rightH, midY, r);
+    const cx = x + segW / 2;
+
+    svgContent += `<g class="funnel-seg animate-seg" data-idx="${i}" style="animation-delay:${i*80}ms">
+      <path d="${path}" fill="${FUNNEL_COLORS[i]}" />
+      <text class="funnel-label-text" x="${cx}" y="${midY+5}" text-anchor="middle" fill="white" font-size="13" font-weight="600">${fmt(row.count)}</text>
+    </g>`;
+  });
+
+  // Drop-offs
+  data.forEach((d, i) => {
+    if (i === 0) return;
+    const cx = i * (segW + gap) + segW / 2;
+    svgContent += `<text x="${cx}" y="${dropoffY}" text-anchor="middle" fill="#d5432c" font-size="13" font-weight="600" opacity="0.7">-${dropoffs[i]}%</text>`;
+  });
+
+  // Percentages
+  data.forEach((d, i) => {
+    const cx = i * (segW + gap) + segW / 2;
+    svgContent += `<text x="${cx}" y="${pctY}" text-anchor="middle" fill="#7f7f7f" font-size="13" font-weight="600">${d.pct}%</text>`;
+  });
+
+  const old = svgWrap.querySelector('svg');
+  if (old) old.remove();
+  svgWrap.insertAdjacentHTML('afterbegin', `<svg viewBox="0 0 ${W} ${totalH}" xmlns="http://www.w3.org/2000/svg">${svgContent}</svg>`);
+
+  // Legend
+  legendWrap.innerHTML = `<div class="funnel-legend-title">Breakdown</div>` +
+    `<div class="funnel-legend-header"><div class="lh-label">Ep</div><div class="lh-val">Count</div><div class="lh-pct">%</div><div class="lh-drop">Drop</div></div>` +
+    data.map((row, i) => {
+      const drop = dropoffs[i] !== null ? `-${dropoffs[i]}%` : '—';
+      return `<div class="funnel-legend-row" data-idx="${i}">
+        <div class="funnel-legend-dot" style="background:${FUNNEL_COLORS[i]}"></div>
+        <div class="funnel-legend-label">${row.label === '10+' ? '10+' : row.label+'+'} ep</div>
+        <div class="funnel-legend-val">${fmt(row.count)}</div>
+        <div class="funnel-legend-pct">${row.pct}%</div>
+        <div class="funnel-legend-drop">${drop}</div>
+      </div>`;
+    }).join('');
+
+  // Bidirectional hover
+  function hl(idx) {
+    const svg = svgWrap.querySelector('svg');
+    if (svg) svg.classList.add('has-hover');
+    svgWrap.querySelectorAll('.funnel-seg').forEach((s, i) => s.classList.toggle('highlighted', i === idx));
+    legendWrap.querySelectorAll('.funnel-legend-row').forEach((r, i) => r.classList.toggle('highlighted', i === idx));
+  }
+  function clr() {
+    const svg = svgWrap.querySelector('svg');
+    if (svg) svg.classList.remove('has-hover');
+    svgWrap.querySelectorAll('.funnel-seg').forEach(s => s.classList.remove('highlighted'));
+    legendWrap.querySelectorAll('.funnel-legend-row').forEach(r => r.classList.remove('highlighted'));
+  }
+
+  svgWrap.querySelectorAll('.funnel-seg').forEach(seg => {
+    seg.addEventListener('mouseenter', () => {
+      const idx = +seg.dataset.idx, row = data[idx];
+      hl(idx);
+      const drop = dropoffs[idx], retained = drop !== null ? (100 - drop) : null, lost = drop !== null ? (data[idx-1].count - row.count) : null;
+      const epLabel = row.label === '10+' ? '10 or more' : row.label + '+';
+      tooltip.innerHTML = `
+        <div class="funnel-tooltip-top">
+          <div class="funnel-tooltip-dot" style="background:${FUNNEL_COLORS[idx]}"></div>
+          <div class="funnel-tooltip-top-text">
+            <div class="funnel-tooltip-count">${fmtFull(row.count)}</div>
+            <div class="funnel-tooltip-label">Watched ${epLabel} episodes</div>
+          </div>
+        </div>
+        <div class="funnel-tooltip-pct-bar"><div class="funnel-tooltip-pct-fill" style="width:${row.pct}%;background:${FUNNEL_COLORS[idx]}"></div></div>
+        ${drop !== null ? `<div class="funnel-tooltip-stats">
+          <div class="funnel-tooltip-stat">
+            <div class="funnel-tooltip-stat-val green">${retained}%</div>
+            <div class="funnel-tooltip-stat-label">Retained</div>
+          </div>
+          <div class="funnel-tooltip-stat">
+            <div class="funnel-tooltip-stat-val red">${fmt(lost)}</div>
+            <div class="funnel-tooltip-stat-label">${drop}% lost</div>
+          </div>
+        </div>` : `<div class="funnel-tooltip-stats">
+          <div class="funnel-tooltip-stat">
+            <div class="funnel-tooltip-stat-val">${row.pct}%</div>
+            <div class="funnel-tooltip-stat-label">Of total audience</div>
+          </div>
+          <div class="funnel-tooltip-stat">
+            <div class="funnel-tooltip-stat-val">${fmtFull(row.count)}</div>
+            <div class="funnel-tooltip-stat-label">Unique listeners</div>
+          </div>
+        </div>`}`;
+      tooltip.classList.add('visible');
+      // Position tooltip centered above the hovered segment
+      requestAnimationFrame(() => {
+        const segRect = seg.getBoundingClientRect();
+        const wrapRect = svgWrap.getBoundingClientRect();
+        const segCenterX = segRect.left + segRect.width / 2 - wrapRect.left;
+        const tipH = tooltip.offsetHeight || 120;
+        let x = segCenterX - 110;
+        let y = segRect.top - wrapRect.top - tipH - 8;
+        if (x < 4) x = 4;
+        if (x + 220 > wrapRect.width) x = wrapRect.width - 224;
+        if (y < 0) y = segRect.bottom - wrapRect.top + 8;
+        tooltip.style.left = x + 'px';
+        tooltip.style.top = y + 'px';
+      });
+    });
+    seg.addEventListener('mouseleave', () => { clr(); tooltip.classList.remove('visible'); });
+  });
+
+  legendWrap.querySelectorAll('.funnel-legend-row').forEach(row => {
+    row.addEventListener('mouseenter', () => hl(+row.dataset.idx));
+    row.addEventListener('mouseleave', clr);
+  });
+
+  // Milestone
+  const sf = data.find(d => d.label === '5');
+  if (sf) animateNumber('calloutSuperfanTop', sf.count);
+}
+
+// ── Loyalty Bar List ──
+function renderLoyaltyBarList() {
+  document.getElementById('loyaltyBarList').innerHTML = LOYALTY_EPISODES.map((ep, i) => `
+    <div class="loyalty-bar-item">
+      <div class="loyalty-bar-bg" style="width:${ep.pct}%"></div>
+      <div class="loyalty-bar-rank">${i + 1}</div>
+      <div class="loyalty-bar-label">${ep.title}</div>
+      <div class="loyalty-bar-meta">${ep.plays}</div>
+      <div class="loyalty-bar-value">${ep.pct}%</div>
+    </div>`).join('');
+}
+
+// ── Loyalty Trend Chart ──
+function renderLoyaltyTrend() {
+  const wrap = document.getElementById('loyaltyTrendChart');
+  const W = 400, H = 180, padL = 36, padR = 12, padT = 12, padB = 28;
+  const chartW = W - padL - padR, chartH = H - padT - padB;
+  const minV = 15, maxV = 28, yTicks = [15, 20, 25];
+  function x(i) { return padL + (i / (LOYALTY_TREND.length - 1)) * chartW; }
+  function y(v) { return padT + chartH - ((v - minV) / (maxV - minV)) * chartH; }
+
+  const grid = yTicks.map(v => `<line x1="${padL}" y1="${y(v)}" x2="${W-padR}" y2="${y(v)}" stroke="#e5e5e5" stroke-width="1"/>`).join('');
+  const yLabels = yTicks.map(v => `<text x="${padL-8}" y="${y(v)+4}" text-anchor="end" fill="#7f7f7f" font-size="13" font-family="var(--font)">${v}%</text>`).join('');
+  const xLabels = LOYALTY_TREND.map((d, i) => `<text x="${x(i)}" y="${H-6}" text-anchor="middle" fill="#7f7f7f" font-size="13" font-family="var(--font)">${d.month}</text>`).join('');
+  const pts = LOYALTY_TREND.map((d, i) => `${x(i)},${y(d.value)}`).join(' ');
+  const area = `<polygon class="trend-area" points="${x(0)},${y(minV)} ${pts} ${x(LOYALTY_TREND.length-1)},${y(minV)}" fill="var(--accent)" opacity="0.08"/>`;
+  const line = `<polyline class="trend-line" points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const dots = LOYALTY_TREND.map((d, i) => `<circle class="trend-dot" style="animation-delay:${300 + i * 80}ms" cx="${x(i)}" cy="${y(d.value)}" r="3.5" fill="white" stroke="var(--accent)" stroke-width="2"/>`).join('');
+  const vals = LOYALTY_TREND.map((d, i) => `<text class="trend-val" style="animation-delay:${350 + i * 80}ms" x="${x(i)}" y="${y(d.value)-10}" text-anchor="middle" fill="var(--text-primary)" font-size="13" font-weight="600" font-family="var(--font)">${d.value}%</text>`).join('');
+
+  wrap.innerHTML = `<svg viewBox="0 0 ${W} ${H}">${grid}${yLabels}${xLabels}${area}${line}${dots}${vals}</svg>`;
+
+  // Compute and set polyline length for draw-in animation
+  requestAnimationFrame(() => {
+    const pl = wrap.querySelector('.trend-line');
+    if (pl) {
+      const len = pl.getTotalLength();
+      wrap.style.setProperty('--line-len', len);
+    }
+  });
+}
+
+// ── Drop-off Points ──
+function renderDropoffs() {
+  const data = getFilteredData();
+  const wrap = document.getElementById('dropoffList');
+  const transitions = [];
+  for (let i = 1; i < data.length; i++) {
+    const drop = parseFloat(((1 - data[i].count / data[i-1].count) * 100).toFixed(1));
+    const lost = data[i-1].count - data[i].count;
+    transitions.push({ from: data[i-1].label, to: data[i].label, drop, lost, idx: i });
+  }
+  // Sort by worst drop, take top 5
+  const sorted = [...transitions].sort((a, b) => b.drop - a.drop).slice(0, 5);
+  const maxDrop = sorted[0].drop;
+
+  wrap.innerHTML = sorted.map((t, rank) => `
+    <div class="dropoff-item">
+      <div class="dropoff-bg" style="width:${(t.drop / maxDrop) * 100}%"></div>
+      <div class="dropoff-rank">${rank + 1}</div>
+      <div class="dropoff-label">Ep ${t.from} → ${t.to}</div>
+      <div class="dropoff-lost">${fmt(t.lost)} listeners lost</div>
+      <div class="dropoff-val">-${t.drop}%</div>
+    </div>
+  `).join('');
+}
+
+// ── Day-of-week chart ──
+function renderDayChart() {
+  const days = [
+    { label: 'Mon', val: 72, abs: '312K' },
+    { label: 'Tue', val: 100, abs: '434K' },
+    { label: 'Wed', val: 78, abs: '339K' },
+    { label: 'Thu', val: 74, abs: '321K' },
+    { label: 'Fri', val: 58, abs: '252K' },
+    { label: 'Sat', val: 34, abs: '148K' },
+    { label: 'Sun', val: 40, abs: '174K' },
+  ];
+  document.getElementById('dayChart').innerHTML = days.map(d => {
+    let tier = 'low';
+    if (d.val >= 95) tier = 'peak';
+    else if (d.val >= 70) tier = 'high';
+    else if (d.val >= 50) tier = 'normal';
+    const isPeak = d.val >= 95;
+    return `<div class="day-bar-wrap">
+      <div class="day-pct ${isPeak ? 'peak-pct' : ''}">${d.abs}</div>
+      <div class="day-bar-track"><div class="day-bar ${tier}" style="height:${d.val}%"></div></div>
+      <div class="day-label ${isPeak ? 'peak' : ''}">${d.label}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Init ──
+renderFunnel();
+renderDropoffs();
+renderDayChart();
+renderLoyaltyBarList();
+renderLoyaltyTrend();
+
+// ── Scroll reveal with stagger ──
+(function() {
+  var scrollRoot = document.querySelector('.content');
+  var reveals = document.querySelectorAll('.reveal');
+
+  // Immediately reveal elements already in viewport on load
+  function isInViewport(el) {
+    var rect = el.getBoundingClientRect();
+    return rect.top < window.innerHeight && rect.bottom > 0;
+  }
+
+  var deferred = [];
+  var loadIndex = 0;
+  reveals.forEach(function(el) {
+    if (isInViewport(el)) {
+      el.style.transitionDelay = (loadIndex * 40) + 'ms';
+      el.classList.add('visible');
+      loadIndex++;
+    } else {
+      deferred.push(el);
+    }
+  });
+
+  // Observe remaining off-screen elements — stagger resets per scroll batch
+  if (deferred.length) {
+    var observer = new IntersectionObserver(function(entries) {
+      var batch = [];
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) batch.push(entry.target);
+      });
+      batch.forEach(function(el, i) {
+        el.style.transitionDelay = (i * 40) + 'ms';
+        el.classList.add('visible');
+        observer.unobserve(el);
+      });
+    }, { root: scrollRoot, threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
+
+    deferred.forEach(function(el) { observer.observe(el); });
+  }
+})();
+</script>
+</body>
+</html>
