@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flightcast — Preview: Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --font: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  --text-primary: #171717;
+  --text-secondary: #525252;
+  --text-tertiary: #7f7f7f;
+  --text-inverse: #ffffff;
+  --bg-page: #ffffff;
+  --bg-card: #ffffff;
+  --bg-hover: #fafafa;
+  --bg-active: #f5f5f5;
+  --bg-muted: #f5f5f5;
+  --accent: #7857d1;
+  --accent-hover: #6a4abf;
+  --accent-light: #f3f0fb;
+  --accent-muted: #ebe5f7;
+  --success: #30a84a;
+  --success-light: #f0fdf4;
+  --danger: #d5432c;
+  --danger-light: #fef2f2;
+  --warning: #e5a00d;
+  --warning-light: #fffbeb;
+  --info: #3b82f6;
+  --info-light: #eff6ff;
+  --border: #e5e5e5;
+  --border-hover: #a3a3a3;
+  --border-light: #f0f0f0;
+  --radius: 4px;
+  --radius-sm: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --ease: 150ms ease;
+  --chart-1: #7857d1;
+  --chart-2: #3b82f6;
+  --chart-3: #f97316;
+  --chart-4: #ef4444;
+  --chart-5: #22c55e;
+  --chart-6: #a855f7;
+}
+
+/* ── Preview Nav ── */
+.preview-nav {
+  height: 40px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; background: #ffffff; border-bottom: 1px solid #e5e5e5;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  flex-shrink: 0; z-index: 100; position: relative;
+}
+.preview-nav-left { display: flex; align-items: center; gap: 10px; }
+.preview-nav-wordmark { font-size: 14px; font-weight: 700; color: #525252; letter-spacing: -0.3px; }
+.preview-nav-sep { width: 1px; height: 16px; background: #d4d4d4; }
+.preview-nav-label { font-size: 12px; font-weight: 600; color: #7f7f7f; letter-spacing: 0.5px; text-transform: uppercase; }
+.preview-nav-links { display: flex; gap: 2px; }
+.preview-nav-link {
+  font-size: 13px; font-weight: 500; color: #7f7f7f; padding: 8px 12px;
+  border-radius: 4px; text-decoration: none; transition: all 150ms ease;
+  letter-spacing: -0.1px;
+}
+.preview-nav-link:hover { color: #171717; background: #f5f5f5; }
+.preview-nav-link.active { color: #7857d1; font-weight: 600; }
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { height: 100%; }
+body {
+  font-family: var(--font); font-size: 16px; color: var(--text-primary);
+  background: var(--bg-page); -webkit-font-smoothing: antialiased;
+  height: 100vh; overflow: hidden; letter-spacing: -0.15px;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; font-size: inherit; color: inherit; }
+a { text-decoration: none; color: inherit; }
+
+/* ── App Shell ── */
+.app { display: flex; flex-direction: column; height: calc(100vh - 40px); overflow: hidden; }
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+.content { flex: 1; overflow-y: auto; padding: 28px; display: flex; flex-direction: column; gap: 20px; }
+
+/* ── Page Header ── */
+.page-header { display: flex; align-items: center; justify-content: space-between; }
+.page-header-left { display: flex; flex-direction: column; gap: 2px; }
+.page-title { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+.page-subtitle { font-size: 14px; color: var(--text-tertiary); font-weight: 500; }
+.page-header-right { display: flex; align-items: center; gap: 8px; }
+
+/* ── Date Filter Bar ── */
+.date-bar { display: flex; align-items: center; gap: 12px; }
+.date-select {
+  display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+  border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;
+  font-size: 15px; font-weight: 500; color: var(--text-primary); background: white;
+}
+.date-select:hover { border-color: var(--border-hover); }
+.date-select svg { width: 14px; height: 14px; color: var(--text-tertiary); }
+.date-hint { font-size: 14px; color: var(--text-tertiary); }
+.date-hint strong { font-weight: 600; color: var(--text-secondary); }
+
+/* ── KPI Cards ── */
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.kpi-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 16px 18px;
+}
+.kpi-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.kpi-label { font-size: 13px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.4px; }
+.kpi-icon { width: 16px; height: 16px; color: var(--text-tertiary); }
+.kpi-value { font-size: 26px; font-weight: 700; letter-spacing: -0.8px; line-height: 1.1; }
+.kpi-sub { display: flex; align-items: center; gap: 4px; margin-top: 4px; font-size: 13px; color: var(--text-tertiary); }
+.kpi-change { display: inline-flex; align-items: center; gap: 2px; font-weight: 600; font-size: 13px; }
+.kpi-change.up { color: var(--success); }
+.kpi-change.down { color: var(--danger); }
+.kpi-sparkline { margin-top: 8px; }
+.kpi-sparkline svg { width: 100%; height: 32px; }
+
+/* ── Card (generic) ── */
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 24px;
+}
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.card-header-left { }
+.card-title { font-size: 16px; font-weight: 600; letter-spacing: -0.2px; }
+.card-desc { font-size: 14px; color: var(--text-tertiary); margin-top: 2px; }
+.card-actions { display: flex; align-items: center; gap: 8px; }
+.card-btn {
+  padding: 5px 12px; border-radius: var(--radius); font-size: 14px; font-weight: 500;
+  color: var(--text-secondary); border: 1px solid var(--border); background: white; cursor: pointer;
+}
+.card-btn:hover { border-color: var(--border-hover); color: var(--text-primary); }
+.card-btn.active { background: var(--bg-active); color: var(--text-primary); }
+
+/* ── Card Footer ── */
+.card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-light);
+  font-size: 13px; color: var(--text-tertiary);
+}
+.card-footer-link { color: var(--accent); font-weight: 600; cursor: pointer; }
+.card-footer-link:hover { color: var(--accent-hover); }
+
+/* ── Grid layouts ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+
+/* ── Badge ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;
+  border-radius: 20px; font-size: 13px; font-weight: 600;
+}
+.badge.purple { background: var(--accent-light); color: var(--accent); }
+.badge.gray { background: var(--bg-muted); color: var(--text-secondary); }
+.badge.green { background: var(--success-light); color: var(--success); }
+.badge.red { background: var(--danger-light); color: var(--danger); }
+.badge.blue { background: var(--info-light); color: var(--info); }
+
+/* ── Show Cards (podcast grid) ── */
+.show-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.show-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 20px;
+  cursor: pointer; transition: all var(--ease);
+  display: flex; flex-direction: column;
+}
+.show-card:hover { border-color: var(--border-hover); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.show-card-top { display: flex; gap: 14px; margin-bottom: 14px; }
+.show-art {
+  width: 56px; height: 56px; border-radius: 6px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 800; color: white;
+}
+.show-info { flex: 1; min-width: 0; }
+.show-name { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.show-meta { font-size: 13px; color: var(--text-tertiary); margin-top: 2px; }
+.show-kpis { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.show-kpi { }
+.show-kpi-val { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+.show-kpi-label { font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.3px; }
+.show-sparkline { margin-top: auto; }
+.show-sparkline svg { width: 100%; height: 28px; }
+.show-card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-light);
+  font-size: 13px; color: var(--text-tertiary);
+}
+.show-status { display: flex; align-items: center; gap: 5px; }
+.show-status-dot { width: 6px; height: 6px; border-radius: 50%; }
+.show-status-dot.green { background: var(--success); }
+.show-status-dot.gray { background: #a3a3a3; }
+
+/* ── Horizontal Bar Chart ── */
+.hbar-list { display: flex; flex-direction: column; gap: 10px; }
+@keyframes rowFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.reveal.visible .hbar-item { animation: rowFadeIn 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+.reveal.visible .hbar-item:nth-child(1) { animation-delay: 50ms; }
+.reveal.visible .hbar-item:nth-child(2) { animation-delay: 100ms; }
+.reveal.visible .hbar-item:nth-child(3) { animation-delay: 150ms; }
+.reveal.visible .hbar-item:nth-child(4) { animation-delay: 200ms; }
+.reveal.visible .hbar-item:nth-child(5) { animation-delay: 250ms; }
+.reveal:not(.visible) .hbar-item { opacity: 0; }
+.hbar-item { display: flex; align-items: center; gap: 12px; }
+.hbar-rank { font-size: 13px; font-weight: 600; color: var(--text-tertiary); width: 16px; text-align: right; }
+.hbar-icon { width: 20px; height: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.hbar-label { width: 80px; font-size: 15px; font-weight: 500; flex-shrink: 0; }
+.hbar-track { flex: 1; height: 8px; background: var(--bg-muted); border-radius: 4px; overflow: hidden; }
+.hbar-fill { height: 100%; border-radius: 4px; transition: width 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+.reveal:not(.visible) .hbar-fill { width: 0 !important; }
+.hbar-val { width: 48px; text-align: right; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ── Top Episodes (Style D background bar) ── */
+.top-ep-list { display: flex; flex-direction: column; gap: 6px; }
+.reveal.visible .top-ep-item { animation: rowFadeIn 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+.reveal.visible .top-ep-item:nth-child(1) { animation-delay: 50ms; }
+.reveal.visible .top-ep-item:nth-child(2) { animation-delay: 100ms; }
+.reveal.visible .top-ep-item:nth-child(3) { animation-delay: 150ms; }
+.reveal.visible .top-ep-item:nth-child(4) { animation-delay: 200ms; }
+.reveal.visible .top-ep-item:nth-child(5) { animation-delay: 250ms; }
+.reveal:not(.visible) .top-ep-item { opacity: 0; }
+.top-ep-item {
+  position: relative; display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: var(--radius-lg); overflow: hidden;
+}
+.top-ep-bg {
+  position: absolute; left: 0; top: 0; bottom: 0; border-radius: var(--radius-lg);
+  transition: width 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.reveal:not(.visible) .top-ep-bg { width: 0 !important; }
+.top-ep-content { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; width: 100%; }
+.top-ep-rank { font-size: 13px; font-weight: 700; width: 20px; text-align: center; }
+.top-ep-info { flex: 1; min-width: 0; }
+.top-ep-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top-ep-show { font-size: 12px; color: var(--text-tertiary); margin-top: 1px; }
+.top-ep-val { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ── Trend Chart ── */
+.trend-chart { position: relative; }
+.trend-chart svg { width: 100%; height: 200px; display: block; }
+.trend-grid-line { stroke: var(--border-light); stroke-width: 1; }
+.trend-area { transition: opacity 600ms ease; }
+.reveal:not(.visible) .trend-area { opacity: 0; }
+.trend-line { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.trend-dot { transition: opacity 400ms ease; }
+.reveal:not(.visible) .trend-dot { opacity: 0; }
+.trend-label { font-family: var(--font); font-size: 11px; fill: var(--text-tertiary); }
+.trend-val-label { font-family: var(--font); font-size: 11px; font-weight: 600; }
+.chart-legend { display: flex; align-items: center; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+.chart-legend-item { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; color: var(--text-secondary); cursor: pointer; }
+.chart-legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ── Timing Insight Rows ── */
+.timing-list { display: flex; flex-direction: column; gap: 0; }
+.timing-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 0; border-bottom: 1px solid var(--border-light);
+}
+.timing-row:last-child { border-bottom: none; }
+.reveal.visible .timing-row { animation: rowFadeIn 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+.reveal.visible .timing-row:nth-child(1) { animation-delay: 50ms; }
+.reveal.visible .timing-row:nth-child(2) { animation-delay: 100ms; }
+.reveal.visible .timing-row:nth-child(3) { animation-delay: 150ms; }
+.reveal.visible .timing-row:nth-child(4) { animation-delay: 200ms; }
+.reveal:not(.visible) .timing-row { opacity: 0; }
+.timing-icon {
+  width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.timing-icon.purple { background: var(--accent-light); }
+.timing-icon.green { background: var(--success-light); }
+.timing-icon.blue { background: var(--info-light); }
+.timing-text { flex: 1; }
+.timing-title { font-size: 15px; font-weight: 600; letter-spacing: -0.1px; }
+.timing-desc { font-size: 13px; color: var(--text-tertiary); margin-top: 1px; }
+
+/* ── Day-of-week bar chart ── */
+.day-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
+.day-bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; height: 100%; justify-content: flex-end; }
+.reveal.visible .day-bar-wrap { animation: rowFadeIn 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+.reveal.visible .day-bar-wrap:nth-child(1) { animation-delay: 50ms; }
+.reveal.visible .day-bar-wrap:nth-child(2) { animation-delay: 100ms; }
+.reveal.visible .day-bar-wrap:nth-child(3) { animation-delay: 150ms; }
+.reveal.visible .day-bar-wrap:nth-child(4) { animation-delay: 200ms; }
+.reveal.visible .day-bar-wrap:nth-child(5) { animation-delay: 250ms; }
+.reveal.visible .day-bar-wrap:nth-child(6) { animation-delay: 300ms; }
+.reveal.visible .day-bar-wrap:nth-child(7) { animation-delay: 350ms; }
+.reveal:not(.visible) .day-bar-wrap { opacity: 0; }
+.day-bar {
+  width: 100%; border-radius: 4px 4px 0 0;
+  transition: height 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.reveal:not(.visible) .day-bar { height: 0 !important; }
+.day-bar-val { font-size: 12px; font-weight: 700; color: var(--text-primary); }
+.day-bar-label { font-size: 12px; font-weight: 600; color: var(--text-tertiary); }
+
+/* ── Data Table ── */
+.table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.table-meta { display: flex; align-items: center; gap: 12px; }
+.table-count { font-size: 14px; color: var(--text-tertiary); }
+.table-count strong { font-weight: 600; color: var(--text-secondary); }
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left; font-size: 13px; font-weight: 600; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: 0.3px; padding: 8px 12px;
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+th.right { text-align: right; }
+td {
+  padding: 10px 12px; font-size: 15px; border-bottom: 1px solid var(--border-light);
+  font-variant-numeric: tabular-nums;
+}
+td.right { text-align: right; }
+td.muted { color: var(--text-tertiary); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg-hover); }
+.reveal.visible tbody tr { animation: rowFadeIn 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+.reveal.visible tbody tr:nth-child(1) { animation-delay: 50ms; }
+.reveal.visible tbody tr:nth-child(2) { animation-delay: 100ms; }
+.reveal.visible tbody tr:nth-child(3) { animation-delay: 150ms; }
+.reveal.visible tbody tr:nth-child(4) { animation-delay: 200ms; }
+.reveal.visible tbody tr:nth-child(5) { animation-delay: 250ms; }
+.reveal.visible tbody tr:nth-child(6) { animation-delay: 300ms; }
+.reveal:not(.visible) tbody tr { opacity: 0; }
+.table-episode-title { font-weight: 500; max-width: 340px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.table-episode-date { font-size: 13px; color: var(--text-tertiary); margin-top: 1px; }
+.table-pagination {
+  display: flex; align-items: center; justify-content: space-between; margin-top: 12px;
+  font-size: 14px; color: var(--text-tertiary);
+}
+.table-pagination-btns { display: flex; gap: 4px; }
+.table-page-btn {
+  width: 28px; height: 28px; border-radius: var(--radius); font-size: 14px; font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer;
+}
+.table-page-btn.active { background: #171717; color: white; border-color: #171717; }
+.table-page-btn:hover:not(.active) { background: var(--bg-muted); }
+
+/* ── Scroll Reveal ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+</style>
+</head>
+<body>
+<nav class="preview-nav">
+  <div class="preview-nav-left">
+    <span class="preview-nav-wordmark">Flightcast</span>
+    <div class="preview-nav-sep"></div>
+    <span class="preview-nav-label">Preview</span>
+  </div>
+  <div class="preview-nav-links">
+    <a href="./dashboard.html" class="preview-nav-link active">Dashboard</a>
+    <a href="./overview.html" class="preview-nav-link">Overview</a>
+    <a href="./retention.html" class="preview-nav-link">Retention</a>
+    <a href="./clusters.html" class="preview-nav-link">Listener Clusters</a>
+  </div>
+</nav>
+<div class="app">
+  <div class="main">
+    <div class="content">
+
+      <!-- Page Header -->
+      <div class="page-header reveal">
+        <div class="page-header-left">
+          <div class="page-title">Distribution Home</div>
+          <div class="page-subtitle">Cross-show performance for The Diary of a CEO</div>
+        </div>
+        <div class="page-header-right">
+          <div class="date-select">
+            <svg viewBox="0 0 16 16" fill="none" style="width:14px;height:14px"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Last 30 days
+            <svg viewBox="0 0 16 16" fill="none" style="width:14px;height:14px"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ KPI STRIP ═══ -->
+      <div class="kpi-grid reveal" id="kpiGrid">
+        <!-- rendered by JS -->
+      </div>
+
+      <!-- ═══ GROWTH TREND ═══ -->
+      <div class="card reveal" id="trendCard">
+        <div class="card-header">
+          <div class="card-header-left">
+            <div class="card-title">Listener Growth</div>
+            <div class="card-desc">Total unique listeners across all shows</div>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn active" data-range="30d">30d</button>
+            <button class="card-btn" data-range="90d">90d</button>
+            <button class="card-btn" data-range="12m">12m</button>
+          </div>
+        </div>
+        <div class="trend-chart" id="trendChart"></div>
+        <div class="chart-legend">
+          <div class="chart-legend-item"><div class="chart-legend-dot" style="background: var(--chart-1)"></div> YouTube</div>
+          <div class="chart-legend-item"><div class="chart-legend-dot" style="background: var(--chart-2)"></div> Spotify</div>
+          <div class="chart-legend-item"><div class="chart-legend-dot" style="background: var(--chart-5)"></div> RSS / Other</div>
+        </div>
+      </div>
+
+      <!-- ═══ SHOW PERFORMANCE ═══ -->
+      <div class="reveal">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+          <div style="font-size: 16px; font-weight: 600; letter-spacing: -0.2px;">Your Shows</div>
+          <span class="badge gray">3 active shows</span>
+        </div>
+        <div class="show-grid" id="showGrid">
+          <!-- rendered by JS -->
+        </div>
+      </div>
+
+      <!-- ═══ TOP EPISODES + PLATFORMS ═══ -->
+      <div class="grid-2">
+
+        <!-- Top Episodes -->
+        <div class="card reveal" id="topEpCard">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-title">Top Episodes This Period</div>
+              <div class="card-desc">Highest-performing across all shows</div>
+            </div>
+          </div>
+          <div class="top-ep-list" id="topEpList"></div>
+          <div class="card-footer">
+            <span>Showing top 5 of 382 episodes</span>
+            <span class="card-footer-link">View all episodes →</span>
+          </div>
+        </div>
+
+        <!-- Platform Breakdown -->
+        <div class="card reveal" id="platformCard">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-title">Platform Distribution</div>
+              <div class="card-desc">Where your listeners consume content</div>
+            </div>
+          </div>
+          <div class="hbar-list" id="platformList"></div>
+          <div class="card-footer">
+            <span>Based on 4.2M total plays</span>
+            <span class="card-footer-link">Platform details →</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TIMING + GEOGRAPHY ═══ -->
+      <div class="grid-2">
+
+        <!-- Best Publishing Times -->
+        <div class="card reveal" id="timingCard">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-title">Best Times &amp; Days</div>
+              <div class="card-desc">When your audience is most active</div>
+            </div>
+          </div>
+          <div class="timing-list" id="timingList"></div>
+          <div style="margin-top: 16px;">
+            <div style="font-size: 13px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 10px;">Listens by Day</div>
+            <div class="day-chart" id="dayChart"></div>
+          </div>
+        </div>
+
+        <!-- Geography -->
+        <div class="card reveal" id="geoCard">
+          <div class="card-header">
+            <div class="card-header-left">
+              <div class="card-title">Top Regions</div>
+              <div class="card-desc">Geographic distribution of listeners</div>
+            </div>
+          </div>
+          <div class="hbar-list" id="geoList"></div>
+          <div class="card-footer">
+            <span>14 countries total</span>
+            <span class="card-footer-link">View all →</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ RECENT EPISODES TABLE ═══ -->
+      <div class="card reveal" id="recentTableCard">
+        <div class="card-header">
+          <div class="card-header-left">
+            <div class="card-title">Recent Episodes</div>
+            <div class="card-desc">Latest releases across all shows</div>
+          </div>
+        </div>
+        <div class="table-header">
+          <div class="table-meta">
+            <div class="table-count">Showing <strong>1–6</strong> of <strong>382</strong></div>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Episode</th>
+              <th>Show</th>
+              <th class="right">Listens</th>
+              <th class="right">Streams</th>
+              <th class="right">Views</th>
+              <th class="right">Downloads</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="recentTableBody"></tbody>
+        </table>
+        <div class="table-pagination">
+          <span>Page 1 of 64</span>
+          <div class="table-pagination-btns">
+            <button class="table-page-btn active">1</button>
+            <button class="table-page-btn">2</button>
+            <button class="table-page-btn">3</button>
+            <button class="table-page-btn">…</button>
+            <button class="table-page-btn">64</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+
+var KPIS = [
+  { label: 'Total Listeners', value: '2.4M', change: '+12.3%', dir: 'up', sub: 'vs previous 30 days', sparkData: [62,58,65,71,68,74,78,82,76,80,85,88] },
+  { label: 'Episodes Published', value: '382', change: '+8', dir: 'up', sub: 'this period', sparkData: [4,3,5,4,6,5,4,7,5,6,8,7] },
+  { label: 'Avg. Completion Rate', value: '68%', change: '+2.1%', dir: 'up', sub: 'vs previous period', sparkData: [61,63,62,65,64,66,65,67,66,68,67,68] },
+  { label: 'Subscriber Growth', value: '+18.4K', change: '+23%', dir: 'up', sub: 'new subscribers', sparkData: [8,10,9,12,11,14,13,15,16,17,18,19] },
+];
+
+var SHOWS = [
+  {
+    name: 'The Diary of a CEO', abbr: 'D', color: 'linear-gradient(135deg, #7857d1, #5a3dad)',
+    episodes: 382, listeners: '1.8M', growth: '+14%', growthDir: 'up',
+    lastEp: 'E382: Simon Sinek — Why Leaders Eat Last', lastEpDate: '2 days ago',
+    status: 'Active', statusColor: 'green',
+    spark: [45,48,42,55,52,58,61,65,60,68,72,75]
+  },
+  {
+    name: 'Flight Mode', abbr: 'F', color: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+    episodes: 64, listeners: '420K', growth: '+8%', growthDir: 'up',
+    lastEp: 'FM64: Building in Public', lastEpDate: '5 days ago',
+    status: 'Active', statusColor: 'green',
+    spark: [22,25,23,28,26,30,29,32,31,35,33,36]
+  },
+  {
+    name: 'Happy Place', abbr: 'H', color: 'linear-gradient(135deg, #f97316, #ea580c)',
+    episodes: 48, listeners: '180K', growth: '+3%', growthDir: 'up',
+    lastEp: 'HP48: Finding Joy in Chaos', lastEpDate: '1 week ago',
+    status: 'Active', statusColor: 'green',
+    spark: [12,14,13,15,14,16,15,17,16,18,17,18]
+  }
+];
+
+var TOP_EPISODES = [
+  { title: 'E382: Simon Sinek — Why Leaders Eat Last', show: 'The Diary of a CEO', plays: '284K', pct: 100 },
+  { title: 'E381: The Neuroscientist Who Decoded Anxiety', show: 'The Diary of a CEO', plays: '261K', pct: 92 },
+  { title: 'E380: Gary Vee — The Truth About Social Media', show: 'The Diary of a CEO', plays: '238K', pct: 84 },
+  { title: 'FM64: Building in Public', show: 'Flight Mode', plays: '142K', pct: 50 },
+  { title: 'E379: Dr. Rangan Chatterjee — The 4 Pillars', show: 'The Diary of a CEO', plays: '134K', pct: 47 },
+];
+
+var PLATFORMS = [
+  { name: 'YouTube', pct: 52, val: '2.18M', color: '#ff0000', icon: '<svg viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="3" fill="#ff0000"/><polygon points="8.5,7.5 13.5,10 8.5,12.5" fill="white"/></svg>' },
+  { name: 'Spotify', pct: 31, val: '1.30M', color: '#1db954', icon: '<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" fill="#1db954"/><path d="M6 8.5c3-1 6.5-.5 8.5.5M6.5 10.5c2.5-.8 5.5-.3 7 .5M7 12.5c2-.6 4.5-.2 5.5.4" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg>' },
+  { name: 'Apple', pct: 11, val: '462K', color: '#fa57c1', icon: '<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" fill="#fa57c1"/><path d="M10 6c1-2 3-2 3-2s.2 2-1 3c-1.2 1-2 .8-2 .8s-.5-1 0-1.8zM8 8c-2 0-3.5 2-3.5 4.5S6.5 16 8 16c.8 0 1.2-.5 2-.5s1.2.5 2 .5c1.5 0 3.5-2 3.5-4" stroke="white" stroke-width="1" stroke-linecap="round"/></svg>' },
+  { name: 'RSS', pct: 4, val: '168K', color: '#f97316', icon: '<svg viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="16" height="16" rx="4" fill="#f97316"/><circle cx="6" cy="14" r="1.5" fill="white"/><path d="M6 10c2.2 0 4 1.8 4 4M6 6c4.4 0 8 3.6 8 8" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>' },
+  { name: 'Other', pct: 2, val: '84K', color: '#a3a3a3', icon: '<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" fill="#a3a3a3"/><circle cx="7" cy="10" r="1" fill="white"/><circle cx="10" cy="10" r="1" fill="white"/><circle cx="13" cy="10" r="1" fill="white"/></svg>' },
+];
+
+var TIMING_INSIGHTS = [
+  { icon: '🎯', iconBg: 'purple', title: 'Peak listening: 7–9 AM weekdays', desc: 'Commute hours drive 34% of daily plays' },
+  { icon: '📅', iconBg: 'green', title: 'Best day to publish: Monday', desc: 'Monday releases get 22% more first-48h plays' },
+  { icon: '📊', iconBg: 'blue', title: 'Weekend surge on long-form', desc: 'Episodes >60min see 40% higher completion on Sat/Sun' },
+];
+
+var DAY_DATA = [
+  { day: 'Mon', val: 100, pct: 100 },
+  { day: 'Tue', val: 88, pct: 88 },
+  { day: 'Wed', val: 82, pct: 82 },
+  { day: 'Thu', val: 79, pct: 79 },
+  { day: 'Fri', val: 71, pct: 71 },
+  { day: 'Sat', val: 64, pct: 64 },
+  { day: 'Sun', val: 58, pct: 58 },
+];
+
+var GEO_DATA = [
+  { name: 'United States', pct: 38, val: '912K' },
+  { name: 'United Kingdom', pct: 24, val: '576K' },
+  { name: 'Canada', pct: 9, val: '216K' },
+  { name: 'Australia', pct: 7, val: '168K' },
+  { name: 'Germany', pct: 5, val: '120K' },
+  { name: 'India', pct: 4, val: '96K' },
+];
+
+var RECENT_EPISODES = [
+  { title: 'E382: Simon Sinek — Why Leaders Eat Last', date: 'Mar 29, 2026', show: 'DOAC', listens: '284K', streams: '148K', views: '136K', downloads: '42K', status: 'Published' },
+  { title: 'FM64: Building in Public', date: 'Mar 26, 2026', show: 'Flight Mode', listens: '142K', streams: '89K', views: '53K', downloads: '28K', status: 'Published' },
+  { title: 'E381: The Neuroscientist Who Decoded Anxiety', date: 'Mar 25, 2026', show: 'DOAC', listens: '261K', streams: '132K', views: '129K', downloads: '38K', status: 'Published' },
+  { title: 'HP48: Finding Joy in Chaos', date: 'Mar 22, 2026', show: 'Happy Place', listens: '84K', streams: '52K', views: '32K', downloads: '18K', status: 'Published' },
+  { title: 'E380: Gary Vee — Social Media Truth', date: 'Mar 20, 2026', show: 'DOAC', listens: '238K', streams: '121K', views: '117K', downloads: '35K', status: 'Published' },
+  { title: 'FM63: Lessons From Year One', date: 'Mar 18, 2026', show: 'Flight Mode', listens: '118K', streams: '72K', views: '46K', downloads: '22K', status: 'Published' },
+];
+
+var TREND_DATA = {
+  labels: ['Mar 2','Mar 5','Mar 8','Mar 11','Mar 14','Mar 17','Mar 20','Mar 23','Mar 26','Mar 29'],
+  youtube: [62,68,65,74,71,78,82,85,80,88],
+  spotify: [38,42,40,45,43,48,50,52,49,54],
+  rss:     [12,14,13,15,14,16,17,18,17,19],
+};
+
+// ═══════════════════════════════════════
+// RENDER FUNCTIONS
+// ═══════════════════════════════════════
+
+function fmt(n) {
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(0) + 'K';
+  return n.toString();
+}
+
+// ── KPI Cards ──
+function renderKPIs() {
+  var grid = document.getElementById('kpiGrid');
+  grid.innerHTML = KPIS.map(function(k) {
+    var spark = renderSparkline(k.sparkData, k.dir === 'up' ? 'var(--success)' : 'var(--danger)');
+    return '<div class="kpi-card">' +
+      '<div class="kpi-card-header"><span class="kpi-label">' + k.label + '</span></div>' +
+      '<div class="kpi-value">' + k.value + '</div>' +
+      '<div class="kpi-sub"><span class="kpi-change ' + k.dir + '">' +
+        (k.dir === 'up' ? '↑' : '↓') + ' ' + k.change +
+      '</span> ' + k.sub + '</div>' +
+      '<div class="kpi-sparkline">' + spark + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderSparkline(data, color) {
+  var w = 120, h = 32, pad = 2;
+  var max = Math.max.apply(null, data);
+  var min = Math.min.apply(null, data);
+  var range = max - min || 1;
+  var pts = data.map(function(v, i) {
+    return (pad + i * (w - pad * 2) / (data.length - 1)).toFixed(1) + ',' +
+           (h - pad - ((v - min) / range) * (h - pad * 2)).toFixed(1);
+  });
+  var areapts = pts.join(' ') + ' ' + (w - pad) + ',' + h + ' ' + pad + ',' + h;
+  return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none">' +
+    '<polygon points="' + areapts + '" fill="' + color + '" opacity="0.1"/>' +
+    '<polyline points="' + pts.join(' ') + '" fill="none" stroke="' + color + '" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+  '</svg>';
+}
+
+// ── Trend Chart ──
+function renderTrend() {
+  var el = document.getElementById('trendChart');
+  var d = TREND_DATA;
+  var w = 700, h = 200, padL = 0, padR = 10, padT = 20, padB = 30;
+
+  var allVals = d.youtube.concat(d.spotify).concat(d.rss);
+  var max = Math.max.apply(null, allVals) * 1.15;
+
+  function x(i) { return padL + i * (w - padL - padR) / (d.labels.length - 1); }
+  function y(v) { return padT + (1 - v / max) * (h - padT - padB); }
+  function path(vals) {
+    return vals.map(function(v, i) { return (i === 0 ? 'M' : 'L') + x(i).toFixed(1) + ',' + y(v).toFixed(1); }).join(' ');
+  }
+  function area(vals) {
+    var p = vals.map(function(v, i) { return x(i).toFixed(1) + ',' + y(v).toFixed(1); });
+    return 'M' + p.join(' L') + ' L' + x(vals.length - 1).toFixed(1) + ',' + (h - padB) + ' L' + x(0).toFixed(1) + ',' + (h - padB) + ' Z';
+  }
+
+  // Grid lines
+  var gridSteps = [0, max * 0.25, max * 0.5, max * 0.75, max];
+  var gridSvg = gridSteps.map(function(v) {
+    return '<line x1="' + padL + '" y1="' + y(v).toFixed(1) + '" x2="' + (w - padR) + '" y2="' + y(v).toFixed(1) + '" class="trend-grid-line"/>';
+  }).join('');
+
+  // X labels
+  var xlabels = d.labels.map(function(lbl, i) {
+    return '<text x="' + x(i).toFixed(1) + '" y="' + (h - 8) + '" class="trend-label" text-anchor="middle">' + lbl + '</text>';
+  }).join('');
+
+  var series = [
+    { vals: d.youtube, color: 'var(--chart-1)', name: 'YouTube' },
+    { vals: d.spotify, color: 'var(--chart-2)', name: 'Spotify' },
+    { vals: d.rss, color: 'var(--chart-5)', name: 'RSS' },
+  ];
+
+  var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none">' + gridSvg + xlabels;
+  series.forEach(function(s) {
+    svg += '<path d="' + area(s.vals) + '" fill="' + s.color + '" opacity="0.08" class="trend-area"/>';
+    svg += '<path d="' + path(s.vals) + '" class="trend-line" stroke="' + s.color + '"/>';
+    s.vals.forEach(function(v, i) {
+      if (i === s.vals.length - 1) {
+        svg += '<circle cx="' + x(i).toFixed(1) + '" cy="' + y(v).toFixed(1) + '" r="3" fill="' + s.color + '" class="trend-dot"/>';
+        svg += '<text x="' + (x(i) + 8).toFixed(1) + '" y="' + (y(v) - 6).toFixed(1) + '" class="trend-val-label" fill="' + s.color + '">' + v + 'K</text>';
+      }
+    });
+  });
+  svg += '</svg>';
+  el.innerHTML = svg;
+}
+
+// ── Show Grid ──
+function renderShows() {
+  var grid = document.getElementById('showGrid');
+  grid.innerHTML = SHOWS.map(function(s) {
+    var spark = renderSparkline(s.spark, 'var(--accent)');
+    return '<div class="show-card">' +
+      '<div class="show-card-top">' +
+        '<div class="show-art" style="background: ' + s.color + '">' + s.abbr + '</div>' +
+        '<div class="show-info">' +
+          '<div class="show-name">' + s.name + '</div>' +
+          '<div class="show-meta">' + s.episodes + ' episodes</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="show-kpis">' +
+        '<div class="show-kpi"><div class="show-kpi-val">' + s.listeners + '</div><div class="show-kpi-label">Listeners</div></div>' +
+        '<div class="show-kpi"><div class="show-kpi-val"><span class="kpi-change ' + s.growthDir + '">' + s.growth + '</span></div><div class="show-kpi-label">Growth</div></div>' +
+        '<div class="show-kpi"><div class="show-kpi-val">' + s.episodes + '</div><div class="show-kpi-label">Episodes</div></div>' +
+      '</div>' +
+      '<div class="show-sparkline">' + spark + '</div>' +
+      '<div class="show-card-footer">' +
+        '<div class="show-status"><div class="show-status-dot ' + s.statusColor + '"></div>' + s.status + '</div>' +
+        '<span style="font-size:12px; color: var(--text-tertiary);">' + s.lastEpDate + '</span>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── Top Episodes (Style D) ──
+function renderTopEpisodes() {
+  var el = document.getElementById('topEpList');
+  el.innerHTML = TOP_EPISODES.map(function(ep, i) {
+    return '<div class="top-ep-item">' +
+      '<div class="top-ep-bg" style="width: ' + ep.pct + '%; background: var(--accent-light);"></div>' +
+      '<div class="top-ep-content">' +
+        '<div class="top-ep-rank" style="color: var(--accent);">' + (i + 1) + '</div>' +
+        '<div class="top-ep-info">' +
+          '<div class="top-ep-title">' + ep.title + '</div>' +
+          '<div class="top-ep-show">' + ep.show + '</div>' +
+        '</div>' +
+        '<div class="top-ep-val" style="color: var(--accent);">' + ep.plays + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── Platforms ──
+function renderPlatforms() {
+  var el = document.getElementById('platformList');
+  el.innerHTML = PLATFORMS.map(function(p, i) {
+    return '<div class="hbar-item">' +
+      '<div class="hbar-rank">' + (i + 1) + '</div>' +
+      '<div class="hbar-icon">' + p.icon + '</div>' +
+      '<div class="hbar-label">' + p.name + '</div>' +
+      '<div class="hbar-track"><div class="hbar-fill" style="width: ' + p.pct + '%; background: ' + p.color + ';"></div></div>' +
+      '<div class="hbar-val">' + p.val + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── Timing ──
+function renderTiming() {
+  var el = document.getElementById('timingList');
+  el.innerHTML = TIMING_INSIGHTS.map(function(t) {
+    return '<div class="timing-row">' +
+      '<div class="timing-icon ' + t.iconBg + '">' + t.icon + '</div>' +
+      '<div class="timing-text">' +
+        '<div class="timing-title">' + t.title + '</div>' +
+        '<div class="timing-desc">' + t.desc + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── Day Chart ──
+function renderDayChart() {
+  var el = document.getElementById('dayChart');
+  el.innerHTML = DAY_DATA.map(function(d) {
+    var isTop = d.pct === 100;
+    return '<div class="day-bar-wrap">' +
+      '<div class="day-bar-val">' + d.val + '%</div>' +
+      '<div class="day-bar" style="height: ' + d.pct + '%; background: ' + (isTop ? 'var(--accent)' : 'var(--bg-active)') + ';"></div>' +
+      '<div class="day-bar-label">' + d.day + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── Geography ──
+function renderGeo() {
+  var el = document.getElementById('geoList');
+  var maxPct = GEO_DATA[0].pct;
+  el.innerHTML = GEO_DATA.map(function(g, i) {
+    var opacity = 1 - (i * 0.13);
+    return '<div class="hbar-item">' +
+      '<div class="hbar-rank">' + (i + 1) + '</div>' +
+      '<div class="hbar-label" style="width: 110px;">' + g.name + '</div>' +
+      '<div class="hbar-track"><div class="hbar-fill" style="width: ' + (g.pct / maxPct * 100) + '%; background: #171717; opacity: ' + opacity.toFixed(2) + ';"></div></div>' +
+      '<div class="hbar-val">' + g.val + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── Recent Episodes Table ──
+function renderRecentTable() {
+  var el = document.getElementById('recentTableBody');
+  el.innerHTML = RECENT_EPISODES.map(function(ep) {
+    return '<tr>' +
+      '<td><div class="table-episode-title">' + ep.title + '</div><div class="table-episode-date">' + ep.date + '</div></td>' +
+      '<td>' + ep.show + '</td>' +
+      '<td class="right">' + ep.listens + '</td>' +
+      '<td class="right">' + ep.streams + '</td>' +
+      '<td class="right">' + ep.views + '</td>' +
+      '<td class="right">' + ep.downloads + '</td>' +
+      '<td><span class="badge green">' + ep.status + '</span></td>' +
+    '</tr>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+
+renderKPIs();
+renderTrend();
+renderShows();
+renderTopEpisodes();
+renderPlatforms();
+renderTiming();
+renderDayChart();
+renderGeo();
+renderRecentTable();
+
+// ── Scroll reveal with stagger ──
+(function() {
+  var scrollRoot = document.querySelector('.content');
+  var reveals = document.querySelectorAll('.reveal');
+
+  function isInViewport(el) {
+    var rect = el.getBoundingClientRect();
+    return rect.top < window.innerHeight && rect.bottom > 0;
+  }
+
+  var deferred = [];
+  var loadIndex = 0;
+  reveals.forEach(function(el) {
+    if (isInViewport(el)) {
+      el.style.transitionDelay = (loadIndex * 40) + 'ms';
+      el.classList.add('visible');
+      loadIndex++;
+    } else {
+      deferred.push(el);
+    }
+  });
+
+  if (deferred.length) {
+    var observer = new IntersectionObserver(function(entries) {
+      var batch = [];
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) batch.push(entry.target);
+      });
+      batch.forEach(function(el, i) {
+        el.style.transitionDelay = (i * 40) + 'ms';
+        el.classList.add('visible');
+        observer.unobserve(el);
+      });
+    }, { root: scrollRoot, threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
+
+    deferred.forEach(function(el) { observer.observe(el); });
+  }
+})();
+</script>
+</body>
+</html>

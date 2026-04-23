@@ -1,0 +1,2427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flightcast — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --font: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --foreground: #0a0a0b;
+  --muted-foreground: #71717a;
+  --background: #ffffff;
+  --card: #ffffff;
+  --muted: #f4f4f5;
+  --border: #e4e4e7;
+  --primary: #18181b;
+  --primary-foreground: #fafafa;
+  --brand: #7c3aed;
+  --brand-light: #f5f3ff;
+  --success: #22c55e;
+  --success-light: #f0fdf4;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --danger-light: #fef2f2;
+  --radius: 8px;
+  --radius-lg: 10px;
+  --youtube: #FF0000;
+  --spotify: #1DB954;
+  --rss: #f97316;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { height: 100%; }
+body {
+  font-family: var(--font); font-size: 14px; color: var(--foreground);
+  background: var(--background); -webkit-font-smoothing: antialiased;
+  height: 100vh; overflow: hidden; line-height: 1.5;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; font-size: inherit; color: inherit; }
+a { text-decoration: none; color: inherit; }
+
+.app { display: flex; height: 100vh; }
+
+/* ═══════════════════════════════════
+   SIDEBAR
+   ═══════════════════════════════════ */
+.sidebar {
+  width: 200px; flex-shrink: 0; background: white;
+  border-right: 1px solid #d4d4d4;
+  display: flex; flex-direction: column; gap: 12px;
+  padding: 18px 12px 24px; overflow-y: auto;
+}
+@media (min-width: 1400px) { .sidebar { width: 270px; padding: 18px 16px 24px; } }
+.sidebar-top { display: flex; align-items: center; justify-content: space-between; padding: 0 4px; }
+.sidebar-logo-mark { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+.sidebar-collapse { width: 20px; height: 20px; color: var(--muted-foreground); display: flex; align-items: center; justify-content: center; }
+.sidebar-collapse:hover { color: var(--foreground); }
+.sidebar-breadcrumb { display: flex; align-items: center; gap: 4px; padding: 0 4px; }
+.sidebar-bc-dim { font-size: 13px; font-weight: 500; color: var(--muted-foreground); }
+.sidebar-bc-sep { width: 14px; height: 14px; color: var(--muted-foreground); }
+.sidebar-bc-active { font-size: 13px; font-weight: 500; color: var(--foreground); }
+.sidebar-search {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border: 1px solid #d4d4d4; border-radius: 4px;
+}
+.sidebar-search svg { width: 14px; height: 14px; color: var(--muted-foreground); flex-shrink: 0; }
+.sidebar-search-ph { flex: 1; font-size: 12px; color: #93939f; font-weight: 500; }
+.sidebar-search-kbd { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; font-size: 11px; color: #64748b; font-weight: 400; }
+.sidebar-cta {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 8px 12px; background: #0a0a0a; color: white;
+  border-radius: 4px; font-size: 14px; font-weight: 500; letter-spacing: -0.15px;
+  transition: opacity 120ms;
+}
+.sidebar-cta:hover { opacity: 0.9; }
+.sidebar-cta svg { width: 15px; height: 15px; }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+.sidebar-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: 4px;
+  font-size: 14px; font-weight: 500; color: #525252; letter-spacing: -0.15px;
+  transition: all 120ms;
+}
+.sidebar-link:hover { background: #f5f5f5; }
+.sidebar-link.active { background: #f5f5f5; }
+.sidebar-link svg { width: 16px; height: 16px; flex-shrink: 0; }
+.sidebar-link-chip {
+  margin-left: auto; padding: 2px 6px; border-radius: 8px;
+  background: #f5f5f5; font-size: 12px; font-weight: 500; color: #525252;
+}
+.sidebar-gap { margin-top: 16px; }
+.sidebar-bottom-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: 4px;
+  font-size: 15px; font-weight: 600; color: #525252; transition: all 120ms;
+}
+.sidebar-bottom-link:hover { background: #f5f5f5; }
+.sidebar-bottom-link svg { width: 16px; height: 16px; flex-shrink: 0; }
+.sidebar-divider { height: 1px; background: #d4d4d4; }
+.sidebar-user { display: flex; align-items: center; gap: 8px; padding: 4px; }
+.sidebar-avatar {
+  width: 28px; height: 28px; border-radius: 50%; background: var(--muted);
+  border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600;
+}
+.sidebar-user-name { font-size: 14px; font-weight: 500; color: #3f3f47; letter-spacing: -0.15px; }
+.sidebar-user-email { font-size: 11px; color: #3f3f47; font-weight: 400; }
+.sidebar-user-chevron { margin-left: auto; width: 14px; height: 14px; color: var(--muted-foreground); }
+
+/* ═══════════════════════════════════
+   MAIN
+   ═══════════════════════════════════ */
+.main { flex: 1; overflow-y: auto; overflow-x: hidden; min-width: 0; }
+.page-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 24px 24px 0; }
+@media (min-width: 1400px) { .page-header { padding: 24px 32px 0; } }
+.greeting { font-size: 20px; font-weight: 600; letter-spacing: -0.31px; color: #171717; }
+.greeting-sub { font-size: 14px; color: #71717a; margin-top: 4px; font-weight: 400; letter-spacing: -0.15px; }
+.time-tabs {
+  display: inline-flex; align-items: center;
+  border: 1px solid #e4e4e7; border-radius: 4px; overflow: hidden;
+  height: 36px;
+  box-shadow: 0 0 1px rgba(0,0,0,0.03), 0 1px 1px rgba(0,0,0,0.03), 0 2px 1px rgba(0,0,0,0.02), 0 4px 2px rgba(0,0,0,0), 0 7px 2px rgba(0,0,0,0);
+}
+.time-tab {
+  height: 100%; padding: 0 12px; font-size: 14px; font-weight: 500;
+  color: #171717; letter-spacing: -0.15px;
+  transition: all 120ms; position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.time-tab + .time-tab::before {
+  content: ''; position: absolute; left: 0; top: 20%; bottom: 20%;
+  width: 1px; background: #e4e4e7;
+}
+.time-tab:hover { background: var(--muted); }
+.time-tab.active { background: #0a0a0a; color: white; }
+.time-tab.active::before { display: none; }
+.time-tab.active + .time-tab::before { display: none; }
+
+.content { padding: 20px 24px 48px; }
+@media (min-width: 1400px) { .content { padding: 20px 32px 48px; } }
+
+/* ═══ KPI STRIP ═══ */
+.kpi-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+  border: 1px solid #e5e5e5; border-radius: 4px;
+  overflow: hidden; margin-bottom: 20px;
+}
+.kpi-card {
+  background: white; padding: 16px 24px;
+  display: flex; flex-direction: column; gap: 4px;
+  border-right: 1px solid #e5e5e5;
+}
+.kpi-card:last-child { border-right: none; }
+.kpi-header { display: flex; align-items: center; justify-content: space-between; height: 20px; }
+.kpi-label { font-size: 14px; color: #525252; font-weight: 500; letter-spacing: -0.15px; }
+.kpi-change {
+  display: inline-flex; align-items: center; gap: 2px;
+  font-size: 12px; font-weight: 500; padding: 2px 6px; border-radius: 8px;
+  color: #399766; background: #f1fcf5;
+}
+.kpi-change svg { width: 12px; height: 12px; }
+.kpi-body { display: flex; align-items: flex-end; justify-content: space-between; }
+.kpi-value { font-size: 32px; font-weight: 700; letter-spacing: -0.44px; line-height: 1; color: #0a0a0b; font-variant-numeric: tabular-nums; }
+.kpi-spark { opacity: 0.4; }
+.kpi-card:hover .kpi-spark { opacity: 0.65; }
+.kpi-sub { font-size: 12px; color: #7f7f7f; font-weight: 500; }
+
+/* ═══ CARDS ═══ */
+.card { border: 1px solid #e5e5e5; border-radius: 4px; background: white; overflow: hidden; }
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 24px;
+}
+.card-title { font-size: 14px; font-weight: 500; letter-spacing: -0.15px; color: #525252; }
+.card-action { font-size: 12px; font-weight: 500; color: var(--muted-foreground); }
+.card-action:hover { color: var(--foreground); }
+
+/* ═══ GRID ═══ */
+.grid-main {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  grid-template-rows: auto auto;
+  gap: 12px;
+}
+@media (min-width: 1400px) { .grid-main { grid-template-columns: 1fr 340px; gap: 16px; } }
+.grid-main > .card, .grid-main > div { min-width: 0; }
+.right-top { display: flex; flex-direction: column; gap: 12px; }
+@media (min-width: 1400px) { .right-top { gap: 16px; } }
+.right-top > .card:first-child { flex: 1; }
+
+/* ═══ LATEST EPISODE ═══ */
+.latest-ep-body { padding: 0 24px 16px; }
+.latest-ep-row { display: flex; gap: 16px; }
+.latest-ep-thumb {
+  width: 240px; aspect-ratio: 16/9; border-radius: 2px;
+  background: #171717; flex-shrink: 0; position: relative; overflow: hidden;
+  align-self: start;
+}
+@media (min-width: 1400px) { .latest-ep-thumb { width: 280px; } }
+.latest-ep-thumb-inner {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, #18181b 0%, #27272a 50%, #18181b 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+.latest-ep-thumb-inner svg { opacity: 0.12; }
+.latest-ep-dur {
+  position: absolute; bottom: 10px; right: 10px;
+  background: white; color: #525252;
+  font-size: 12px; font-weight: 500; padding: 2px 6px; border-radius: 8px;
+}
+.latest-ep-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.badge {
+  display: inline-flex; align-items: center; gap: 2px;
+  padding: 2px 6px; border-radius: 8px;
+  font-size: 12px; font-weight: 500; color: #525252;
+  background: #f5f5f5; border: none;
+}
+.badge .dot { width: 6px; height: 6px; border-radius: 50%; }
+.badge .dot.green { background: var(--success); }
+.badge-muted { background: #f5f5f5; color: #525252; }
+.latest-ep-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.latest-ep-name { font-size: 15px; font-weight: 600; letter-spacing: 0; line-height: 1.4; margin-bottom: 4px; color: #171717; }
+.latest-ep-meta { font-size: 12px; color: #7f7f7f; font-weight: 500; margin-bottom: 0; }
+.stats-row {
+  display: flex; gap: 0; border: 1px solid #e5e5e5;
+  border-radius: 4px; overflow: hidden; margin-top: auto;
+}
+.stat-cell { flex: 1; background: white; padding: 8px 16px; border-right: 1px solid #e5e5e5; }
+.stat-cell:last-child { border-right: none; }
+.stat-label { font-size: 12px; color: #525252; font-weight: 500; margin-bottom: 2px; }
+.stat-value { font-size: 20px; font-weight: 600; letter-spacing: -0.31px; color: #171717; font-variant-numeric: tabular-nums; }
+.stat-sub { font-size: 12px; font-weight: 500; margin-top: 2px; }
+.stat-sub.up { color: #399766; }
+
+/* Insight banner */
+.insight-banner {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 16px 12px; margin: 16px 24px 0; background: #f5f5f5; border-radius: 0;
+}
+.insight-banner-icon { width: 20px; height: 20px; color: #171717; flex-shrink: 0; margin-top: 0; }
+.insight-banner-text { font-size: 14px; color: #525252; line-height: 1.5; font-weight: 500; letter-spacing: -0.15px; }
+.insight-banner-text strong { color: #171717; font-weight: 600; }
+
+/* Retention chart — LARGE */
+.retention-section { padding: 16px 24px 16px; }
+.retention-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.retention-label { font-size: 14px; font-weight: 500; color: #525252; letter-spacing: -0.15px; }
+.retention-link { font-size: 14px; font-weight: 500; color: #171717; display: flex; align-items: center; gap: 6px; letter-spacing: -0.15px; padding: 8px 12px; }
+.retention-link:hover { opacity: 0.7; }
+.retention-link svg { width: 14px; height: 14px; }
+.retention-chart-wrap { position: relative; }
+.retention-chart { width: 100%; height: 180px; display: block; }
+.retention-axis {
+  display: flex; justify-content: space-between;
+  padding-top: 4px; font-size: 12px; color: #a3a3a3; font-weight: 500; font-variant-numeric: tabular-nums;
+}
+
+/* ═══ FEY AI ═══ */
+.fey-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 24px;
+}
+.fey-title { display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 500; color: #5d23ff; letter-spacing: -0.15px; }
+.fey-title svg { width: 16px; height: 16px; color: #5d23ff; }
+.fey-chat-btn {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 14px; font-weight: 500; color: #171717; letter-spacing: -0.15px;
+  padding: 8px 12px;
+}
+.fey-chat-btn:hover { opacity: 0.7; }
+.fey-chat-btn svg { width: 16px; height: 16px; }
+.fey-body { padding: 0 24px 16px; }
+.fey-pills { display: flex; gap: 8px; margin-bottom: 8px; overflow-x: auto; }
+.fey-pill {
+  display: inline-flex; align-items: center; padding: 8px;
+  background: #f5f5f5; border-radius: 4px; border: none;
+  font-size: 13px; font-weight: 500; color: #525252; letter-spacing: -0.1px;
+  white-space: nowrap; transition: opacity 120ms; flex-shrink: 0;
+}
+.fey-pill:hover { opacity: 0.7; }
+.fey-spacer { height: 79px; }
+.fey-input {
+  display: flex; align-items: flex-start;
+  padding: 12px; border: 1px solid #e5e5e5; border-radius: 4px;
+  margin-bottom: 8px;
+  box-shadow: 0 0 1px rgba(0,0,0,0.03), 0 1px 1px rgba(0,0,0,0.03), 0 2px 1px rgba(0,0,0,0.02);
+}
+.fey-input-ph { font-size: 15px; font-weight: 600; color: #7f7f7f; }
+.fey-footnote { font-size: 12px; font-weight: 500; color: #7f7f7f; }
+
+/* ═══ RIGHT COL: INSIGHTS ═══ */
+.insights-body { padding: 0 24px 16px; display: flex; flex-direction: column; gap: 16px; }
+.insight-item {
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.insight-dot { width: 8px; height: 8px; border-radius: 4px; flex-shrink: 0; margin-top: 5px; }
+.insight-dot.purple { background: #5d23ff; }
+.insight-divider { height: 1px; background: #e5e5e5; }
+.insight-text { flex: 1; font-size: 14px; color: #525252; font-weight: 500; line-height: 1.5; letter-spacing: -0.15px; }
+.insight-text strong { color: #171717; font-weight: 500; }
+.insight-time { font-size: 12px; color: #7f7f7f; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
+
+/* ═══ RIGHT COL: PLATFORM DIST ═══ */
+.platform-body { padding: 0 24px 16px; display: flex; flex-direction: column; gap: 16px; }
+.platform-row { display: flex; align-items: center; gap: 12px; }
+.platform-label { display: flex; align-items: center; gap: 8px; width: 100px; flex-shrink: 0; }
+.platform-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.platform-icon svg { width: 18px; height: 18px; }
+.platform-icon.yt { color: var(--youtube); }
+.platform-icon.sp { color: var(--spotify); }
+.platform-icon.rs { color: var(--rss); }
+.platform-name { font-size: 15px; font-weight: 600; color: black; }
+.platform-bar-wrap { flex: 1; height: 4px; background: #f5f5f5; border-radius: 3px; overflow: hidden; }
+.platform-bar { height: 100%; border-radius: 3px; background: #171717; transition: width 800ms cubic-bezier(0.16,1,0.3,1); }
+.platform-views { font-size: 13px; font-weight: 500; color: #7f7f7f; letter-spacing: -0.1px; text-align: right; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.platform-pct-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 2px 6px; border-radius: 8px;
+  background: #171717; color: white;
+  font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; flex-shrink: 0;
+}
+
+/* ═══ RIGHT COL: ACCOUNT ═══ */
+.account-body { padding: 0 24px 16px; display: flex; flex-direction: column; gap: 16px; }
+.account-item { display: flex; align-items: center; justify-content: space-between; }
+.account-item-left { display: flex; align-items: center; gap: 8px; }
+.account-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.account-icon svg { width: 18px; height: 18px; }
+.account-label { font-size: 15px; font-weight: 600; color: black; }
+.account-chip {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 2px 6px; border-radius: 8px; font-size: 12px; font-weight: 500;
+}
+.account-chip.active { background: #f1fcf5; color: #399766; }
+.account-chip.count { background: #f5f5f5; color: #525252; }
+
+/* ═══ EPISODES TABLE (card-based) ═══ */
+.episodes-section { margin-top: 20px; }
+.ep-table-header-row {
+  display: flex; align-items: center;
+}
+.ep-table-row {
+  display: flex; align-items: center;
+}
+.ep-table-row:hover { background: #fafafa; }
+.ep-table-divider { height: 1px; background: #e5e5e5; }
+.ep-cell { padding: 16px; font-size: 13px; font-weight: 500; letter-spacing: -0.1px; }
+.ep-cell-num { width: 55px; color: #525252; flex-shrink: 0; }
+.ep-cell-episode { flex: 1; min-width: 0; padding: 9px 16px; }
+.ep-cell-stat { width: 70px; color: #171717; text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.ep-cell-completion { width: 120px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; }
+.ep-cell-date { width: 80px; color: #71717a; text-align: center; flex-shrink: 0; }
+.ep-cell-actions { flex-shrink: 0; padding: 7px 8px; }
+.ep-cell-header { padding: 8px 16px; font-size: 12px; font-weight: 500; color: #7f7f7f; }
+.ep-cell-header.right { text-align: right; }
+.ep-cell-header.center { text-align: center; }
+.ep-title-cell { display: flex; align-items: center; gap: 10px; height: 32px; }
+.ep-thumb { height: 32px; aspect-ratio: 16/9; border-radius: 2px; background: #171717; flex-shrink: 0; }
+.ep-name { font-weight: 500; color: #171717; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+.completion-track { flex: 1; height: 4px; background: #f4f4f5; border-radius: 2px; overflow: hidden; }
+.completion-fill { height: 100%; border-radius: 2px; }
+.completion-fill.high { background: #22c55e; }
+.completion-fill.mid { background: #f59e0b; }
+.completion-pct { font-size: 13px; font-weight: 500; color: #0a0a0b; letter-spacing: -0.1px; font-variant-numeric: tabular-nums; }
+.ep-more-btn {
+  width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 110px; color: #71717a; transition: all 120ms;
+}
+.ep-more-btn:hover { background: #f4f4f5; }
+.ep-more-btn svg { width: 16px; height: 16px; }
+
+/* Scrollbar */
+.main::-webkit-scrollbar { width: 6px; }
+.main::-webkit-scrollbar-track { background: transparent; }
+.main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ═══ ANIMATIONS ═══ */
+
+/* Page load cascade */
+@keyframes fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.page-header { animation: fade-up 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+.kpi-grid { animation: fade-up 0.5s cubic-bezier(0.16,1,0.3,1) 0.06s both; }
+.grid-main > *:nth-child(1) { animation: fade-up 0.5s cubic-bezier(0.16,1,0.3,1) 0.12s both; }
+.grid-main > *:nth-child(2) { animation: fade-up 0.5s cubic-bezier(0.16,1,0.3,1) 0.18s both; }
+.grid-main > *:nth-child(3) { animation: fade-up 0.5s cubic-bezier(0.16,1,0.3,1) 0.24s both; }
+.grid-main > *:nth-child(4) { animation: fade-up 0.5s cubic-bezier(0.16,1,0.3,1) 0.30s both; }
+.episodes-section { animation: fade-up 0.5s cubic-bezier(0.16,1,0.3,1) 0.36s both; }
+
+/* Card hover — subtle lift */
+.card { transition: box-shadow 0.2s ease; }
+.card:hover { box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03); }
+
+/* Sparkline draw-on */
+@keyframes draw-line { from { stroke-dashoffset: var(--line-len); } to { stroke-dashoffset: 0; } }
+.kpi-spark polyline {
+  --line-len: 120;
+  stroke-dasharray: var(--line-len);
+  stroke-dashoffset: var(--line-len);
+  animation: draw-line 1.2s cubic-bezier(0.16,1,0.3,1) 0.4s forwards;
+}
+
+/* Retention curve draw-on */
+.retention-chart polyline {
+  --line-len: 1200;
+  stroke-dasharray: var(--line-len);
+  stroke-dashoffset: var(--line-len);
+  animation: draw-line 1.6s cubic-bezier(0.16,1,0.3,1) 0.5s forwards;
+}
+
+/* Platform bars animate from 0 */
+@keyframes bar-grow { from { width: 0; } }
+.platform-bar { animation: bar-grow 0.8s cubic-bezier(0.16,1,0.3,1) 0.4s both; }
+
+/* Completion bars animate from 0 */
+.completion-fill { animation: bar-grow 0.8s cubic-bezier(0.16,1,0.3,1) 0.5s both; }
+
+/* Episode row stagger — applied via JS due to interspersed dividers */
+.ep-table-row { animation: fade-up 0.4s ease both; animation-delay: var(--row-delay, 0.4s); }
+
+/* Insight items stagger */
+.insight-item:nth-child(1) { animation: fade-up 0.4s ease 0.3s both; }
+.insight-item:nth-child(3) { animation: fade-up 0.4s ease 0.38s both; }
+.insight-item:nth-child(5) { animation: fade-up 0.4s ease 0.46s both; }
+.insight-item:nth-child(7) { animation: fade-up 0.4s ease 0.54s both; }
+
+/* Time tab smooth transition */
+.time-tab { transition: background 0.15s ease, color 0.15s ease; }
+.time-tab.disabled { opacity: 0.35; pointer-events: none; }
+
+/* ═══ SKELETON SHIMMER ═══ */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skel {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease infinite;
+  border-radius: 3px;
+  display: inline-block;
+}
+.skel-line { height: 14px; }
+.skel-value { height: 32px; width: 80px; }
+.skel-value-sm { height: 20px; width: 50px; }
+.skel-title { height: 16px; width: 180px; }
+.skel-text { height: 14px; width: 100%; }
+.skel-text-short { height: 14px; width: 60%; }
+.skel-thumb { aspect-ratio: 16/9; border-radius: 2px; }
+.skel-spark { height: 28px; width: 72px; border-radius: 4px; }
+.skel-chart { height: 180px; width: 100%; border-radius: 4px; }
+.skel-circle { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ═══ STATE SWITCHER ═══ */
+.state-switcher {
+  position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+  display: flex; align-items: center; gap: 2px;
+  background: #18181b; border-radius: 8px; padding: 4px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.05);
+}
+.state-btn {
+  width: 32px; height: 28px; border-radius: 5px;
+  font-size: 12px; font-weight: 600; color: #71717a;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s ease; position: relative;
+}
+.state-btn:hover { color: #a1a1aa; background: rgba(255,255,255,0.06); }
+.state-btn.active { color: white; background: rgba(255,255,255,0.12); }
+.state-btn .state-tooltip {
+  position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  background: #18181b; color: #e4e4e7; font-size: 11px; font-weight: 500;
+  padding: 4px 8px; border-radius: 4px; white-space: nowrap;
+  opacity: 0; pointer-events: none; transition: opacity 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.state-btn:hover .state-tooltip { opacity: 1; }
+.state-label {
+  color: #525252; font-size: 11px; font-weight: 500;
+  padding: 0 8px 0 6px; letter-spacing: -0.1px;
+}
+
+/* ═══ STATE TRANSITION ═══ */
+.main-content { transition: none; }
+.main-content.exiting {
+  animation: state-exit 0.18s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+}
+.main-content.entering {
+  animation: state-enter 0.22s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+}
+@keyframes state-exit { to { opacity: 0; transform: translateY(-6px); } }
+@keyframes state-enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ═══ NEGATIVE TRENDS ═══ */
+.kpi-change.down { color: #ef4444; background: #fef2f2; }
+.kpi-change.down svg { transform: rotate(180deg); }
+
+/* ═══ EMPTY STATES ═══ */
+.empty-cta-card {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 48px 32px; text-align: center; min-height: 280px;
+}
+.empty-cta-icon {
+  width: 48px; height: 48px; border-radius: 12px; background: #f5f5f5;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
+}
+.empty-cta-icon svg { width: 24px; height: 24px; color: #525252; }
+.empty-cta-heading { font-size: 16px; font-weight: 600; color: #171717; margin-bottom: 6px; }
+.empty-cta-body { font-size: 14px; color: #7f7f7f; font-weight: 500; max-width: 320px; line-height: 1.5; margin-bottom: 20px; }
+.empty-cta-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px; background: #0a0a0a; color: white;
+  border-radius: 4px; font-size: 14px; font-weight: 500;
+  transition: opacity 0.15s;
+}
+.empty-cta-btn:hover { opacity: 0.9; }
+.empty-message {
+  padding: 32px; text-align: center;
+  font-size: 14px; color: #a3a3a3; font-weight: 500;
+}
+
+/* ═══ SETUP CHECKLIST ═══ */
+.checklist-body { padding: 0 24px 16px; display: flex; flex-direction: column; gap: 0; }
+.checklist-phase { margin-bottom: 12px; }
+.checklist-phase-label {
+  font-size: 11px; font-weight: 600; color: #a3a3a3; text-transform: uppercase;
+  letter-spacing: 0.5px; padding: 0 0 6px; margin-bottom: 2px;
+}
+.checklist-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid #f4f4f5;
+}
+.checklist-item:last-child { border-bottom: none; }
+.checklist-icon {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid #d4d4d4; color: transparent;
+  transition: all 0.2s ease;
+}
+.checklist-icon.done { background: #22c55e; border-color: #22c55e; color: white; }
+.checklist-icon svg { width: 12px; height: 12px; }
+.checklist-info { flex: 1; min-width: 0; }
+.checklist-name { font-size: 14px; font-weight: 500; color: #171717; letter-spacing: -0.15px; }
+.checklist-desc { font-size: 12px; color: #7f7f7f; font-weight: 400; }
+.checklist-item.done .checklist-name { color: #a3a3a3; text-decoration: line-through; }
+.checklist-item.done .checklist-desc { display: none; }
+.checklist-action {
+  font-size: 12px; font-weight: 500; color: #171717; padding: 4px 10px;
+  border: 1px solid #e5e5e5; border-radius: 4px; flex-shrink: 0;
+  transition: background 0.15s;
+}
+.checklist-action:hover { background: #f5f5f5; }
+.checklist-item.done .checklist-action { display: none; }
+.checklist-progress {
+  font-size: 12px; font-weight: 500; color: #7f7f7f;
+  display: flex; align-items: center; gap: 8px;
+}
+.checklist-progress-bar {
+  width: 60px; height: 4px; background: #f4f4f5; border-radius: 2px; overflow: hidden;
+}
+.checklist-progress-fill { height: 100%; background: #22c55e; border-radius: 2px; transition: width 0.6s cubic-bezier(0.16,1,0.3,1); }
+
+/* ═══ MILESTONE DOT ═══ */
+.milestone-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0; margin-top: 5px;
+}
+
+/* ═══ RETENTION CHART HOVER ═══ */
+.retention-chart-wrap { position: relative; cursor: crosshair; }
+.ret-hover-line {
+  position: absolute; top: 0; bottom: 0; width: 1px;
+  background: #a3a3a3; pointer-events: none; opacity: 0;
+  transition: opacity 80ms ease;
+}
+.ret-hover-dot {
+  position: absolute; width: 8px; height: 8px; border-radius: 50%;
+  border: 2px solid white; transform: translate(-50%, -50%);
+  pointer-events: none; opacity: 0; transition: opacity 80ms ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+.ret-hover-dot.yt { background: var(--youtube); }
+.ret-hover-dot.sp { background: var(--spotify); }
+.ret-hover-dot.rs { background: var(--rss); }
+.ret-tooltip {
+  position: absolute; background: white; border-radius: 4px;
+  padding: 8px 10px; pointer-events: none; opacity: 0;
+  transition: opacity 80ms ease; white-space: nowrap;
+  box-shadow: 0 0 1px rgba(0,0,0,0.04), 0 2px 6px rgba(0,0,0,0.08);
+  z-index: 100; display: flex; gap: 12px;
+}
+.ret-tp-item { display: flex; flex-direction: column; gap: 1px; }
+.ret-tp-label { font-size: 11px; font-weight: 500; color: #7f7f7f; display: flex; align-items: center; gap: 4px; }
+.ret-tp-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.ret-tp-value { font-size: 13px; font-weight: 600; color: #171717; font-variant-numeric: tabular-nums; }
+
+/* ═══ STATE 9: INTERACTIVE ═══ */
+
+/* KPI sparkline tooltip */
+.kpi-tooltip {
+  position: absolute; background: #18181b; color: white; font-size: 11px; font-weight: 600;
+  padding: 3px 7px; border-radius: 4px; pointer-events: none; opacity: 0;
+  transition: opacity 80ms; white-space: nowrap; z-index: 20;
+  font-variant-numeric: tabular-nums; letter-spacing: -0.1px;
+}
+.kpi-card { position: relative; }
+.s9 .kpi-card { cursor: pointer; transition: all 0.2s ease; }
+.s9 .kpi-card:hover { background: #fafafa; }
+.s9 .kpi-card:hover .kpi-spark { opacity: 0.85; }
+
+/* KPI expanded chart */
+.kpi-expand {
+  overflow: hidden; max-height: 0; opacity: 0;
+  transition: max-height 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.25s ease, padding 0.25s ease;
+  padding: 0 24px;
+}
+.kpi-card.expanded .kpi-expand {
+  max-height: 160px; opacity: 1; padding: 8px 24px 16px;
+}
+.kpi-expand svg { display: block; }
+
+/* Platform tooltip */
+.plat-tooltip {
+  position: absolute; background: #18181b; color: white; font-size: 11px; font-weight: 500;
+  padding: 4px 8px; border-radius: 4px; pointer-events: none; opacity: 0;
+  transition: opacity 80ms; white-space: nowrap; z-index: 20; letter-spacing: -0.1px;
+}
+.platform-body { position: relative; }
+.s9 .platform-row { cursor: default; transition: background 0.12s; border-radius: 4px; padding: 4px 0; }
+.s9 .platform-row:hover { background: #fafafa; }
+
+/* Sortable columns */
+.s9 .ep-cell-header.sortable { cursor: pointer; user-select: none; transition: color 0.12s; display: inline-flex; align-items: center; gap: 4px; }
+.s9 .ep-cell-header.sortable:hover { color: #171717; }
+.sort-arrow { font-size: 10px; opacity: 0.4; }
+.sort-arrow.active { opacity: 1; color: #171717; }
+
+/* Retention legend */
+.ret-legend { display: flex; gap: 16px; padding: 8px 0 0; }
+.ret-legend-item {
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
+  font-size: 12px; font-weight: 500; color: #525252; transition: opacity 0.15s;
+  user-select: none;
+}
+.ret-legend-item:hover { opacity: 0.7; }
+.ret-legend-item.muted { opacity: 0.3; text-decoration: line-through; }
+.ret-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* Data update transitions */
+@keyframes value-update { 0% { opacity: 0; transform: translateY(4px); } 100% { opacity: 1; transform: translateY(0); } }
+.value-updating { animation: value-update 0.3s cubic-bezier(0.16,1,0.3,1) both; }
+</style>
+</head>
+<body>
+<!-- State Switcher -->
+<div class="state-switcher">
+  <span class="state-label">State</span>
+  <button class="state-btn" data-state="1" onclick="switchState(1)">1<span class="state-tooltip">Loading</span></button>
+  <button class="state-btn" data-state="2" onclick="switchState(2)">2<span class="state-tooltip">Post-Import</span></button>
+  <button class="state-btn" data-state="3" onclick="switchState(3)">3<span class="state-tooltip">Setup In Progress</span></button>
+  <button class="state-btn" data-state="4" onclick="switchState(4)">4<span class="state-tooltip">Zero Episodes</span></button>
+  <button class="state-btn" data-state="5" onclick="switchState(5)">5<span class="state-tooltip">First Publish</span></button>
+  <button class="state-btn" data-state="6" onclick="switchState(6)">6<span class="state-tooltip">Just Dropped</span></button>
+  <button class="state-btn active" data-state="7" onclick="switchState(7)">7<span class="state-tooltip">Happy Path</span></button>
+  <button class="state-btn" data-state="8" onclick="switchState(8)">8<span class="state-tooltip">Idle Period</span></button>
+  <button class="state-btn" data-state="9" onclick="switchState(9)">9<span class="state-tooltip">Interactive</span></button>
+</div>
+
+<div class="app">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <nav class="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-logo-mark"><svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.0217 1.92804L14.0012 25.667M13.9029 1.90039L3.38466 17.9558C2.90551 18.6746 3.13196 19.6491 3.87812 20.0843C7.33944 22.103 10.2327 24.0455 13.8556 26.1652M14.0999 1.90039L24.6587 17.9558C25.1378 18.6746 24.9125 19.6484 24.1663 20.0836L14.1415 26.1652" stroke="#6A3FC0" stroke-width="1.71429"/></svg></div>
+      <button class="sidebar-collapse"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M15.8333 2.5H4.16667C3.24619 2.5 2.5 3.24619 2.5 4.16667V15.8333C2.5 16.7538 3.24619 17.5 4.16667 17.5H15.8333C16.7538 17.5 17.5 16.7538 17.5 15.8333V4.16667C17.5 3.24619 16.7538 2.5 15.8333 2.5Z" stroke="#60606C" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.5 2.5V17.5" stroke="#60606C" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+    <div class="sidebar-breadcrumb">
+      <span class="sidebar-bc-dim">Flightstory</span>
+      <svg class="sidebar-bc-sep" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 12L10 8L6 4" stroke="#171717" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="sidebar-bc-active">Diary of a CEO</span>
+    </div>
+    <div class="sidebar-search">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12.2504 12.2504L9.71875 9.71875" stroke="#93939F" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.41667 11.0833C8.994 11.0833 11.0833 8.994 11.0833 6.41667C11.0833 3.83934 8.994 1.75 6.41667 1.75C3.83934 1.75 1.75 3.83934 1.75 6.41667C1.75 8.994 3.83934 11.0833 6.41667 11.0833Z" stroke="#93939F" stroke-width="1.16667" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="sidebar-search-ph">Search...</span>
+      <span class="sidebar-search-kbd">&#8984;K</span>
+    </div>
+    <button class="sidebar-cta"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.33203 8.00065H12.6654M7.9987 3.33398V12.6673" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>New episode</button>
+    <div class="sidebar-nav">
+      <a href="#" class="sidebar-link active"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 2H2.66667C2.29848 2 2 2.29848 2 2.66667V7.33333C2 7.70152 2.29848 8 2.66667 8H6C6.36819 8 6.66667 7.70152 6.66667 7.33333V2.66667C6.66667 2.29848 6.36819 2 6 2Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.332 2H9.9987C9.63051 2 9.33203 2.29848 9.33203 2.66667V4.66667C9.33203 5.03486 9.63051 5.33333 9.9987 5.33333H13.332C13.7002 5.33333 13.9987 5.03486 13.9987 4.66667V2.66667C13.9987 2.29848 13.7002 2 13.332 2Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.332 8H9.9987C9.63051 8 9.33203 8.29848 9.33203 8.66667V13.3333C9.33203 13.7015 9.63051 14 9.9987 14H13.332C13.7002 14 13.9987 13.7015 13.9987 13.3333V8.66667C13.9987 8.29848 13.7002 8 13.332 8Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10.666H2.66667C2.29848 10.666 2 10.9645 2 11.3327V13.3327C2 13.7009 2.29848 13.9993 2.66667 13.9993H6C6.36819 13.9993 6.66667 13.7009 6.66667 13.3327V11.3327C6.66667 10.9645 6.36819 10.666 6 10.666Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>Dashboard</a>
+      <a href="#" class="sidebar-link"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4.66406 14H11.3307" stroke="#525252" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.332 2H2.66536C1.92898 2 1.33203 2.59695 1.33203 3.33333V10C1.33203 10.7364 1.92898 11.3333 2.66536 11.3333H13.332C14.0684 11.3333 14.6654 10.7364 14.6654 10V3.33333C14.6654 2.59695 14.0684 2 13.332 2Z" stroke="#525252" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>Episodes<span class="sidebar-link-chip" id="sidebarEpCount">312</span></a>
+      <a href="#" class="sidebar-link"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8.66536 11.3327C8.66536 11.1559 8.59513 10.9863 8.4701 10.8613C8.34508 10.7363 8.17551 10.666 7.9987 10.666C7.82189 10.666 7.65232 10.7363 7.52729 10.8613C7.40227 10.9863 7.33203 11.1559 7.33203 11.3327L7.66536 14.3327C7.66536 14.4211 7.70048 14.5059 7.763 14.5684C7.82551 14.6309 7.91029 14.666 7.9987 14.666C8.0871 14.666 8.17189 14.6309 8.2344 14.5684C8.29691 14.5059 8.33203 14.4211 8.33203 14.3327L8.66536 11.3327Z" fill="#595959" stroke="#595959" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.2333 12.3863C12.3263 11.6871 13.1631 10.6525 13.6184 9.43759C14.0737 8.22266 14.1229 6.89289 13.7587 5.64763C13.3945 4.40237 12.6364 3.30872 11.5982 2.53066C10.5599 1.75259 9.29744 1.33203 8 1.33203C6.70256 1.33203 5.44008 1.75259 4.40184 2.53066C3.36359 3.30872 2.60552 4.40237 2.24129 5.64763C1.87705 6.89289 1.92628 8.22266 2.38158 9.43759C2.83689 10.6525 3.67374 11.6871 4.76667 12.3863" stroke="#595959" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.33464 9.33333C4.96321 8.8381 4.73703 8.24922 4.68144 7.63269C4.62585 7.01615 4.74304 6.39631 5.01988 5.84262C5.29672 5.28894 5.72228 4.82328 6.24887 4.49783C6.77545 4.17238 7.38226 4 8.0013 4C8.62034 4 9.22715 4.17238 9.75374 4.49783C10.2803 4.82328 10.7059 5.28894 10.9827 5.84262C11.2596 6.39631 11.3768 7.01615 11.3212 7.63269C11.2656 8.24922 11.0394 8.8381 10.668 9.33333" stroke="#595959" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.9987 7.99935C8.36689 7.99935 8.66536 7.70087 8.66536 7.33268C8.66536 6.96449 8.36689 6.66602 7.9987 6.66602C7.63051 6.66602 7.33203 6.96449 7.33203 7.33268C7.33203 7.70087 7.63051 7.99935 7.9987 7.99935Z" fill="#595959" stroke="#595959" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>Podcast</a>
+      <a href="#" class="sidebar-link"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6C5.10457 6 6 5.10457 6 4C6 2.89543 5.10457 2 4 2C2.89543 2 2 2.89543 2 4C2 5.10457 2.89543 6 4 6Z" stroke="#595959" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.41406 5.41268L8.00073 7.99935M13.3341 2.66602L5.41406 10.586" stroke="#595959" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 14C5.10457 14 6 13.1046 6 12C6 10.8954 5.10457 10 4 10C2.89543 10 2 10.8954 2 12C2 13.1046 2.89543 14 4 14Z" stroke="#595959" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.86719 9.86719L13.3339 13.3339" stroke="#595959" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>Clips<span class="sidebar-link-chip">53</span></a>
+      <a href="#" class="sidebar-link"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2V12.6667C2 13.0203 2.14048 13.3594 2.39052 13.6095C2.64057 13.8595 2.97971 14 3.33333 14H14M12 11.3333V6M8.66667 11.3333V3.33333M5.33333 11.3333V9.33333" stroke="#595959" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>Analytics AI<span class="sidebar-link-chip">Beta</span></a>
+    </div>
+    <div class="sidebar-gap"></div>
+    <a href="#" class="sidebar-bottom-link"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2.56484 5.74608C2.46754 5.30776 2.48248 4.85198 2.60828 4.42097C2.73408 3.98997 2.96667 3.59771 3.28449 3.28056C3.6023 2.96341 3.99505 2.73164 4.42631 2.60674C4.85758 2.48184 5.3134 2.46786 5.75151 2.56608C5.99265 2.18895 6.32484 1.87859 6.71748 1.6636C7.11011 1.44862 7.55054 1.33594 7.99818 1.33594C8.44581 1.33594 8.88624 1.44862 9.27887 1.6636C9.67151 1.87859 10.0037 2.18895 10.2448 2.56608C10.6836 2.46743 11.1402 2.48135 11.5722 2.60656C12.0041 2.73176 12.3974 2.96417 12.7154 3.28218C13.0334 3.60019 13.2658 3.99346 13.391 4.42542C13.5162 4.85737 13.5302 5.31397 13.4315 5.75275C13.8086 5.99389 14.119 6.32608 14.334 6.71871C14.549 7.11135 14.6617 7.55178 14.6617 7.99941C14.6617 8.44705 14.549 8.88748 14.334 9.28011C14.119 9.67275 13.8086 10.0049 13.4315 10.2461C13.5297 10.6842 13.5157 11.14 13.3908 11.5713C13.2659 12.0025 13.0342 12.3953 12.717 12.7131C12.3999 13.0309 12.0076 13.2635 11.5766 13.3893C11.1456 13.5151 10.6898 13.5301 10.2515 13.4327C10.0107 13.8113 9.67823 14.123 9.28493 14.339C8.89162 14.5549 8.45019 14.6681 8.00151 14.6681C7.55282 14.6681 7.11139 14.5549 6.71809 14.339C6.32479 14.123 5.99233 13.8113 5.75151 13.4327C5.3134 13.531 4.85758 13.517 4.42631 13.3921C3.99505 13.2672 3.6023 13.0354 3.28449 12.7183C2.96667 12.4011 2.73408 12.0089 2.60828 11.5779C2.48248 11.1469 2.46754 10.6911 2.56484 10.2527C2.18481 10.0122 1.87178 9.67953 1.65487 9.28556C1.43796 8.89158 1.32422 8.44915 1.32422 7.99941C1.32422 7.54968 1.43796 7.10724 1.65487 6.71327C1.87178 6.3193 2.18481 5.98659 2.56484 5.74608Z" stroke="#525252" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.6654 5.33333H6.66536C6.31174 5.33333 5.9726 5.47381 5.72256 5.72386C5.47251 5.97391 5.33203 6.31304 5.33203 6.66667C5.33203 7.02029 5.47251 7.35943 5.72256 7.60948C5.9726 7.85952 6.31174 8 6.66536 8H9.33203C9.68565 8 10.0248 8.14048 10.2748 8.39052C10.5249 8.64057 10.6654 8.97971 10.6654 9.33333C10.6654 9.68696 10.5249 10.0261 10.2748 10.2761C10.0248 10.5262 9.68565 10.6667 9.33203 10.6667H5.33203M7.9987 12V4" stroke="#525252" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>Ads</a>
+    <a href="#" class="sidebar-bottom-link"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M7.9987 14.6673C11.6806 14.6673 14.6654 11.6825 14.6654 8.00065C14.6654 4.31875 11.6806 1.33398 7.9987 1.33398C4.3168 1.33398 1.33203 4.31875 1.33203 8.00065C1.33203 11.6825 4.3168 14.6673 7.9987 14.6673Z" stroke="#525252" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.05859 6.00038C6.21533 5.55482 6.5247 5.17912 6.9319 4.9398C7.3391 4.70049 7.81786 4.61301 8.28338 4.69285C8.7489 4.7727 9.17114 5.01473 9.47531 5.37607C9.77949 5.7374 9.94596 6.19473 9.94526 6.66705C9.94526 8.00038 7.94526 8.66705 7.94526 8.66705M7.99859 11.3337H8.00526" stroke="#525252" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>Tutorials &amp; Support</a>
+    <a href="#" class="sidebar-bottom-link"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M7.25281 14.6277L10.3061 9.33435M14.1128 5.33435H7.99948M2.63281 4.04102L5.69281 9.33435" stroke="#525252" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.9987 14.6673C11.6806 14.6673 14.6654 11.6825 14.6654 8.00065C14.6654 4.31875 11.6806 1.33398 7.9987 1.33398C4.3168 1.33398 1.33203 4.31875 1.33203 8.00065C1.33203 11.6825 4.3168 14.6673 7.9987 14.6673Z" stroke="#525252" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.9987 10.6673C9.47146 10.6673 10.6654 9.47341 10.6654 8.00065C10.6654 6.52789 9.47146 5.33398 7.9987 5.33398C6.52594 5.33398 5.33203 6.52789 5.33203 8.00065C5.33203 9.47341 6.52594 10.6673 7.9987 10.6673Z" stroke="#525252" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>Install Extension</a>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">FS</div>
+      <div style="flex:1;min-width:0"><div class="sidebar-user-name">Flightstory</div><div class="sidebar-user-email">doac@flightstory.com</div></div>
+      <svg class="sidebar-user-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4.66797 9.99935L8.0013 13.3327L11.3346 9.99935M4.66797 5.99935L8.0013 2.66602L11.3346 5.99935" stroke="#60606C" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+  </nav>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="main">
+    <div class="main-content" id="mainContent">
+    <div class="page-header">
+      <div>
+        <div class="greeting">Welcome back. +12,400 followers since last episode publish.</div>
+        <div class="greeting-sub">Mar 19 &ndash; Apr 2, 2026 &middot; Last updated 34m ago</div>
+      </div>
+      <div class="time-tabs">
+        <button class="time-tab active">7d</button>
+        <button class="time-tab">30d</button>
+        <button class="time-tab">90d</button>
+        <button class="time-tab">All</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- KPI STRIP -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-header"><span class="kpi-label">Total Plays</span><span class="kpi-change"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L6 2.5M6 2.5L9.5 6M6 2.5V9.5" stroke="#399766" stroke-linecap="round" stroke-linejoin="round"/></svg>22.6%</span></div>
+          <div class="kpi-body"><span class="kpi-value">3.8M</span><svg class="kpi-spark" width="72" height="28" viewBox="0 0 72 28"><polyline fill="none" stroke="#0a0a0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="0,24 8,22 16,23 24,19 32,17 40,15 48,13 56,10 64,7 72,3"/></svg></div>
+          <div class="kpi-sub">vs. 3.1M prev. period</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-header"><span class="kpi-label">Watch Time</span><span class="kpi-change"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L6 2.5M6 2.5L9.5 6M6 2.5V9.5" stroke="#399766" stroke-linecap="round" stroke-linejoin="round"/></svg>18.3%</span></div>
+          <div class="kpi-body"><span class="kpi-value">1.2 Mh</span><svg class="kpi-spark" width="72" height="28" viewBox="0 0 72 28"><polyline fill="none" stroke="#0a0a0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="0,22 9,20 18,18 27,21 36,16 45,13 54,10 63,8 72,4"/></svg></div>
+          <div class="kpi-sub">vs. 980K hours prev.</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-header"><span class="kpi-label">Unique Viewers</span><span class="kpi-change"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L6 2.5M6 2.5L9.5 6M6 2.5V9.5" stroke="#399766" stroke-linecap="round" stroke-linejoin="round"/></svg>11.8%</span></div>
+          <div class="kpi-body"><span class="kpi-value">1.7M</span><svg class="kpi-spark" width="72" height="28" viewBox="0 0 72 28"><polyline fill="none" stroke="#0a0a0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="0,18 9,20 18,16 27,14 36,17 45,12 54,10 63,8 72,6"/></svg></div>
+          <div class="kpi-sub">vs. 1.52M prev. period</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-header"><span class="kpi-label">Subscribers</span><span class="kpi-change"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L6 2.5M6 2.5L9.5 6M6 2.5V9.5" stroke="#399766" stroke-linecap="round" stroke-linejoin="round"/></svg>8.4%</span></div>
+          <div class="kpi-body"><span class="kpi-value">8.24M</span><svg class="kpi-spark" width="72" height="28" viewBox="0 0 72 28"><polyline fill="none" stroke="#0a0a0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="0,24 9,22 18,21 27,20 36,18 45,16 54,13 63,10 72,8"/></svg></div>
+          <div class="kpi-sub">+38.6K new this period</div>
+        </div>
+      </div>
+
+      <!-- MAIN 2x2 GRID -->
+      <div class="grid-main">
+
+          <!-- ROW 1 LEFT: LATEST EPISODE -->
+          <div class="card">
+            <div class="card-header"><span class="card-title">Latest Episode</span><span class="badge"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 9C7.65685 9 9 7.65685 9 6C9 4.34315 7.65685 3 6 3C4.34315 3 3 4.34315 3 6C3 7.65685 4.34315 9 6 9Z" fill="#399766" stroke="#399766" stroke-linecap="round" stroke-linejoin="round"/></svg>Live &middot; 2d ago</span></div>
+            <div class="latest-ep-body">
+              <div class="latest-ep-row">
+                <div class="latest-ep-thumb"><div class="latest-ep-thumb-inner"><svg width="80" height="24" viewBox="0 0 80 24" fill="none"><text x="0" y="18" font-family="Inter,sans-serif" font-weight="700" font-size="18" fill="#fff">DOAC</text></svg></div><span class="latest-ep-dur">2:14:38</span></div>
+                <div class="latest-ep-info">
+                  <div class="latest-ep-top"><span class="badge badge-muted">Ep 312</span></div>
+                  <div class="latest-ep-name">Dr. Paul Conti: &ldquo;The Hidden Epidemic Nobody Wants to Talk About&rdquo;</div>
+                  <div class="latest-ep-meta">Published Mar 31, 2026</div>
+                  <div class="stats-row">
+                    <div class="stat-cell"><div class="stat-label">Plays</div><div class="stat-value">487K</div><div class="stat-sub up">3.1x avg</div></div>
+                    <div class="stat-cell"><div class="stat-label">Watch Time</div><div class="stat-value">142Kh</div><div class="stat-sub up">+62%</div></div>
+                    <div class="stat-cell"><div class="stat-label">Completion</div><div class="stat-value">72%</div><div class="stat-sub up">Top 5%</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="insight-banner">
+              <svg class="insight-banner-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4.16797 9.99935L10.0013 4.16602M10.0013 4.16602L15.8346 9.99935M10.0013 4.16602V15.8327" stroke="#171717" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div class="insight-banner-text">Performing <strong>3.1x better</strong> than your typical first 48 hours. Peak engagement at the <strong>41:00 mark</strong>: &ldquo;&hellip;the trauma-to-addiction pipeline segment is driving shares and saves&hellip;&rdquo;</div>
+            </div>
+
+            <!-- RETENTION CHART (large) -->
+            <div class="retention-section">
+              <div class="retention-header">
+                <span class="retention-label">Retention curve</span>
+                <a href="retention.html" class="retention-link">Full analysis <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.33203 8.00065H12.6654M12.6654 8.00065L7.9987 3.33398M12.6654 8.00065L7.9987 12.6673" stroke="#171717" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+              </div>
+              <div class="retention-chart-wrap" id="retChartWrap">
+                <div class="ret-hover-line" id="retHoverLine"></div>
+                <div class="ret-hover-dot yt" id="retDotYT"></div>
+                <div class="ret-hover-dot sp" id="retDotSP"></div>
+                <div class="ret-hover-dot rs" id="retDotRS"></div>
+                <div class="ret-tooltip" id="retTooltip">
+                  <div class="ret-tp-item"><span class="ret-tp-label"><span class="ret-tp-dot" style="background:var(--youtube)"></span>YouTube</span><span class="ret-tp-value" id="retTpYT">—</span></div>
+                  <div class="ret-tp-item"><span class="ret-tp-label"><span class="ret-tp-dot" style="background:var(--spotify)"></span>Spotify</span><span class="ret-tp-value" id="retTpSP">—</span></div>
+                  <div class="ret-tp-item"><span class="ret-tp-label"><span class="ret-tp-dot" style="background:var(--rss)"></span>RSS</span><span class="ret-tp-value" id="retTpRS">—</span></div>
+                </div>
+                <svg class="retention-chart" viewBox="0 0 700 180" preserveAspectRatio="none">
+                  <!-- Grid -->
+                  <line x1="0" y1="0" x2="700" y2="0" stroke="#f4f4f5" stroke-width="1"/>
+                  <line x1="0" y1="45" x2="700" y2="45" stroke="#f4f4f5" stroke-width="1"/>
+                  <line x1="0" y1="90" x2="700" y2="90" stroke="#f4f4f5" stroke-width="1"/>
+                  <line x1="0" y1="135" x2="700" y2="135" stroke="#f4f4f5" stroke-width="1"/>
+                  <line x1="0" y1="180" x2="700" y2="180" stroke="#f4f4f5" stroke-width="1"/>
+                  <!-- Drop marker at ~5:03 -->
+                  <line x1="140" y1="0" x2="140" y2="180" stroke="var(--muted-foreground)" stroke-width="0.5" stroke-dasharray="4,4" opacity="0.4"/>
+                  <!-- YouTube (red) -->
+                  <polyline fill="none" stroke="var(--youtube)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"
+                    points="0,4 14,6 28,8 42,10 56,12 70,14 84,16 98,18 112,22 126,28 140,60 154,72 168,78 182,82 196,86 210,90 238,96 266,100 294,104 322,108 350,112 378,116 406,120 434,122 462,124 490,126 518,128 546,130 574,132 602,134 630,136 658,138 686,140 700,142"/>
+                  <!-- Spotify (green) -->
+                  <polyline fill="none" stroke="var(--spotify)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"
+                    points="0,4 14,8 28,14 42,20 56,26 70,32 84,38 98,44 112,52 126,62 140,90 154,100 168,108 182,116 196,120 210,124 238,128 266,132 294,134 322,136 350,137 378,138 406,139 434,140 462,140 490,141 518,142 546,142 574,142 602,142 630,142 658,142 686,142 700,142"/>
+                  <!-- RSS (orange) -->
+                  <polyline fill="none" stroke="var(--rss)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"
+                    points="0,4 14,10 28,18 42,28 56,38 70,48 84,58 98,68 112,80 126,92 140,120 154,130 168,138 182,144 196,148 210,152 238,156 266,158 294,160 322,162 350,163 378,164 406,165 434,166 462,166 490,167 518,167 546,168 574,168 602,168 630,168 658,168 686,168 700,168"/>
+                </svg>
+              </div>
+              <div class="retention-axis">
+                <span>0:00</span><span>5:03</span><span>10:07</span><span>15:10</span><span>20:14</span><span>25:17</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ROW 1 RIGHT: INSIGHTS + PLATFORM DISTRIBUTION -->
+          <div class="right-top">
+          <!-- INSIGHTS -->
+          <div class="card">
+            <div class="card-header"><span class="card-title">Insights</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">View all</a></div>
+            <div class="insights-body">
+              <div class="insight-item"><div class="insight-text"><strong>Ep 247 is outperforming</strong> your last 10 episodes by 2.3x.</div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><div class="insight-dot purple"></div><div class="insight-time">2h</div></div></div>
+              <div class="insight-divider"></div>
+              <div class="insight-item"><div class="insight-text"><strong>Tuesday releases</strong> average +18% plays. Consider moving your schedule.</div><div class="insight-time">1d</div></div>
+              <div class="insight-divider"></div>
+              <div class="insight-item"><div class="insight-text"><strong>Spotify completion</strong> dropped 8% this month. Audio listeners bouncing at intro.</div><div class="insight-time">3d</div></div>
+              <div class="insight-divider"></div>
+              <div class="insight-item"><div class="insight-text"><strong>+4,200 subscribers</strong> this week &mdash; highest since the Tony Robbins ep.</div><div class="insight-time">5d</div></div>
+            </div>
+          </div>
+
+          <!-- PLATFORM DISTRIBUTION -->
+          <div class="card">
+            <div class="card-header"><span class="card-title">Platform Distribution</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">Details</a></div>
+            <div class="platform-body">
+              <div class="platform-row">
+                <div class="platform-label"><div class="platform-icon yt"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2 31.4 31.4 0 000 12a31.4 31.4 0 00.5 5.8 3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1A31.4 31.4 0 0024 12a31.4 31.4 0 00-.5-5.8zM9.6 15.5V8.5L15.8 12 9.6 15.5z"/></svg></div><span class="platform-name">YouTube</span></div>
+                <div class="platform-bar-wrap"><div class="platform-bar" style="width:62%"></div></div>
+                <span class="platform-views">1.49M</span>
+                <span class="platform-pct-badge">62%</span>
+              </div>
+              <div class="platform-row">
+                <div class="platform-label"><div class="platform-icon sp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-.2.3-.6.4-1 .2-2.7-1.6-6-2-10-1.1-.4.1-.8-.2-.8-.6-.1-.4.2-.8.6-.8 4.3-1 8-.6 11 1.2.3.2.4.7.2 1.1z"/></svg></div><span class="platform-name">Spotify</span></div>
+                <div class="platform-bar-wrap"><div class="platform-bar" style="width:28%"></div></div>
+                <span class="platform-views">672K</span>
+                <span class="platform-pct-badge">28%</span>
+              </div>
+              <div class="platform-row">
+                <div class="platform-label"><div class="platform-icon rs"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.18 15.64a2.18 2.18 0 110 4.36 2.18 2.18 0 010-4.36zM4 4.44A15.56 15.56 0 0119.56 20h-2.83A12.73 12.73 0 004 7.27V4.44zm0 5.66a9.9 9.9 0 019.9 9.9h-2.83A7.07 7.07 0 004 12.93v-2.83z"/></svg></div><span class="platform-name">RSS Feed</span></div>
+                <div class="platform-bar-wrap"><div class="platform-bar" style="width:10%"></div></div>
+                <span class="platform-views">240K</span>
+                <span class="platform-pct-badge">10%</span>
+              </div>
+            </div>
+          </div>
+          </div><!-- /right-top -->
+
+          <!-- ROW 2 LEFT: FEY AI -->
+          <div class="card">
+            <div class="fey-header">
+              <div class="fey-title">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13.3336 1.33363V4.00029M14.667 2.66696H12.0003M7.34496 1.87629C7.37353 1.72336 7.45468 1.58524 7.57436 1.48584C7.69404 1.38644 7.84472 1.33203 8.00029 1.33203C8.15587 1.33203 8.30655 1.38644 8.42623 1.48584C8.54591 1.58524 8.62706 1.72336 8.65563 1.87629L9.35629 5.58163C9.40606 5.84506 9.53408 6.08737 9.72365 6.27694C9.91322 6.46651 10.1555 6.59453 10.419 6.64429L14.1243 7.34496C14.2772 7.37353 14.4154 7.45468 14.5147 7.57436C14.6141 7.69404 14.6686 7.84472 14.6686 8.00029C14.6686 8.15587 14.6141 8.30655 14.5147 8.42623C14.4154 8.54591 14.2772 8.62706 14.1243 8.65563L10.419 9.35629C10.1555 9.40606 9.91322 9.53408 9.72365 9.72365C9.53408 9.91322 9.40606 10.1555 9.35629 10.419L8.65563 14.1243C8.62706 14.2772 8.54591 14.4154 8.42623 14.5147C8.30655 14.6141 8.15587 14.6686 8.00029 14.6686C7.84472 14.6686 7.69404 14.6141 7.57436 14.5147C7.45468 14.4154 7.37353 14.2772 7.34496 14.1243L6.64429 10.419C6.59453 10.1555 6.46651 9.91322 6.27694 9.72365C6.08737 9.53408 5.84506 9.40606 5.58163 9.35629L1.87629 8.65563C1.72336 8.62706 1.58524 8.54591 1.48584 8.42623C1.38644 8.30655 1.33203 8.15587 1.33203 8.00029C1.33203 7.84472 1.38644 7.69404 1.48584 7.57436C1.58524 7.45468 1.72336 7.37353 1.87629 7.34496L5.58163 6.64429C5.84506 6.59453 6.08737 6.46651 6.27694 6.27694C6.46651 6.08737 6.59453 5.84506 6.64429 5.58163L7.34496 1.87629Z" stroke="#5D23FF" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.66536 14.6667C3.40174 14.6667 3.9987 14.0697 3.9987 13.3333C3.9987 12.597 3.40174 12 2.66536 12C1.92898 12 1.33203 12.597 1.33203 13.3333C1.33203 14.0697 1.92898 14.6667 2.66536 14.6667Z" stroke="#5D23FF" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Fey AI
+              </div>
+              <button class="fey-chat-btn">Chat <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1.99316 10.8951C2.09118 11.1424 2.11301 11.4133 2.05583 11.6731L1.34583 13.8664C1.32295 13.9777 1.32886 14.0929 1.36301 14.2012C1.39716 14.3095 1.4584 14.4073 1.54094 14.4853C1.62347 14.5633 1.72456 14.6189 1.83463 14.6469C1.94469 14.6749 2.06007 14.6742 2.16983 14.6451L4.44516 13.9798C4.6903 13.9312 4.94418 13.9524 5.17783 14.0411C6.60142 14.7059 8.21407 14.8466 9.73126 14.4383C11.2484 14.0299 12.5727 13.0989 13.4703 11.8094C14.3679 10.5198 14.7812 8.95472 14.6374 7.39015C14.4935 5.82557 13.8016 4.36209 12.6839 3.25791C11.5661 2.15373 10.0943 1.47981 8.52808 1.35504C6.96187 1.23028 5.40192 1.6627 4.12345 2.57601C2.84499 3.48931 1.93018 4.82481 1.54042 6.34687C1.15066 7.86894 1.311 9.47975 1.99316 10.8951Z" stroke="#171717" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            </div>
+            <div class="fey-body">
+              <div class="fey-pills">
+                <button class="fey-pill">How are my episodes performing?</button>
+                <button class="fey-pill">What trends do you see in my analytics?</button>
+                <button class="fey-pill">How can I improve engagement?</button>
+                <button class="fey-pill">What are my top performing episodes?</button>
+              </div>
+              <div class="fey-spacer"></div>
+              <div class="fey-input"><span class="fey-input-ph">Ask Fey anything about your podcast...</span></div>
+              <div class="fey-footnote">Analytics AI (beta)</div>
+            </div>
+          </div>
+
+          <!-- ROW 2 RIGHT: ACCOUNT -->
+          <div class="card">
+            <div class="card-header"><span class="card-title">Account</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">Manage</a></div>
+            <div class="account-body">
+              <div class="account-item">
+                <div class="account-item-left"><div class="account-icon" style="color:var(--youtube)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2 31.4 31.4 0 000 12a31.4 31.4 0 00.5 5.8 3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1A31.4 31.4 0 0024 12a31.4 31.4 0 00-.5-5.8zM9.6 15.5V8.5L15.8 12 9.6 15.5z"/></svg></div><span class="account-label">YouTube</span></div>
+                <span class="account-chip active">Active</span>
+              </div>
+              <div class="account-item">
+                <div class="account-item-left"><div class="account-icon" style="color:var(--spotify)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-.2.3-.6.4-1 .2-2.7-1.6-6-2-10-1.1-.4.1-.8-.2-.8-.6-.1-.4.2-.8.6-.8 4.3-1 8-.6 11 1.2.3.2.4.7.2 1.1z"/></svg></div><span class="account-label">Spotify</span></div>
+                <span class="account-chip active">Active</span>
+              </div>
+              <div class="account-item">
+                <div class="account-item-left"><div class="account-icon" style="color:var(--rss)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.18 15.64a2.18 2.18 0 110 4.36 2.18 2.18 0 010-4.36zM4 4.44A15.56 15.56 0 0119.56 20h-2.83A12.73 12.73 0 004 7.27V4.44zm0 5.66a9.9 9.9 0 019.9 9.9h-2.83A7.07 7.07 0 004 12.93v-2.83z"/></svg></div><span class="account-label">RSS Feed</span></div>
+                <span class="account-chip active">Active</span>
+              </div>
+              <div class="account-item">
+                <div class="account-item-left"><div class="account-icon" style="color:#171717"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M8.18503 9.81384C8.04169 9.67077 7.87087 9.5582 7.68285 9.48292L1.73535 7.09792C1.66434 7.06943 1.60375 7.01989 1.5617 6.95597C1.51965 6.89204 1.49816 6.81678 1.50012 6.74029C1.50208 6.6638 1.52739 6.58974 1.57266 6.52805C1.61792 6.46636 1.68098 6.41999 1.75335 6.39517L16.0034 1.52017C16.0698 1.49617 16.1417 1.49159 16.2107 1.50696C16.2797 1.52234 16.3428 1.55704 16.3928 1.607C16.4427 1.65697 16.4774 1.72012 16.4928 1.78909C16.5082 1.85805 16.5036 1.92997 16.4796 1.99642L11.6046 16.2464C11.5798 16.3188 11.5334 16.3818 11.4717 16.4271C11.41 16.4724 11.336 16.4977 11.2595 16.4997C11.183 16.5016 11.1077 16.4801 11.0438 16.4381C10.9799 16.396 10.9303 16.3354 10.9019 16.2644L8.51685 10.3154C8.44124 10.1275 8.32836 9.95692 8.18503 9.81384ZM8.18503 9.81384L16.3904 1.61017" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="account-label" style="color:#171717">Published</span></div>
+                <span class="account-chip count">14</span>
+              </div>
+              <div class="account-item">
+                <div class="account-item-left"><div class="account-icon" style="color:#171717"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 4.5V9L12 10.5" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 16.5C13.1421 16.5 16.5 13.1421 16.5 9C16.5 4.85786 13.1421 1.5 9 1.5C4.85786 1.5 1.5 4.85786 1.5 9C1.5 13.1421 4.85786 16.5 9 16.5Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="account-label" style="color:#171717">Scheduled</span></div>
+                <span class="account-chip count">0</span>
+              </div>
+              <div class="account-item">
+                <div class="account-item-left"><div class="account-icon" style="color:#171717"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2.25H3.75C3.35218 2.25 2.97064 2.40804 2.68934 2.68934C2.40804 2.97064 2.25 3.35218 2.25 3.75V14.25C2.25 14.6478 2.40804 15.0294 2.68934 15.3107C2.97064 15.592 3.35218 15.75 3.75 15.75H14.25C14.6478 15.75 15.0294 15.592 15.3107 15.3107C15.592 15.0294 15.75 14.6478 15.75 14.25V9" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.7803 1.96794C14.0787 1.66957 14.4834 1.50195 14.9053 1.50195C15.3273 1.50195 15.732 1.66957 16.0303 1.96794C16.3287 2.26631 16.4963 2.67099 16.4963 3.09294C16.4963 3.5149 16.3287 3.91957 16.0303 4.21794L9.27059 10.9784C9.09251 11.1564 8.8725 11.2866 8.63084 11.3572L6.47609 11.9872C6.41156 12.006 6.34315 12.0071 6.27803 11.9905C6.2129 11.9738 6.15346 11.9399 6.10593 11.8924C6.05839 11.8448 6.02451 11.7854 6.00783 11.7203C5.99114 11.6551 5.99227 11.5867 6.01109 11.5222L6.64109 9.36744C6.71199 9.12598 6.84249 8.90624 7.02059 8.72844L13.7803 1.96794Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="account-label" style="color:#171717">Drafts</span></div>
+                <span class="account-chip count">8</span>
+              </div>
+            </div>
+          </div>
+      </div>
+
+      <!-- RECENT EPISODES (card-based table) -->
+      <div class="episodes-section">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Recent Episodes</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">View all</a></div>
+          <div style="padding:0 24px 16px">
+            <div class="ep-table-header-row">
+              <div class="ep-cell-header" style="width:55px">#</div>
+              <div class="ep-cell-header" style="flex:1">Episode</div>
+              <div class="ep-cell-header right" style="width:70px">Plays</div>
+              <div class="ep-cell-header right" style="width:70px">Watch Time</div>
+              <div class="ep-cell-header center" style="width:120px">Completion</div>
+              <div class="ep-cell-header" style="width:80px">Published</div>
+              <div style="width:52px"></div>
+            </div>
+            <div class="ep-table-divider"></div>
+            <div class="ep-table-row">
+              <div class="ep-cell ep-cell-num">246</div>
+              <div class="ep-cell ep-cell-episode"><div class="ep-title-cell"><div class="ep-thumb"></div><span class="ep-name">The Sleep Scientist: Why You're Tired All The Time</span></div></div>
+              <div class="ep-cell ep-cell-stat">289K</div>
+              <div class="ep-cell ep-cell-stat">72Kh</div>
+              <div class="ep-cell ep-cell-completion"><div class="completion-track"><div class="completion-fill high" style="width:64%"></div></div><span class="completion-pct">64%</span></div>
+              <div class="ep-cell ep-cell-date">Mar 22</div>
+              <div class="ep-cell-actions"><button class="ep-more-btn"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M7.9987 8.66536C8.36689 8.66536 8.66536 8.36689 8.66536 7.9987C8.66536 7.63051 8.36689 7.33203 7.9987 7.33203C7.63051 7.33203 7.33203 7.63051 7.33203 7.9987C7.33203 8.36689 7.63051 8.66536 7.9987 8.66536Z" stroke="#525252" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.9987 3.99935C8.36689 3.99935 8.66536 3.70087 8.66536 3.33268C8.66536 2.96449 8.36689 2.66602 7.9987 2.66602C7.63051 2.66602 7.33203 2.96449 7.33203 3.33268C7.33203 3.70087 7.63051 3.99935 7.9987 3.99935Z" stroke="#525252" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.9987 13.3333C8.36689 13.3333 8.66536 13.0349 8.66536 12.6667C8.66536 12.2985 8.36689 12 7.9987 12C7.63051 12 7.33203 12.2985 7.33203 12.6667C7.33203 13.0349 7.63051 13.3333 7.9987 13.3333Z" stroke="#525252" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+            </div>
+            <div class="ep-table-divider"></div>
+            <div class="ep-table-row">
+              <div class="ep-cell ep-cell-num">245</div>
+              <div class="ep-cell ep-cell-episode"><div class="ep-title-cell"><div class="ep-thumb"></div><span class="ep-name">I Built a $100M Business at 21. Here's What Nobody Tells You.</span></div></div>
+              <div class="ep-cell ep-cell-stat">412K</div>
+              <div class="ep-cell ep-cell-stat">104Kh</div>
+              <div class="ep-cell ep-cell-completion"><div class="completion-track"><div class="completion-fill high" style="width:71%"></div></div><span class="completion-pct">71%</span></div>
+              <div class="ep-cell ep-cell-date">Mar 15</div>
+              <div class="ep-cell-actions"><button class="ep-more-btn"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M7.9987 8.66536C8.36689 8.66536 8.66536 8.36689 8.66536 7.9987C8.66536 7.63051 8.36689 7.33203 7.9987 7.33203C7.63051 7.33203 7.33203 7.63051 7.33203 7.9987C7.33203 8.36689 7.63051 8.66536 7.9987 8.66536Z" stroke="#525252" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.9987 3.99935C8.36689 3.99935 8.66536 3.70087 8.66536 3.33268C8.66536 2.96449 8.36689 2.66602 7.9987 2.66602C7.63051 2.66602 7.33203 2.96449 7.33203 3.33268C7.33203 3.70087 7.63051 3.99935 7.9987 3.99935Z" stroke="#525252" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.9987 13.3333C8.36689 13.3333 8.66536 13.0349 8.66536 12.6667C8.66536 12.2985 8.36689 12 7.9987 12C7.63051 12 7.33203 12.2985 7.33203 12.6667C7.33203 13.0349 7.63051 13.3333 7.9987 13.3333Z" stroke="#525252" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+            </div>
+            <div class="ep-table-divider"></div>
+            <div class="ep-table-row">
+              <div class="ep-cell ep-cell-num">244</div>
+              <div class="ep-cell ep-cell-episode"><div class="ep-title-cell"><div class="ep-thumb"></div><span class="ep-name">The Gut Doctor: Your Stomach Is Controlling Your Brain</span></div></div>
+              <div class="ep-cell ep-cell-stat">198K</div>
+              <div class="ep-cell ep-cell-stat">48Kh</div>
+              <div class="ep-cell ep-cell-completion"><div class="completion-track"><div class="completion-fill mid" style="width:58%"></div></div><span class="completion-pct">58%</span></div>
+              <div class="ep-cell ep-cell-date">Mar 8</div>
+              <div class="ep-cell-actions"><button class="ep-more-btn"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M7.9987 8.66536C8.36689 8.66536 8.66536 8.36689 8.66536 7.9987C8.66536 7.63051 8.36689 7.33203 7.9987 7.33203C7.63051 7.33203 7.33203 7.63051 7.33203 7.9987C7.33203 8.36689 7.63051 8.66536 7.9987 8.66536Z" stroke="#525252" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.9987 3.99935C8.36689 3.99935 8.66536 3.70087 8.66536 3.33268C8.66536 2.96449 8.36689 2.66602 7.9987 2.66602C7.63051 2.66602 7.33203 2.96449 7.33203 3.33268C7.33203 3.70087 7.63051 3.99935 7.9987 3.99935Z" stroke="#525252" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.9987 13.3333C8.36689 13.3333 8.66536 13.0349 8.66536 12.6667C8.66536 12.2985 8.36689 12 7.9987 12C7.63051 12 7.33203 12.2985 7.33203 12.6667C7.33203 13.0349 7.63051 13.3333 7.9987 13.3333Z" stroke="#525252" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+            </div>
+            <div class="ep-table-divider"></div>
+            <div class="ep-table-row">
+              <div class="ep-cell ep-cell-num">243</div>
+              <div class="ep-cell ep-cell-episode"><div class="ep-title-cell"><div class="ep-thumb"></div><span class="ep-name">Mo Gawdat: Why AI Will Take Your Job Sooner Than You Think</span></div></div>
+              <div class="ep-cell ep-cell-stat">356K</div>
+              <div class="ep-cell ep-cell-stat">91Kh</div>
+              <div class="ep-cell ep-cell-completion"><div class="completion-track"><div class="completion-fill high" style="width:66%"></div></div><span class="completion-pct">66%</span></div>
+              <div class="ep-cell ep-cell-date">Mar 1</div>
+              <div class="ep-cell-actions"><button class="ep-more-btn"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M7.9987 8.66536C8.36689 8.66536 8.66536 8.36689 8.66536 7.9987C8.66536 7.63051 8.36689 7.33203 7.9987 7.33203C7.63051 7.33203 7.33203 7.63051 7.33203 7.9987C7.33203 8.36689 7.63051 8.66536 7.9987 8.66536Z" stroke="#525252" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.9987 3.99935C8.36689 3.99935 8.66536 3.70087 8.66536 3.33268C8.66536 2.96449 8.36689 2.66602 7.9987 2.66602C7.63051 2.66602 7.33203 2.96449 7.33203 3.33268C7.33203 3.70087 7.63051 3.99935 7.9987 3.99935Z" stroke="#525252" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.9987 13.3333C8.36689 13.3333 8.66536 13.0349 8.66536 12.6667C8.66536 12.2985 8.36689 12 7.9987 12C7.63051 12 7.33203 12.2985 7.33203 12.6667C7.33203 13.0349 7.63051 13.3333 7.9987 13.3333Z" stroke="#525252" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div><!-- /main-content -->
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// DASHBOARD STATE ENGINE
+// ═══════════════════════════════════════
+
+let currentState = 7;
+const mainContent = document.getElementById('mainContent');
+
+// ── Shared SVG icons ──
+const IC = {
+  arrowUp: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L6 2.5M6 2.5L9.5 6M6 2.5V9.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  check: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  arrow: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3.33203 8.00065H12.6654M12.6654 8.00065L7.9987 3.33398M12.6654 8.00065L7.9987 12.6673" stroke="#171717" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  upload: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 8L12 3L7 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  liveDot: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 9C7.65685 9 9 7.65685 9 6C9 4.34315 7.65685 3 6 3C4.34315 3 3 4.34315 3 6C3 7.65685 4.34315 9 6 9Z" fill="#399766" stroke="#399766" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  more: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M7.9987 8.66536C8.36689 8.66536 8.66536 8.36689 8.66536 7.9987C8.66536 7.63051 8.36689 7.33203 7.9987 7.33203C7.63051 7.33203 7.33203 7.63051 7.33203 7.9987C7.33203 8.36689 7.63051 8.66536 7.9987 8.66536Z" stroke="#525252" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.9987 3.99935C8.36689 3.99935 8.66536 3.70087 8.66536 3.33268C8.66536 2.96449 8.36689 2.66602 7.9987 2.66602C7.63051 2.66602 7.33203 2.96449 7.33203 3.33268C7.33203 3.70087 7.63051 3.99935 7.9987 3.99935Z" stroke="#525252" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.9987 13.3333C8.36689 13.3333 8.66536 13.0349 8.66536 12.6667C8.66536 12.2985 8.36689 12 7.9987 12C7.63051 12 7.33203 12.2985 7.33203 12.6667C7.33203 13.0349 7.63051 13.3333 7.9987 13.3333Z" stroke="#525252" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  sparkFey: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13.3336 1.33363V4.00029M14.667 2.66696H12.0003M7.34496 1.87629C7.37353 1.72336 7.45468 1.58524 7.57436 1.48584C7.69404 1.38644 7.84472 1.33203 8.00029 1.33203C8.15587 1.33203 8.30655 1.38644 8.42623 1.48584C8.54591 1.58524 8.62706 1.72336 8.65563 1.87629L9.35629 5.58163C9.40606 5.84506 9.53408 6.08737 9.72365 6.27694C9.91322 6.46651 10.1555 6.59453 10.419 6.64429L14.1243 7.34496C14.2772 7.37353 14.4154 7.45468 14.5147 7.57436C14.6141 7.69404 14.6686 7.84472 14.6686 8.00029C14.6686 8.15587 14.6141 8.30655 14.5147 8.42623C14.4154 8.54591 14.2772 8.62706 14.1243 8.65563L10.419 9.35629C10.1555 9.40606 9.91322 9.53408 9.72365 9.72365C9.53408 9.91322 9.40606 10.1555 9.35629 10.419L8.65563 14.1243C8.62706 14.2772 8.54591 14.4154 8.42623 14.5147C8.30655 14.6141 8.15587 14.6686 8.00029 14.6686C7.84472 14.6686 7.69404 14.6141 7.57436 14.5147C7.45468 14.4154 7.37353 14.2772 7.34496 14.1243L6.64429 10.419C6.59453 10.1555 6.46651 9.91322 6.27694 9.72365C6.08737 9.53408 5.84506 9.40606 5.58163 9.35629L1.87629 8.65563C1.72336 8.62706 1.58524 8.54591 1.48584 8.42623C1.38644 8.30655 1.33203 8.15587 1.33203 8.00029C1.33203 7.84472 1.38644 7.69404 1.48584 7.57436C1.58524 7.45468 1.72336 7.37353 1.87629 7.34496L5.58163 6.64429C5.84506 6.59453 6.08737 6.46651 6.27694 6.27694C6.46651 6.08737 6.59453 5.84506 6.64429 5.58163L7.34496 1.87629Z" stroke="#5D23FF" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.66536 14.6667C3.40174 14.6667 3.9987 14.0697 3.9987 13.3333C3.9987 12.597 3.40174 12 2.66536 12C1.92898 12 1.33203 12.597 1.33203 13.3333C1.33203 14.0697 1.92898 14.6667 2.66536 14.6667Z" stroke="#5D23FF" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  chat: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1.99316 10.8951C2.09118 11.1424 2.11301 11.4133 2.05583 11.6731L1.34583 13.8664C1.32295 13.9777 1.32886 14.0929 1.36301 14.2012C1.39716 14.3095 1.4584 14.4073 1.54094 14.4853C1.62347 14.5633 1.72456 14.6189 1.83463 14.6469C1.94469 14.6749 2.06007 14.6742 2.16983 14.6451L4.44516 13.9798C4.6903 13.9312 4.94418 13.9524 5.17783 14.0411C6.60142 14.7059 8.21407 14.8466 9.73126 14.4383C11.2484 14.0299 12.5727 13.0989 13.4703 11.8094C14.3679 10.5198 14.7812 8.95472 14.6374 7.39015C14.4935 5.82557 13.8016 4.36209 12.6839 3.25791C11.5661 2.15373 10.0943 1.47981 8.52808 1.35504C6.96187 1.23028 5.40192 1.6627 4.12345 2.57601C2.84499 3.48931 1.93018 4.82481 1.54042 6.34687C1.15066 7.86894 1.311 9.47975 1.99316 10.8951Z" stroke="#171717" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  insightUp: '<svg class="insight-banner-icon" width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4.16797 9.99935L10.0013 4.16602M10.0013 4.16602L15.8346 9.99935M10.0013 4.16602V15.8327" stroke="#171717" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
+
+// ── Shared HTML fragments ──
+
+function kpiCard(label, value, change, changePct, sub, sparkPts) {
+  const changeClass = change === 'down' ? 'kpi-change down' : 'kpi-change';
+  const changeHTML = changePct ? `<span class="${changeClass}">${IC.arrowUp}${changePct}</span>` : '';
+  const sparkHTML = sparkPts ? `<svg class="kpi-spark" width="72" height="28" viewBox="0 0 72 28"><polyline fill="none" stroke="#0a0a0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="${sparkPts}"/></svg>` : '';
+  return `<div class="kpi-card">
+    <div class="kpi-header"><span class="kpi-label">${label}</span>${changeHTML}</div>
+    <div class="kpi-body"><span class="kpi-value">${value}</span>${sparkHTML}</div>
+    <div class="kpi-sub">${sub}</div>
+  </div>`;
+}
+
+function skelBlock(w, h = 14) {
+  return `<span class="skel" style="width:${w}px;height:${h}px"></span>`;
+}
+
+function timeTabs(disabled = false) {
+  const cls = disabled ? ' disabled' : '';
+  return `<div class="time-tabs">
+    <button class="time-tab active${cls}">7d</button>
+    <button class="time-tab${cls}">30d</button>
+    <button class="time-tab${cls}">90d</button>
+    <button class="time-tab${cls}">All</button>
+  </div>`;
+}
+
+function platformRow(icon, name, barW, views, pct, connected = true) {
+  if (!connected) {
+    return `<div class="platform-row" style="opacity:0.4">
+      <div class="platform-label"><div class="platform-icon ${icon}"><svg viewBox="0 0 24 24" fill="currentColor"><rect width="24" height="24" rx="4" fill="currentColor" opacity="0.15"/></svg></div><span class="platform-name">${name}</span></div>
+      <div class="platform-bar-wrap"><div class="platform-bar" style="width:0"></div></div>
+      <span class="platform-views">&mdash;</span>
+      <button class="checklist-action">Connect</button>
+    </div>`;
+  }
+  return `<div class="platform-row">
+    <div class="platform-label"><div class="platform-icon ${icon}"><svg viewBox="0 0 24 24" fill="currentColor">${icon === 'yt' ? '<path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2 31.4 31.4 0 000 12a31.4 31.4 0 00.5 5.8 3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1A31.4 31.4 0 0024 12a31.4 31.4 0 00-.5-5.8zM9.6 15.5V8.5L15.8 12 9.6 15.5z"/>' : icon === 'sp' ? '<path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-.2.3-.6.4-1 .2-2.7-1.6-6-2-10-1.1-.4.1-.8-.2-.8-.6-.1-.4.2-.8.6-.8 4.3-1 8-.6 11 1.2.3.2.4.7.2 1.1z"/>' : '<path d="M6.18 15.64a2.18 2.18 0 110 4.36 2.18 2.18 0 010-4.36zM4 4.44A15.56 15.56 0 0119.56 20h-2.83A12.73 12.73 0 004 7.27V4.44zm0 5.66a9.9 9.9 0 019.9 9.9h-2.83A7.07 7.07 0 004 12.93v-2.83z"/>'}</svg></div><span class="platform-name">${name}</span></div>
+    <div class="platform-bar-wrap"><div class="platform-bar" style="width:${barW}"></div></div>
+    <span class="platform-views">${views}</span>
+    <span class="platform-pct-badge">${pct}</span>
+  </div>`;
+}
+
+// Proper Figma-exported SVGs for account items
+const ACCT_ICONS = {
+  yt: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2 31.4 31.4 0 000 12a31.4 31.4 0 00.5 5.8 3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1A31.4 31.4 0 0024 12a31.4 31.4 0 00-.5-5.8zM9.6 15.5V8.5L15.8 12 9.6 15.5z"/></svg>',
+  sp: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm5.5 17.3c-.2.3-.6.4-1 .2-2.7-1.6-6-2-10-1.1-.4.1-.8-.2-.8-.6-.1-.4.2-.8.6-.8 4.3-1 8-.6 11 1.2.3.2.4.7.2 1.1z"/></svg>',
+  rs: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.18 15.64a2.18 2.18 0 110 4.36 2.18 2.18 0 010-4.36zM4 4.44A15.56 15.56 0 0119.56 20h-2.83A12.73 12.73 0 004 7.27V4.44zm0 5.66a9.9 9.9 0 019.9 9.9h-2.83A7.07 7.07 0 004 12.93v-2.83z"/></svg>',
+  published: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M8.18503 9.81384C8.04169 9.67077 7.87087 9.5582 7.68285 9.48292L1.73535 7.09792C1.66434 7.06943 1.60375 7.01989 1.5617 6.95597C1.51965 6.89204 1.49816 6.81678 1.50012 6.74029C1.50208 6.6638 1.52739 6.58974 1.57266 6.52805C1.61792 6.46636 1.68098 6.41999 1.75335 6.39517L16.0034 1.52017C16.0698 1.49617 16.1417 1.49159 16.2107 1.50696C16.2797 1.52234 16.3428 1.55704 16.3928 1.607C16.4427 1.65697 16.4774 1.72012 16.4928 1.78909C16.5082 1.85805 16.5036 1.92997 16.4796 1.99642L11.6046 16.2464C11.5798 16.3188 11.5334 16.3818 11.4717 16.4271C11.41 16.4724 11.336 16.4977 11.2595 16.4997C11.183 16.5016 11.1077 16.4801 11.0438 16.4381C10.9799 16.396 10.9303 16.3354 10.9019 16.2644L8.51685 10.3154C8.44124 10.1275 8.32836 9.95692 8.18503 9.81384ZM8.18503 9.81384L16.3904 1.61017" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  scheduled: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 4.5V9L12 10.5" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 16.5C13.1421 16.5 16.5 13.1421 16.5 9C16.5 4.85786 13.1421 1.5 9 1.5C4.85786 1.5 1.5 4.85786 1.5 9C1.5 13.1421 4.85786 16.5 9 16.5Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  drafts: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2.25H3.75C3.35218 2.25 2.97064 2.40804 2.68934 2.68934C2.40804 2.97064 2.25 3.35218 2.25 3.75V14.25C2.25 14.6478 2.40804 15.0294 2.68934 15.3107C2.97064 15.592 3.35218 15.75 3.75 15.75H14.25C14.6478 15.75 15.0294 15.592 15.3107 15.3107C15.592 15.0294 15.75 14.6478 15.75 14.25V9" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.7803 1.96794C14.0787 1.66957 14.4834 1.50195 14.9053 1.50195C15.3273 1.50195 15.732 1.66957 16.0303 1.96794C16.3287 2.26631 16.4963 2.67099 16.4963 3.09294C16.4963 3.5149 16.3287 3.91957 16.0303 4.21794L9.27059 10.9784C9.09251 11.1564 8.8725 11.2866 8.63084 11.3572L6.47609 11.9872C6.41156 12.006 6.34315 12.0071 6.27803 11.9905C6.2129 11.9738 6.15346 11.9399 6.10593 11.8924C6.05839 11.8448 6.02451 11.7854 6.00783 11.7203C5.99114 11.6551 5.99227 11.5867 6.01109 11.5222L6.64109 9.36744C6.71199 9.12598 6.84249 8.90624 7.02059 8.72844L13.7803 1.96794Z" stroke="currentColor" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
+
+function accountItem(iconKey, label, chipText, chipClass, iconColor = '#171717') {
+  const svg = ACCT_ICONS[iconKey] || ACCT_ICONS.published;
+  return `<div class="account-item">
+    <div class="account-item-left"><div class="account-icon" style="color:${iconColor}">${svg}</div><span class="account-label" style="color:${iconColor}">${label}</span></div>
+    <span class="account-chip ${chipClass}">${chipText}</span>
+  </div>`;
+}
+
+function epRow(num, title, plays, wt, comp, compClass, date) {
+  const compHTML = (comp === 0 && !compClass)
+    ? `<span class="completion-pct" style="color:#a3a3a3">&mdash;</span>`
+    : `<div class="completion-track"><div class="completion-fill ${compClass}" style="width:${comp}%"></div></div><span class="completion-pct">${comp}%</span>`;
+  return `<div class="ep-table-row">
+    <div class="ep-cell ep-cell-num">${num}</div>
+    <div class="ep-cell ep-cell-episode"><div class="ep-title-cell"><div class="ep-thumb"></div><span class="ep-name">${title}</span></div></div>
+    <div class="ep-cell ep-cell-stat">${plays}</div>
+    <div class="ep-cell ep-cell-stat">${wt}</div>
+    <div class="ep-cell ep-cell-completion">${compHTML}</div>
+    <div class="ep-cell ep-cell-date">${date}</div>
+    <div class="ep-cell-actions"><button class="ep-more-btn">${IC.more}</button></div>
+  </div>`;
+}
+
+function epTableHeaders() {
+  return `<div class="ep-table-header-row">
+    <div class="ep-cell-header" style="width:55px">#</div>
+    <div class="ep-cell-header" style="flex:1">Episode</div>
+    <div class="ep-cell-header right" style="width:70px">Plays</div>
+    <div class="ep-cell-header right" style="width:70px">Watch Time</div>
+    <div class="ep-cell-header center" style="width:120px">Completion</div>
+    <div class="ep-cell-header" style="width:80px">Published</div>
+    <div style="width:52px"></div>
+  </div><div class="ep-table-divider"></div>`;
+}
+
+function feySection(prompts) {
+  return `<div class="card">
+    <div class="fey-header">
+      <div class="fey-title">${IC.sparkFey} Fey AI</div>
+      <button class="fey-chat-btn">Chat ${IC.chat}</button>
+    </div>
+    <div class="fey-body">
+      <div class="fey-pills">${prompts.map(p => `<button class="fey-pill">${p}</button>`).join('')}</div>
+      <div class="fey-spacer"></div>
+      <div class="fey-input"><span class="fey-input-ph">Ask Fey anything about your podcast...</span></div>
+      <div class="fey-footnote">Analytics AI (beta)</div>
+    </div>
+  </div>`;
+}
+
+// ── Retention chart SVG (full) ──
+const RETENTION_FULL = `<div class="retention-section">
+  <div class="retention-header">
+    <span class="retention-label">Retention curve</span>
+    <a href="retention.html" class="retention-link">Full analysis ${IC.arrow}</a>
+  </div>
+  <div class="retention-chart-wrap" id="retChartWrap">
+    <div class="ret-hover-line" id="retHoverLine"></div>
+    <div class="ret-hover-dot yt" id="retDotYT"></div>
+    <div class="ret-hover-dot sp" id="retDotSP"></div>
+    <div class="ret-hover-dot rs" id="retDotRS"></div>
+    <div class="ret-tooltip" id="retTooltip">
+      <div class="ret-tp-item"><span class="ret-tp-label"><span class="ret-tp-dot" style="background:var(--youtube)"></span>YouTube</span><span class="ret-tp-value" id="retTpYT">&mdash;</span></div>
+      <div class="ret-tp-item"><span class="ret-tp-label"><span class="ret-tp-dot" style="background:var(--spotify)"></span>Spotify</span><span class="ret-tp-value" id="retTpSP">&mdash;</span></div>
+      <div class="ret-tp-item"><span class="ret-tp-label"><span class="ret-tp-dot" style="background:var(--rss)"></span>RSS</span><span class="ret-tp-value" id="retTpRS">&mdash;</span></div>
+    </div>
+    <svg class="retention-chart" viewBox="0 0 700 180" preserveAspectRatio="none">
+      <line x1="0" y1="0" x2="700" y2="0" stroke="#f4f4f5" stroke-width="1"/>
+      <line x1="0" y1="45" x2="700" y2="45" stroke="#f4f4f5" stroke-width="1"/>
+      <line x1="0" y1="90" x2="700" y2="90" stroke="#f4f4f5" stroke-width="1"/>
+      <line x1="0" y1="135" x2="700" y2="135" stroke="#f4f4f5" stroke-width="1"/>
+      <line x1="0" y1="180" x2="700" y2="180" stroke="#f4f4f5" stroke-width="1"/>
+      <line x1="140" y1="0" x2="140" y2="180" stroke="var(--muted-foreground)" stroke-width="0.5" stroke-dasharray="4,4" opacity="0.4"/>
+      <polyline fill="none" stroke="var(--youtube)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.8" points="0,4 14,6 28,8 42,10 56,12 70,14 84,16 98,18 112,22 126,28 140,60 154,72 168,78 182,82 196,86 210,90 238,96 266,100 294,104 322,108 350,112 378,116 406,120 434,122 462,124 490,126 518,128 546,130 574,132 602,134 630,136 658,138 686,140 700,142"/>
+      <polyline fill="none" stroke="var(--spotify)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.8" points="0,4 14,8 28,14 42,20 56,26 70,32 84,38 98,44 112,52 126,62 140,90 154,100 168,108 182,116 196,120 210,124 238,128 266,132 294,134 322,136 350,137 378,138 406,139 434,140 462,140 490,141 518,142 546,142 574,142 602,142 630,142 658,142 686,142 700,142"/>
+      <polyline fill="none" stroke="var(--rss)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7" points="0,4 14,10 28,18 42,28 56,38 70,48 84,58 98,68 112,80 126,92 140,120 154,130 168,138 182,144 196,148 210,152 238,156 266,158 294,160 322,162 350,163 378,164 406,165 434,166 462,166 490,167 518,167 546,168 574,168 602,168 630,168 658,168 686,168 700,168"/>
+    </svg>
+  </div>
+  <div class="retention-axis"><span>0:00</span><span>5:03</span><span>10:07</span><span>15:10</span><span>20:14</span><span>25:17</span></div>
+</div>`;
+
+// ═══════════════════════════════════════
+// STATE RENDERERS
+// ═══════════════════════════════════════
+
+function renderState7() {
+  return `<div class="page-header">
+    <div>
+      <div class="greeting">${skelBlock(340, 20)}</div>
+      <div class="greeting-sub">${skelBlock(220, 14)}</div>
+    </div>
+    ${timeTabs(true)}
+  </div>
+  <div class="content">
+    <div class="kpi-grid">
+      ${['Total Plays','Watch Time','Unique Viewers','Subscribers'].map(l => `<div class="kpi-card">
+        <div class="kpi-header"><span class="kpi-label">${l}</span></div>
+        <div class="kpi-body">${skelBlock(80, 32)} ${skelBlock(72, 28)}</div>
+        <div class="kpi-sub">${skelBlock(120, 12)}</div>
+      </div>`).join('')}
+    </div>
+    <div class="grid-main">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Latest Episode</span>${skelBlock(60, 14)}</div>
+        <div class="latest-ep-body">
+          <div class="latest-ep-row">
+            <div class="latest-ep-thumb" style="align-self:start"><div class="skel" style="width:100%;height:100%;position:absolute;inset:0"></div></div>
+            <div class="latest-ep-info" style="gap:8px">
+              ${skelBlock(50, 14)}
+              ${skelBlock(260, 16)}
+              ${skelBlock(140, 12)}
+              <div class="stats-row" style="margin-top:auto">
+                ${[1,2,3].map(() => `<div class="stat-cell">${skelBlock(50, 12)}<br>${skelBlock(60, 20)}<br>${skelBlock(40, 12)}</div>`).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:16px 24px">${skelBlock(500, 48)}</div>
+        <div style="padding:16px 24px">${skelBlock(0, 0)}<div class="skel skel-chart"></div></div>
+      </div>
+      <div class="right-top">
+        <div class="card" style="flex:1">
+          <div class="card-header"><span class="card-title">Insights</span></div>
+          <div class="insights-body">
+            ${[1,2,3,4].map(() => `<div class="insight-item"><div class="skel skel-circle"></div><div style="flex:1">${skelBlock(200, 14)}<br>${skelBlock(160, 14)}</div></div><div class="insight-divider"></div>`).join('')}
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Platform Distribution</span></div>
+          <div class="platform-body">
+            ${[1,2,3].map(() => `<div class="platform-row">${skelBlock(80, 18)} <div class="platform-bar-wrap"><div class="skel" style="height:4px;width:60%"></div></div> ${skelBlock(40, 14)} ${skelBlock(30, 20)}</div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="fey-header"><div class="fey-title">${IC.sparkFey} Fey AI</div></div>
+        <div class="fey-body">
+          <div class="fey-pills">${[140,180,160].map(w => `<span class="skel" style="width:${w}px;height:32px;border-radius:4px;flex-shrink:0"></span>`).join('')}</div>
+          <div class="fey-spacer"></div>
+          <div class="fey-input" style="opacity:0.5"><span class="fey-input-ph">Ask Fey anything about your podcast...</span></div>
+          <div class="fey-footnote">Analytics AI (beta)</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Account</span></div>
+        <div class="account-body">
+          ${[1,2,3,4,5,6].map(() => `<div class="account-item">${skelBlock(18, 18)} ${skelBlock(80, 15)} <span style="margin-left:auto">${skelBlock(40, 16)}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="episodes-section"><div class="card">
+      <div class="card-header"><span class="card-title">Recent Episodes</span></div>
+      <div style="padding:0 24px 16px">
+        ${epTableHeaders()}
+        ${[1,2,3,4].map(() => `<div class="ep-table-row"><div class="ep-cell ep-cell-num">${skelBlock(20, 14)}</div><div class="ep-cell ep-cell-episode"><div class="ep-title-cell"><div class="skel" style="height:32px;aspect-ratio:16/9;border-radius:2px"></div>${skelBlock(180, 14)}</div></div><div class="ep-cell ep-cell-stat">${skelBlock(40, 14)}</div><div class="ep-cell ep-cell-stat">${skelBlock(40, 14)}</div><div class="ep-cell ep-cell-completion">${skelBlock(80, 4)}</div><div class="ep-cell ep-cell-date">${skelBlock(50, 14)}</div><div class="ep-cell-actions"></div></div><div class="ep-table-divider"></div>`).join('')}
+      </div>
+    </div></div>
+  </div>`;
+}
+
+function renderState3() {
+  return `<div class="page-header">
+    <div>
+      <div class="greeting">Publish your first episode.</div>
+      <div class="greeting-sub">Diary of a CEO &middot; RSS active</div>
+    </div>
+    ${timeTabs(true)}
+  </div>
+  <div class="content">
+    <div class="kpi-grid">
+      ${kpiCard('Total Plays', '&mdash;', '', '', 'Publish your first episode to start tracking', '')}
+      ${kpiCard('Watch Time', '&mdash;', '', '', 'Publish your first episode to start tracking', '')}
+      ${kpiCard('Unique Viewers', '&mdash;', '', '', 'Publish your first episode to start tracking', '')}
+      ${kpiCard('Subscribers', '&mdash;', '', '', 'Publish your first episode to start tracking', '')}
+    </div>
+    <div class="grid-main">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Latest Episode</span></div>
+        <div class="empty-cta-card">
+          <div class="empty-cta-icon">${IC.upload}</div>
+          <div class="empty-cta-heading">No episodes yet</div>
+          <div class="empty-cta-body">Publish your first episode to start tracking performance across your connected platforms.</div>
+          <button class="empty-cta-btn">${IC.upload} Create Episode</button>
+        </div>
+      </div>
+      <div class="right-top">
+        <div class="card" style="flex:1">
+          <div class="card-header"><span class="card-title">Insights</span></div>
+          <div class="empty-message">Insights will appear here after your first episode is published.</div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Platform Distribution</span></div>
+          <div class="platform-body">
+            ${platformRow('yt', 'YouTube', '0', '&mdash;', '&mdash;')}
+            ${platformRow('sp', 'Spotify', '0', '&mdash;', '&mdash;')}
+            ${platformRow('rs', 'RSS Feed', '0', '&mdash;', '&mdash;')}
+          </div>
+        </div>
+      </div>
+      ${feySection(['How do I publish my first episode?','What formats does Flightcast support?','How does cross-platform publishing work?'])}
+      <div class="card">
+        <div class="card-header"><span class="card-title">Account</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">Manage</a></div>
+        <div class="account-body">
+          ${accountItem('rs', 'RSS Feed', 'Active', 'active', 'var(--rss)')}
+          ${accountItem('yt', 'YouTube', 'Not connected', 'count', '#a3a3a3')}
+          ${accountItem('sp', 'Spotify', 'Not connected', 'count', '#a3a3a3')}
+          ${accountItem('published', 'Published', '0', 'count')}
+          ${accountItem('scheduled', 'Scheduled', '0', 'count')}
+          ${accountItem('drafts', 'Drafts', '0', 'count')}
+        </div>
+      </div>
+    </div>
+    <div class="episodes-section"><div class="card">
+      <div class="card-header"><span class="card-title">Recent Episodes</span></div>
+      <div style="padding:0 24px 16px">
+        ${epTableHeaders()}
+        <div class="empty-message">No episodes yet.</div>
+      </div>
+    </div></div>
+  </div>`;
+}
+
+function renderState1() {
+  return `<div class="page-header">
+    <div>
+      <div class="greeting">247 episodes imported. Let&rsquo;s finish setting up.</div>
+      <div class="greeting-sub">Diary of a CEO &middot; Setup in progress</div>
+    </div>
+    ${timeTabs(true)}
+  </div>
+  <div class="content">
+    <div class="kpi-grid">
+      ${kpiCard('Total Plays', '&mdash;', '', '', 'Import analytics to see historical data', '')}
+      ${kpiCard('Watch Time', '&mdash;', '', '', 'Import analytics to see historical data', '')}
+      ${kpiCard('Unique Viewers', '&mdash;', '', '', 'Import analytics to see historical data', '')}
+      ${kpiCard('Subscribers', '&mdash;', '', '', 'Import analytics to see historical data', '')}
+    </div>
+    <!-- Setup Checklist — full width, hero of this state -->
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-header"><span class="card-title">Setup Checklist</span><span class="checklist-progress"><span class="checklist-progress-bar"><div class="checklist-progress-fill" style="width:0%"></div></span>0 of 8</span></div>
+      <div class="checklist-body" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 32px">
+        <div class="checklist-phase">
+          <div class="checklist-phase-label">Resumable</div>
+          <div class="checklist-item"><div class="checklist-icon">${IC.check}</div><div class="checklist-info"><div class="checklist-name">Install Chrome extension</div><div class="checklist-desc">Required for analytics import</div></div><button class="checklist-action">Install</button></div>
+          <div class="checklist-item"><div class="checklist-icon">${IC.check}</div><div class="checklist-info"><div class="checklist-name">Import historical analytics</div><div class="checklist-desc">Bring your existing data into Flightcast</div></div><button class="checklist-action">Import</button></div>
+        </div>
+        <div class="checklist-phase">
+          <div class="checklist-phase-label">Required</div>
+          <div class="checklist-item"><div class="checklist-icon">${IC.check}</div><div class="checklist-info"><div class="checklist-name">Choose your plan</div><div class="checklist-desc">Required to publish and go live</div></div><button class="checklist-action">Choose</button></div>
+          <div class="checklist-item"><div class="checklist-icon">${IC.check}</div><div class="checklist-info"><div class="checklist-name">Import Spotify media</div><div class="checklist-desc">Sync your Spotify catalog</div></div><button class="checklist-action">Start</button></div>
+          <div class="checklist-item"><div class="checklist-icon">${IC.check}</div><div class="checklist-info"><div class="checklist-name">Verify episode backlog</div><div class="checklist-desc">Check imported episodes are correct</div></div><button class="checklist-action">Verify</button></div>
+          <div class="checklist-item"><div class="checklist-icon">${IC.check}</div><div class="checklist-info"><div class="checklist-name">Redirect your RSS feed</div><div class="checklist-desc">Go live on all platforms</div></div><button class="checklist-action">Redirect</button></div>
+        </div>
+        <div class="checklist-phase">
+          <div class="checklist-phase-label">Optional</div>
+          <div class="checklist-item"><div class="checklist-icon">${IC.check}</div><div class="checklist-info"><div class="checklist-name">Connect YouTube channel</div><div class="checklist-desc">Unlock video analytics</div></div><button class="checklist-action">Connect</button></div>
+          <div class="checklist-item"><div class="checklist-icon">${IC.check}</div><div class="checklist-info"><div class="checklist-name">Connect Spotify for publishing</div><div class="checklist-desc">Publish directly to Spotify</div></div><button class="checklist-action">Connect</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid-main">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Latest Episode</span><span class="badge badge-muted">Imported</span></div>
+        <div class="latest-ep-body">
+          <div class="latest-ep-row">
+            <div class="latest-ep-thumb" style="align-self:start"><div class="latest-ep-thumb-inner"><svg width="80" height="24" viewBox="0 0 80 24" fill="none"><text x="0" y="18" font-family="Inter,sans-serif" font-weight="700" font-size="18" fill="#fff">DOAC</text></svg></div><span class="latest-ep-dur">1:48:22</span></div>
+            <div class="latest-ep-info">
+              <div class="latest-ep-top"><span class="badge badge-muted">Ep 247</span></div>
+              <div class="latest-ep-name">The Nutritionist: &ldquo;5 Foods You Should Never Eat Again&rdquo;</div>
+              <div class="latest-ep-meta">Originally published Jan 12, 2026</div>
+              <div class="stats-row" style="margin-top:auto">
+                <div class="stat-cell"><div class="stat-label">Plays</div><div class="stat-value">&mdash;</div></div>
+                <div class="stat-cell"><div class="stat-label">Watch Time</div><div class="stat-value">&mdash;</div></div>
+                <div class="stat-cell"><div class="stat-label">Completion</div><div class="stat-value">&mdash;</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="right-top">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Platform Distribution</span></div>
+          <div class="platform-body">
+            ${platformRow('yt', 'YouTube', '0', '&mdash;', '&mdash;', false)}
+            ${platformRow('sp', 'Spotify', '0', '&mdash;', '&mdash;', false)}
+            ${platformRow('rs', 'RSS Feed', '0', '&mdash;', '&mdash;')}
+          </div>
+        </div>
+      </div>
+      ${feySection(['What can Flightcast do for my podcast?','How do I complete my setup?','What analytics will I see after redirecting?'])}
+      <div class="card">
+        <div class="card-header"><span class="card-title">Account</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">Manage</a></div>
+        <div class="account-body">
+          ${accountItem('rs', 'RSS Feed', 'Active', 'active', 'var(--rss)')}
+          ${accountItem('yt', 'YouTube', 'Not connected', 'count', '#a3a3a3')}
+          ${accountItem('sp', 'Spotify', 'Not connected', 'count', '#a3a3a3')}
+          ${accountItem('published', 'Published', '0', 'count')}
+          ${accountItem('scheduled', 'Scheduled', '0', 'count')}
+          ${accountItem('drafts', 'Drafts', '247', 'count')}
+        </div>
+      </div>
+    </div>
+    <div class="episodes-section"><div class="card">
+      <div class="card-header"><span class="card-title">Recent Episodes</span><span class="badge badge-muted">Imported</span></div>
+      <div style="padding:0 24px 16px">
+        ${epTableHeaders()}
+        ${epRow(247, 'The Nutritionist: "5 Foods You Should Never Eat Again"', '&mdash;', '&mdash;', 0, '', 'Jan 12')}
+        <div class="ep-table-divider"></div>
+        ${epRow(246, 'The Sleep Scientist: Why You\'re Tired All The Time', '&mdash;', '&mdash;', 0, '', 'Jan 5')}
+        <div class="ep-table-divider"></div>
+        ${epRow(245, 'I Built a $100M Business at 21', '&mdash;', '&mdash;', 0, '', 'Dec 29')}
+        <div class="ep-table-divider"></div>
+        ${epRow(244, 'The Gut Doctor: Your Stomach Is Controlling Your Brain', '&mdash;', '&mdash;', 0, '', 'Dec 22')}
+      </div>
+    </div></div>
+  </div>`;
+}
+
+function renderState2() {
+  return `<div class="page-header">
+    <div>
+      <div class="greeting">Almost there. Redirect your RSS to go live.</div>
+      <div class="greeting-sub">Diary of a CEO &middot; Setup in progress</div>
+    </div>
+    ${timeTabs(true)}
+  </div>
+  <div class="content">
+    <div class="kpi-grid">
+      ${kpiCard('Total Plays', '38K', '', '', 'Historical &middot; RSS', '0,22 9,21 18,20 27,19 36,18 45,17 54,16 63,15 72,14')}
+      ${kpiCard('Watch Time', '12.4Kh', '', '', 'Historical &middot; RSS', '0,22 9,21 18,20 27,19 36,18 45,17 54,16 63,15 72,14')}
+      ${kpiCard('Unique Viewers', '&mdash;', '', '', 'Connect YouTube to track', '')}
+      ${kpiCard('Subscribers', '&mdash;', '', '', 'Connect YouTube to track', '')}
+    </div>
+    <!-- Setup Checklist — full width, 4/8 complete -->
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-header"><span class="card-title">Setup Checklist</span><span class="checklist-progress"><span class="checklist-progress-bar"><div class="checklist-progress-fill" style="width:50%"></div></span>4 of 8</span></div>
+      <div class="checklist-body" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 32px">
+        <div class="checklist-phase">
+          <div class="checklist-phase-label">Resumable</div>
+          <div class="checklist-item done"><div class="checklist-icon done">${IC.check}</div><div class="checklist-info"><div class="checklist-name">Install Chrome extension</div></div></div>
+          <div class="checklist-item done"><div class="checklist-icon done">${IC.check}</div><div class="checklist-info"><div class="checklist-name">Import historical analytics</div></div></div>
+        </div>
+        <div class="checklist-phase">
+          <div class="checklist-phase-label">Required</div>
+          <div class="checklist-item done"><div class="checklist-icon done">${IC.check}</div><div class="checklist-info"><div class="checklist-name">Choose your plan</div></div></div>
+          <div class="checklist-item done"><div class="checklist-icon done">${IC.check}</div><div class="checklist-info"><div class="checklist-name">Import Spotify media</div></div></div>
+          <div class="checklist-item"><div class="checklist-icon">${IC.check}</div><div class="checklist-info"><div class="checklist-name">Verify episode backlog</div><div class="checklist-desc">Check imported episodes are correct</div></div><button class="checklist-action">Verify</button></div>
+          <div class="checklist-item"><div class="checklist-icon">${IC.check}</div><div class="checklist-info"><div class="checklist-name">Redirect your RSS feed</div><div class="checklist-desc">Go live on all platforms</div></div><button class="checklist-action">Redirect</button></div>
+        </div>
+        <div class="checklist-phase">
+          <div class="checklist-phase-label">Optional</div>
+          <div class="checklist-item"><div class="checklist-icon">${IC.check}</div><div class="checklist-info"><div class="checklist-name">Connect YouTube channel</div><div class="checklist-desc">Unlock video analytics</div></div><button class="checklist-action">Connect</button></div>
+          <div class="checklist-item"><div class="checklist-icon">${IC.check}</div><div class="checklist-info"><div class="checklist-name">Connect Spotify for publishing</div><div class="checklist-desc">Publish directly to Spotify</div></div><button class="checklist-action">Connect</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid-main">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Latest Episode</span><span class="badge badge-muted">Imported</span></div>
+        <div class="latest-ep-body">
+          <div class="latest-ep-row">
+            <div class="latest-ep-thumb" style="align-self:start"><div class="latest-ep-thumb-inner"><svg width="80" height="24" viewBox="0 0 80 24" fill="none"><text x="0" y="18" font-family="Inter,sans-serif" font-weight="700" font-size="18" fill="#fff">DOAC</text></svg></div><span class="latest-ep-dur">1:48:22</span></div>
+            <div class="latest-ep-info">
+              <div class="latest-ep-top"><span class="badge badge-muted">Ep 247</span></div>
+              <div class="latest-ep-name">The Nutritionist: &ldquo;5 Foods You Should Never Eat Again&rdquo;</div>
+              <div class="latest-ep-meta">Originally published Jan 12, 2026</div>
+              <div class="stats-row" style="margin-top:auto">
+                <div class="stat-cell"><div class="stat-label">Plays</div><div class="stat-value">&mdash;</div></div>
+                <div class="stat-cell"><div class="stat-label">Watch Time</div><div class="stat-value">&mdash;</div></div>
+                <div class="stat-cell"><div class="stat-label">Completion</div><div class="stat-value">&mdash;</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="right-top">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Platform Distribution</span></div>
+          <div class="platform-body">
+            ${platformRow('yt', 'YouTube', '0', '&mdash;', '&mdash;', false)}
+            ${platformRow('sp', 'Spotify', '0', '&mdash;', '&mdash;', false)}
+            ${platformRow('rs', 'RSS Feed', '0', '&mdash;', '&mdash;')}
+          </div>
+        </div>
+      </div>
+      ${feySection(['What can Flightcast do for my podcast?','How do I complete my setup?','What analytics will I see after redirecting?'])}
+      <div class="card">
+        <div class="card-header"><span class="card-title">Account</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">Manage</a></div>
+        <div class="account-body">
+          ${accountItem('rs', 'RSS Feed', 'Active', 'active', 'var(--rss)')}
+          ${accountItem('yt', 'YouTube', 'Not connected', 'count', '#a3a3a3')}
+          ${accountItem('sp', 'Spotify', 'Not connected', 'count', '#a3a3a3')}
+          ${accountItem('published', 'Published', '0', 'count')}
+          ${accountItem('scheduled', 'Scheduled', '0', 'count')}
+          ${accountItem('drafts', 'Drafts', '247', 'count')}
+        </div>
+      </div>
+    </div>
+    <div class="episodes-section"><div class="card">
+      <div class="card-header"><span class="card-title">Recent Episodes</span><span class="badge badge-muted">Imported</span></div>
+      <div style="padding:0 24px 16px">
+        ${epTableHeaders()}
+        ${epRow(247, 'The Nutritionist: "5 Foods You Should Never Eat Again"', '&mdash;', '&mdash;', 0, '', 'Jan 12')}
+        <div class="ep-table-divider"></div>
+        ${epRow(246, 'The Sleep Scientist: Why You\'re Tired All The Time', '&mdash;', '&mdash;', 0, '', 'Jan 5')}
+        <div class="ep-table-divider"></div>
+        ${epRow(245, 'I Built a $100M Business at 21', '&mdash;', '&mdash;', 0, '', 'Dec 29')}
+        <div class="ep-table-divider"></div>
+        ${epRow(244, 'The Gut Doctor: Your Stomach Is Controlling Your Brain', '&mdash;', '&mdash;', 0, '', 'Dec 22')}
+      </div>
+    </div></div>
+  </div>`;
+}
+
+function renderState4() {
+  return `<div class="page-header">
+    <div>
+      <div class="greeting">2,143 plays in the first 6 hours.</div>
+      <div class="greeting-sub">Apr 3, 2026 &middot; Last updated 12m ago</div>
+    </div>
+    ${timeTabs(false)}
+  </div>
+  <div class="content">
+    <div class="kpi-grid">
+      ${kpiCard('Total Plays', '2.1K', '', '', 'First Flightcast publish', '0,24 8,23 16,22 24,20 32,18 40,15 48,12 56,9 64,6 72,3')}
+      ${kpiCard('Watch Time', '890h', '', '', 'First Flightcast publish', '0,22 9,21 18,19 27,17 36,15 45,12 54,10 63,7 72,4')}
+      ${kpiCard('Unique Viewers', '1.4K', '', '', 'First Flightcast publish', '0,22 9,20 18,18 27,16 36,14 45,11 54,9 63,6 72,4')}
+      ${kpiCard('Subscribers', '4.16M', '', '', '+42 new since publishing', '0,20 9,19 18,18 27,17 36,16 45,14 54,12 63,10 72,8')}
+    </div>
+    <div class="grid-main">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Latest Episode</span><span class="badge">${IC.liveDot}Live &middot; 6h ago</span></div>
+        <div class="latest-ep-body">
+          <div class="latest-ep-row">
+            <div class="latest-ep-thumb" style="align-self:start"><div class="latest-ep-thumb-inner"><svg width="80" height="24" viewBox="0 0 80 24" fill="none"><text x="0" y="18" font-family="Inter,sans-serif" font-weight="700" font-size="18" fill="#fff">DOAC</text></svg></div><span class="latest-ep-dur">1:52:14</span></div>
+            <div class="latest-ep-info">
+              <div class="latest-ep-top"><span class="badge badge-muted">Ep 248</span></div>
+              <div class="latest-ep-name">The First One on Flightcast: &ldquo;Why We Switched&rdquo;</div>
+              <div class="latest-ep-meta">Published Apr 3, 2026</div>
+              <div class="stats-row" style="margin-top:auto">
+                <div class="stat-cell"><div class="stat-label">Plays</div><div class="stat-value">2.1K</div></div>
+                <div class="stat-cell"><div class="stat-label">Watch Time</div><div class="stat-value">890h</div></div>
+                <div class="stat-cell"><div class="stat-label">Completion</div><div class="stat-value">&mdash;</div><div class="stat-sub" style="color:#7f7f7f">Too early</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="insight-banner">
+          ${IC.insightUp}
+          <div class="insight-banner-text">First 6 hours &mdash; data is still coming in. Check back tomorrow for a full performance picture.</div>
+        </div>
+        <div class="retention-section">
+          <div class="retention-header"><span class="retention-label">Retention curve</span></div>
+          <div style="padding:24px 0;text-align:center;color:#a3a3a3;font-size:13px;font-weight:500">Retention data available after 24 hours</div>
+        </div>
+      </div>
+      <div class="right-top">
+        <div class="card" style="flex:1">
+          <div class="card-header"><span class="card-title">Insights</span></div>
+          <div class="insights-body">
+            <div class="insight-item"><div class="milestone-dot"></div><div class="insight-text"><strong>First 1,000 plays reached</strong> on Flightcast.</div><div class="insight-time">3h</div></div>
+            <div class="insight-divider"></div>
+            <div class="insight-item"><div class="milestone-dot"></div><div class="insight-text"><strong>Ep 248 crossed 500 views</strong> on YouTube.</div><div class="insight-time">4h</div></div>
+            <div class="insight-divider"></div>
+            <div class="insight-item"><div class="milestone-dot"></div><div class="insight-text"><strong>First 100 Spotify streams</strong> via Flightcast.</div><div class="insight-time">5h</div></div>
+            <div class="insight-divider"></div>
+            <div class="insight-item"><div class="milestone-dot"></div><div class="insight-text"><strong>+42 new subscribers</strong> since publishing.</div><div class="insight-time">6h</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Platform Distribution</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">Details</a></div>
+          <div class="platform-body">
+            ${platformRow('yt', 'YouTube', '72%', '1.5K', '72%')}
+            ${platformRow('sp', 'Spotify', '18%', '386', '18%')}
+            ${platformRow('rs', 'RSS Feed', '10%', '214', '10%')}
+          </div>
+        </div>
+      </div>
+      ${feySection(['How are my episodes performing?','What trends do you see in my analytics?','How can I improve engagement?'])}
+      <div class="card">
+        <div class="card-header"><span class="card-title">Account</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">Manage</a></div>
+        <div class="account-body">
+          ${accountItem('yt', 'YouTube', 'Active', 'active', 'var(--youtube)')}
+          ${accountItem('sp', 'Spotify', 'Active', 'active', 'var(--spotify)')}
+          ${accountItem('rs', 'RSS Feed', 'Active', 'active', 'var(--rss)')}
+          ${accountItem('published', 'Published', '1', 'count')}
+          ${accountItem('scheduled', 'Scheduled', '0', 'count')}
+          ${accountItem('drafts', 'Drafts', '0', 'count')}
+        </div>
+      </div>
+    </div>
+    <div class="episodes-section"><div class="card">
+      <div class="card-header"><span class="card-title">Recent Episodes</span></div>
+      <div style="padding:0 24px 16px">
+        ${epTableHeaders()}
+        ${epRow(248, 'The First One on Flightcast: &ldquo;Why We Switched&rdquo;', '2.1K', '890h', 0, '', 'Today')}
+      </div>
+    </div></div>
+  </div>`;
+}
+
+// State 5: Episode Just Dropped (< 4 hours) — established show, real-time energy
+function renderState5() {
+  return `<div class="page-header">
+    <div>
+      <div class="greeting">48,291 plays in the first 2 hours.</div>
+      <div class="greeting-sub">Apr 3, 2026 &middot; Last updated 4m ago</div>
+    </div>
+    ${timeTabs(false)}
+  </div>
+  <div class="content">
+    <div class="kpi-grid">
+      ${kpiCard('Total Plays', '3.9M', 'up', '24.1%', 'vs. 3.1M prev. period', '0,24 8,22 16,23 24,19 32,17 40,15 48,13 56,10 64,7 72,2')}
+      ${kpiCard('Watch Time', '1.2 Mh', 'up', '19.8%', 'vs. 980K hours prev.', '0,22 9,20 18,18 27,21 36,16 45,13 54,10 63,8 72,3')}
+      ${kpiCard('Unique Viewers', '1.7M', 'up', '12.4%', 'vs. 1.52M prev. period', '0,18 9,20 18,16 27,14 36,17 45,12 54,10 63,8 72,5')}
+      ${kpiCard('Subscribers', '8.24M', 'up', '8.6%', '+38.9K new this period', '0,24 9,22 18,21 27,20 36,18 45,16 54,13 63,10 72,7')}
+    </div>
+    <div class="grid-main">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Latest Episode</span><span class="badge">${IC.liveDot}Live &middot; 2h ago</span></div>
+        <div class="latest-ep-body">
+          <div class="latest-ep-row">
+            <div class="latest-ep-thumb" style="align-self:start"><div class="latest-ep-thumb-inner"><svg width="80" height="24" viewBox="0 0 80 24" fill="none"><text x="0" y="18" font-family="Inter,sans-serif" font-weight="700" font-size="18" fill="#fff">DOAC</text></svg></div><span class="latest-ep-dur">2:14:38</span></div>
+            <div class="latest-ep-info">
+              <div class="latest-ep-top"><span class="badge badge-muted">Ep 313</span></div>
+              <div class="latest-ep-name">Dr. Paul Conti: &ldquo;The Hidden Epidemic Nobody Wants to Talk About&rdquo;</div>
+              <div class="latest-ep-meta">Published Apr 3, 2026</div>
+              <div class="stats-row" style="margin-top:auto">
+                <div class="stat-cell"><div class="stat-label">Plays</div><div class="stat-value">48.3K</div><div class="stat-sub up">Tracking ahead</div></div>
+                <div class="stat-cell"><div class="stat-label">Watch Time</div><div class="stat-value">14.2Kh</div><div class="stat-sub up">+22% vs Ep 312</div></div>
+                <div class="stat-cell"><div class="stat-label">Completion</div><div class="stat-value">&mdash;</div><div class="stat-sub" style="color:#7f7f7f">Too early</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="insight-banner">
+          ${IC.insightUp}
+          <div class="insight-banner-text">First 2h &mdash; <strong>48K plays</strong>. Tracking <strong>22% ahead</strong> of Ep 312&rsquo;s first 2 hours.</div>
+        </div>
+        <div class="retention-section">
+          <div class="retention-header"><span class="retention-label">Retention curve</span></div>
+          <div style="padding:24px 0;text-align:center;color:#a3a3a3;font-size:13px;font-weight:500">Very early data &mdash; full retention curve in ~6 hours</div>
+        </div>
+      </div>
+      <div class="right-top">
+        <div class="card" style="flex:1">
+          <div class="card-header"><span class="card-title">Insights</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">View all</a></div>
+          <div class="insights-body">
+            <div class="insight-item"><div class="milestone-dot"></div><div class="insight-text"><strong>Ep 313 crossed 10K plays</strong> in the first hour.</div><div class="insight-time">1h</div></div>
+            <div class="insight-divider"></div>
+            <div class="insight-item"><div class="milestone-dot"></div><div class="insight-text"><strong>Ep 313 published</strong> to YouTube, Spotify, and RSS Feed.</div><div class="insight-time">2h</div></div>
+            <div class="insight-divider"></div>
+            <div class="insight-item"><div class="insight-text"><strong>Ep 312 crossed 400K plays</strong> in 48 hours &mdash; fastest to 400K in the last 30 episodes.</div><div class="insight-time">2d</div></div>
+            <div class="insight-divider"></div>
+            <div class="insight-item"><div class="insight-text"><strong>Total subscribers passed 8.2M</strong> on Mar 30.</div><div class="insight-time">4d</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Platform Distribution</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">Details</a></div>
+          <div class="platform-body">
+            ${platformRow('yt', 'YouTube', '62%', '1.49M', '62%')}
+            ${platformRow('sp', 'Spotify', '28%', '672K', '28%')}
+            ${platformRow('rs', 'RSS Feed', '10%', '240K', '10%')}
+          </div>
+        </div>
+      </div>
+      ${feySection(['How are my episodes performing?','What trends do you see in my analytics?','How can I improve engagement?','What are my top performing episodes?'])}
+      <div class="card">
+        <div class="card-header"><span class="card-title">Account</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">Manage</a></div>
+        <div class="account-body">
+          ${accountItem('yt', 'YouTube', 'Active', 'active', 'var(--youtube)')}
+          ${accountItem('sp', 'Spotify', 'Active', 'active', 'var(--spotify)')}
+          ${accountItem('rs', 'RSS Feed', 'Active', 'active', 'var(--rss)')}
+          ${accountItem('published', 'Published', '313', 'count')}
+          ${accountItem('scheduled', 'Scheduled', '0', 'count')}
+          ${accountItem('drafts', 'Drafts', '5', 'count')}
+        </div>
+      </div>
+    </div>
+    <div class="episodes-section"><div class="card">
+      <div class="card-header"><span class="card-title">Recent Episodes</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">View all</a></div>
+      <div style="padding:0 24px 16px">
+        ${epTableHeaders()}
+        ${epRow(313, 'Dr. Paul Conti: &ldquo;The Hidden Epidemic Nobody Wants to Talk About&rdquo;', '48.3K', '14.2Kh', 0, '', 'Today')}
+        <div class="ep-table-divider"></div>
+        ${epRow(312, 'The Sleep Scientist: Why You\'re Tired All The Time', '412K', '104Kh', 71, 'high', 'Mar 31')}
+        <div class="ep-table-divider"></div>
+        ${epRow(311, 'I Built a $100M Business at 21', '289K', '72Kh', 64, 'high', 'Mar 22')}
+        <div class="ep-table-divider"></div>
+        ${epRow(310, 'The Gut Doctor: Your Stomach Is Controlling Your Brain', '198K', '48Kh', 58, 'mid', 'Mar 15')}
+      </div>
+    </div></div>
+  </div>`;
+}
+
+// State 0: Happy Path — established show, full data, no special conditions
+function renderState0() {
+  return `<div class="page-header">
+    <div>
+      <div class="greeting">3.8M plays in the last 14 days.</div>
+      <div class="greeting-sub">Mar 19 &ndash; Apr 2, 2026 &middot; Last updated 34m ago</div>
+    </div>
+    ${timeTabs(false)}
+  </div>
+  <div class="content">
+    <div class="kpi-grid">
+      ${kpiCard('Total Plays', '3.8M', 'up', '22.6%', 'vs. 3.1M prev. period', '0,24 8,22 16,23 24,19 32,17 40,15 48,13 56,10 64,7 72,3')}
+      ${kpiCard('Watch Time', '1.2 Mh', 'up', '18.3%', 'vs. 980K hours prev.', '0,22 9,20 18,18 27,21 36,16 45,13 54,10 63,8 72,4')}
+      ${kpiCard('Unique Viewers', '1.7M', 'up', '11.8%', 'vs. 1.52M prev. period', '0,18 9,20 18,16 27,14 36,17 45,12 54,10 63,8 72,6')}
+      ${kpiCard('Subscribers', '8.24M', 'up', '8.4%', '+38.6K new this period', '0,24 9,22 18,21 27,20 36,18 45,16 54,13 63,10 72,8')}
+    </div>
+    <div class="grid-main">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Latest Episode</span><span class="badge">${IC.liveDot}Live &middot; 2d ago</span></div>
+        <div class="latest-ep-body">
+          <div class="latest-ep-row">
+            <div class="latest-ep-thumb" style="align-self:start"><div class="latest-ep-thumb-inner"><svg width="80" height="24" viewBox="0 0 80 24" fill="none"><text x="0" y="18" font-family="Inter,sans-serif" font-weight="700" font-size="18" fill="#fff">DOAC</text></svg></div><span class="latest-ep-dur">2:14:38</span></div>
+            <div class="latest-ep-info">
+              <div class="latest-ep-top"><span class="badge badge-muted">Ep 312</span></div>
+              <div class="latest-ep-name">Dr. Paul Conti: &ldquo;The Hidden Epidemic Nobody Wants to Talk About&rdquo;</div>
+              <div class="latest-ep-meta">Published Mar 31, 2026</div>
+              <div class="stats-row" style="margin-top:auto">
+                <div class="stat-cell"><div class="stat-label">Plays</div><div class="stat-value">487K</div><div class="stat-sub up">3.1x avg</div></div>
+                <div class="stat-cell"><div class="stat-label">Watch Time</div><div class="stat-value">142Kh</div><div class="stat-sub up">+62%</div></div>
+                <div class="stat-cell"><div class="stat-label">Completion</div><div class="stat-value">72%</div><div class="stat-sub up">Top 5%</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="insight-banner">
+          ${IC.insightUp}
+          <div class="insight-banner-text">Ep 312 crossed <strong>400K plays in 48 hours</strong> &mdash; fastest to 400K in the last 30 episodes. Peak engagement at the <strong>41:00 mark</strong>.</div>
+        </div>
+        ${RETENTION_FULL}
+      </div>
+      <div class="right-top">
+        <div class="card" style="flex:1">
+          <div class="card-header"><span class="card-title">Insights</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">View all</a></div>
+          <div class="insights-body">
+            <div class="insight-item"><div class="insight-text"><strong>Ep 312 crossed 400K plays</strong> in 48 hours &mdash; fastest to 400K in the last 30 episodes.</div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><div class="insight-dot purple"></div><div class="insight-time">2h</div></div></div>
+            <div class="insight-divider"></div>
+            <div class="insight-item"><div class="insight-text"><strong>Total subscribers passed 8.2M</strong> on Mar 30.</div><div class="insight-time">3d</div></div>
+            <div class="insight-divider"></div>
+            <div class="insight-item"><div class="insight-text"><strong>Spotify completion rate up 12%</strong> this month. Average listen-through: 68% vs 61% prev.</div><div class="insight-time">5d</div></div>
+            <div class="insight-divider"></div>
+            <div class="insight-item"><div class="insight-text"><strong>YouTube crossed 5M total plays</strong> this period. Up 22% from previous period.</div><div class="insight-time">7d</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Platform Distribution</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">Details</a></div>
+          <div class="platform-body">
+            ${platformRow('yt', 'YouTube', '62%', '1.49M', '62%')}
+            ${platformRow('sp', 'Spotify', '28%', '672K', '28%')}
+            ${platformRow('rs', 'RSS Feed', '10%', '240K', '10%')}
+          </div>
+        </div>
+      </div>
+      ${feySection(['How are my episodes performing?','What trends do you see in my analytics?','How can I improve engagement?','What are my top performing episodes?'])}
+      <div class="card">
+        <div class="card-header"><span class="card-title">Account</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">Manage</a></div>
+        <div class="account-body">
+          ${accountItem('yt', 'YouTube', 'Active', 'active', 'var(--youtube)')}
+          ${accountItem('sp', 'Spotify', 'Active', 'active', 'var(--spotify)')}
+          ${accountItem('rs', 'RSS Feed', 'Active', 'active', 'var(--rss)')}
+          ${accountItem('published', 'Published', '312', 'count')}
+          ${accountItem('scheduled', 'Scheduled', '0', 'count')}
+          ${accountItem('drafts', 'Drafts', '5', 'count')}
+        </div>
+      </div>
+    </div>
+    <div class="episodes-section"><div class="card">
+      <div class="card-header"><span class="card-title">Recent Episodes</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">View all</a></div>
+      <div style="padding:0 24px 16px">
+        ${epTableHeaders()}
+        ${epRow(312, 'Dr. Paul Conti: &ldquo;The Hidden Epidemic Nobody Wants to Talk About&rdquo;', '487K', '142Kh', 72, 'high', 'Mar 31')}
+        <div class="ep-table-divider"></div>
+        ${epRow(311, 'The Sleep Scientist: Why You\'re Tired All The Time', '289K', '72Kh', 64, 'high', 'Mar 22')}
+        <div class="ep-table-divider"></div>
+        ${epRow(310, 'I Built a $100M Business at 21', '412K', '104Kh', 71, 'high', 'Mar 15')}
+        <div class="ep-table-divider"></div>
+        ${epRow(309, 'The Gut Doctor: Your Stomach Is Controlling Your Brain', '198K', '48Kh', 58, 'mid', 'Mar 8')}
+      </div>
+    </div></div>
+  </div>`;
+}
+
+function renderState6() {
+  return `<div class="page-header">
+    <div>
+      <div class="greeting">892K plays in the last 30 days.</div>
+      <div class="greeting-sub">Mar 4 &ndash; Apr 3, 2026 &middot; Last updated 2h ago</div>
+    </div>
+    ${timeTabs(false)}
+  </div>
+  <div class="content">
+    <div class="kpi-grid">
+      ${kpiCard('Total Plays', '892K', 'down', '34.2%', 'vs. 1.36M prev. period', '0,4 8,5 16,6 24,8 32,10 40,13 48,15 56,17 64,20 72,22')}
+      ${kpiCard('Watch Time', '284Kh', 'down', '28.1%', 'vs. 395K hours prev.', '0,6 9,7 18,9 27,11 36,13 45,15 54,17 63,19 72,22')}
+      ${kpiCard('Unique Viewers', '620K', 'down', '22.7%', 'vs. 802K prev. period', '0,6 9,8 18,10 27,12 36,14 45,15 54,17 63,19 72,21')}
+      ${kpiCard('Subscribers', '8.18M', 'down', '1.2%', '+4.8K new this period', '0,10 9,11 18,12 27,13 36,14 45,15 54,16 63,17 72,18')}
+    </div>
+    <div class="grid-main">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Latest Episode</span><span class="badge badge-muted">Published &middot; 34d ago</span></div>
+        <div class="latest-ep-body">
+          <div class="latest-ep-row">
+            <div class="latest-ep-thumb" style="align-self:start"><div class="latest-ep-thumb-inner"><svg width="80" height="24" viewBox="0 0 80 24" fill="none"><text x="0" y="18" font-family="Inter,sans-serif" font-weight="700" font-size="18" fill="#fff">DOAC</text></svg></div><span class="latest-ep-dur">1:42:10</span></div>
+            <div class="latest-ep-info">
+              <div class="latest-ep-top"><span class="badge badge-muted">Ep 278</span></div>
+              <div class="latest-ep-name">The Burnout Expert: &ldquo;Why High Achievers Are Breaking Down&rdquo;</div>
+              <div class="latest-ep-meta">Published Feb 28, 2026</div>
+              <div class="stats-row" style="margin-top:auto">
+                <div class="stat-cell"><div class="stat-label">Total Plays</div><div class="stat-value">1.2M</div></div>
+                <div class="stat-cell"><div class="stat-label">Watch Time</div><div class="stat-value">348Kh</div></div>
+                <div class="stat-cell"><div class="stat-label">Completion</div><div class="stat-value">61%</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="insight-banner">
+          ${IC.insightUp}
+          <div class="insight-banner-text">Ep 278 has accumulated <strong>1.2M total plays</strong> since publishing. Still gaining <strong>~8K plays/week</strong> from search and recommendations.</div>
+        </div>
+        ${RETENTION_FULL}
+      </div>
+      <div class="right-top">
+        <div class="card" style="flex:1">
+          <div class="card-header"><span class="card-title">Insights</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">View all</a></div>
+          <div class="insights-body">
+            <div class="insight-item"><div class="insight-text"><strong>Ep 241 gained +12K plays</strong> this week from search.</div><div class="insight-time">2h</div></div>
+            <div class="insight-divider"></div>
+            <div class="insight-item"><div class="insight-text"><strong>Your top 5 episodes</strong> account for 38% of total plays this month.</div><div class="insight-time">1d</div></div>
+            <div class="insight-divider"></div>
+            <div class="insight-item"><div class="insight-text"><strong>Subscriber growth slowed</strong> to +4.8K this period vs. +18.2K last period.</div><div class="insight-time">3d</div></div>
+            <div class="insight-divider"></div>
+            <div class="insight-item"><div class="insight-text"><strong>Ep 265 trending on Spotify</strong> &mdash; up 3.4K streams this week.</div><div class="insight-time">5d</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Platform Distribution</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">Details</a></div>
+          <div class="platform-body">
+            ${platformRow('yt', 'YouTube', '58%', '517K', '58%')}
+            ${platformRow('sp', 'Spotify', '30%', '268K', '30%')}
+            ${platformRow('rs', 'RSS Feed', '12%', '107K', '12%')}
+          </div>
+        </div>
+      </div>
+      ${feySection(['Which episodes are still growing?','What content topics perform best?','How is my back catalog performing?','What should my next episode be about?'])}
+      <div class="card">
+        <div class="card-header"><span class="card-title">Account</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">Manage</a></div>
+        <div class="account-body">
+          ${accountItem('yt', 'YouTube', 'Active', 'active', 'var(--youtube)')}
+          ${accountItem('sp', 'Spotify', 'Active', 'active', 'var(--spotify)')}
+          ${accountItem('rs', 'RSS Feed', 'Active', 'active', 'var(--rss)')}
+          ${accountItem('published', 'Published', '278', 'count')}
+          ${accountItem('scheduled', 'Scheduled', '0', 'count')}
+          ${accountItem('drafts', 'Drafts', '3', 'count')}
+        </div>
+      </div>
+    </div>
+    <div class="episodes-section"><div class="card">
+      <div class="card-header"><span class="card-title">Recent Episodes</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">View all</a></div>
+      <div style="padding:0 24px 16px">
+        ${epTableHeaders()}
+        ${epRow(278, 'The Burnout Expert: "Why High Achievers Are Breaking Down"', '1.2M', '348Kh', 61, 'mid', 'Feb 28')}
+        <div class="ep-table-divider"></div>
+        ${epRow(277, 'The Memory Coach: Forget Everything You Know About Learning', '980K', '312Kh', 64, 'high', 'Feb 21')}
+        <div class="ep-table-divider"></div>
+        ${epRow(276, 'I Spent 30 Days Living Like a Monk', '1.4M', '410Kh', 68, 'high', 'Feb 14')}
+        <div class="ep-table-divider"></div>
+        ${epRow(275, 'The Dark Psychology of Social Media Addiction', '2.1M', '590Kh', 72, 'high', 'Feb 7')}
+      </div>
+    </div></div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════
+// STATE SWITCHING ENGINE
+// ═══════════════════════════════════════
+
+// ═══════════════════════════════════════
+// STATE 9: INTERACTIVE DASHBOARD
+// ═══════════════════════════════════════
+
+const S9_DATA = {
+  '7d': {
+    kpi: [
+      { label: 'Total Plays', value: '3.8M', change: 'up', changePct: '22.6%', sub: 'vs. 3.1M prev. period', sparkPts: '0,24 8,22 16,23 24,19 32,17 40,15 48,13 56,10 64,7 72,3', detailPts: [3100,3150,3280,3400,3520,3650,3800] },
+      { label: 'Watch Time', value: '1.2Mh', change: 'up', changePct: '18.3%', sub: 'vs. 980Kh prev.', sparkPts: '0,22 9,20 18,18 27,21 36,16 45,13 54,10 63,8 72,4', detailPts: [980,1010,1050,1080,1120,1160,1200] },
+      { label: 'Unique Viewers', value: '1.7M', change: 'up', changePct: '11.8%', sub: 'vs. 1.52M prev. period', sparkPts: '0,18 9,20 18,16 27,14 36,17 45,12 54,10 63,8 72,6', detailPts: [1520,1540,1580,1610,1640,1670,1700] },
+      { label: 'Subscribers', value: '8.24M', change: 'up', changePct: '8.4%', sub: '+38.6K new this period', sparkPts: '0,24 9,22 18,21 27,20 36,18 45,16 54,13 63,10 72,8', detailPts: [8201,8208,8214,8220,8226,8233,8240] },
+    ],
+    platform: [
+      { icon: 'yt', name: 'YouTube', barW: '62%', views: '1.49M', pct: '62%', prev: '1.22M' },
+      { icon: 'sp', name: 'Spotify', barW: '28%', views: '672K', pct: '28%', prev: '551K' },
+      { icon: 'rs', name: 'RSS Feed', barW: '10%', views: '240K', pct: '10%', prev: '215K' },
+    ],
+    episodes: [
+      { num: 312, title: 'Dr. Paul Conti: "The Hidden Epidemic Nobody Wants to Talk About"', plays: '487K', wt: '142Kh', comp: 72, compClass: 'high', date: 'Mar 31', playsN: 487000, wtN: 142000, compN: 72, dateN: 20260331 },
+      { num: 311, title: 'The Sleep Scientist: Why You\'re Tired All The Time', plays: '289K', wt: '72Kh', comp: 64, compClass: 'high', date: 'Mar 22', playsN: 289000, wtN: 72000, compN: 64, dateN: 20260322 },
+      { num: 310, title: 'I Built a $100M Business at 21. Here\'s What Nobody Tells You.', plays: '412K', wt: '104Kh', comp: 71, compClass: 'high', date: 'Mar 15', playsN: 412000, wtN: 104000, compN: 71, dateN: 20260315 },
+      { num: 309, title: 'The Gut Doctor: Your Stomach Is Controlling Your Brain', plays: '198K', wt: '48Kh', comp: 58, compClass: 'mid', date: 'Mar 8', playsN: 198000, wtN: 48000, compN: 58, dateN: 20260308 },
+    ],
+  },
+  '30d': {
+    kpi: [
+      { label: 'Total Plays', value: '14.2M', change: 'up', changePct: '15.1%', sub: 'vs. 12.3M prev. period', sparkPts: '0,26 8,24 16,22 24,20 32,22 40,18 48,15 56,12 64,8 72,4', detailPts: [12300,12600,12900,13100,13400,13700,14200] },
+      { label: 'Watch Time', value: '4.8Mh', change: 'up', changePct: '12.7%', sub: 'vs. 4.26Mh prev.', sparkPts: '0,24 9,22 18,20 27,22 36,18 45,15 54,12 63,8 72,5', detailPts: [4260,4340,4420,4500,4600,4700,4800] },
+      { label: 'Unique Viewers', value: '6.1M', change: 'up', changePct: '9.2%', sub: 'vs. 5.58M prev. period', sparkPts: '0,22 9,20 18,18 27,20 36,16 45,14 54,11 63,8 72,6', detailPts: [5580,5660,5740,5820,5900,6000,6100] },
+      { label: 'Subscribers', value: '8.24M', change: 'up', changePct: '2.1%', sub: '+168K new this period', sparkPts: '0,24 9,22 18,22 27,20 36,18 45,17 54,14 63,12 72,10', detailPts: [8072,8096,8120,8148,8176,8208,8240] },
+    ],
+    platform: [
+      { icon: 'yt', name: 'YouTube', barW: '58%', views: '5.4M', pct: '58%', prev: '4.7M' },
+      { icon: 'sp', name: 'Spotify', barW: '30%', views: '2.8M', pct: '30%', prev: '2.4M' },
+      { icon: 'rs', name: 'RSS Feed', barW: '12%', views: '1.1M', pct: '12%', prev: '980K' },
+    ],
+    episodes: [
+      { num: 312, title: 'Dr. Paul Conti: "The Hidden Epidemic Nobody Wants to Talk About"', plays: '487K', wt: '142Kh', comp: 72, compClass: 'high', date: 'Mar 31', playsN: 487000, wtN: 142000, compN: 72, dateN: 20260331 },
+      { num: 311, title: 'The Sleep Scientist: Why You\'re Tired All The Time', plays: '542K', wt: '136Kh', comp: 64, compClass: 'high', date: 'Mar 22', playsN: 542000, wtN: 136000, compN: 64, dateN: 20260322 },
+      { num: 310, title: 'I Built a $100M Business at 21. Here\'s What Nobody Tells You.', plays: '891K', wt: '224Kh', comp: 71, compClass: 'high', date: 'Mar 15', playsN: 891000, wtN: 224000, compN: 71, dateN: 20260315 },
+      { num: 309, title: 'The Gut Doctor: Your Stomach Is Controlling Your Brain', plays: '645K', wt: '158Kh', comp: 58, compClass: 'mid', date: 'Mar 8', playsN: 645000, wtN: 158000, compN: 58, dateN: 20260308 },
+    ],
+  },
+  '90d': {
+    kpi: [
+      { label: 'Total Plays', value: '38.6M', change: 'up', changePct: '19.4%', sub: 'vs. 32.3M prev. period', sparkPts: '0,26 8,24 16,26 24,22 32,20 40,18 48,16 56,12 64,8 72,4', detailPts: [32300,33100,34200,35400,36500,37600,38600] },
+      { label: 'Watch Time', value: '12.4Mh', change: 'up', changePct: '14.8%', sub: 'vs. 10.8Mh prev.', sparkPts: '0,24 9,24 18,22 27,20 36,18 45,16 54,12 63,8 72,4', detailPts: [10800,11000,11400,11700,12000,12200,12400] },
+      { label: 'Unique Viewers', value: '16.8M', change: 'up', changePct: '13.5%', sub: 'vs. 14.8M prev. period', sparkPts: '0,24 9,22 18,20 27,22 36,18 45,14 54,12 63,8 72,4', detailPts: [14800,15100,15400,15800,16100,16500,16800] },
+      { label: 'Subscribers', value: '8.24M', change: 'up', changePct: '5.8%', sub: '+452K new this period', sparkPts: '0,26 9,24 18,22 27,20 36,18 45,14 54,12 63,8 72,6', detailPts: [7788,7860,7940,8020,8100,8172,8240] },
+    ],
+    platform: [
+      { icon: 'yt', name: 'YouTube', barW: '60%', views: '14.8M', pct: '60%', prev: '12.1M' },
+      { icon: 'sp', name: 'Spotify', barW: '28%', views: '6.9M', pct: '28%', prev: '5.8M' },
+      { icon: 'rs', name: 'RSS Feed', barW: '12%', views: '2.9M', pct: '12%', prev: '2.5M' },
+    ],
+    episodes: [
+      { num: 312, title: 'Dr. Paul Conti: "The Hidden Epidemic Nobody Wants to Talk About"', plays: '487K', wt: '142Kh', comp: 72, compClass: 'high', date: 'Mar 31', playsN: 487000, wtN: 142000, compN: 72, dateN: 20260331 },
+      { num: 311, title: 'The Sleep Scientist: Why You\'re Tired All The Time', plays: '612K', wt: '153Kh', comp: 64, compClass: 'high', date: 'Mar 22', playsN: 612000, wtN: 153000, compN: 64, dateN: 20260322 },
+      { num: 310, title: 'I Built a $100M Business at 21. Here\'s What Nobody Tells You.', plays: '1.4M', wt: '352Kh', comp: 71, compClass: 'high', date: 'Mar 15', playsN: 1400000, wtN: 352000, compN: 71, dateN: 20260315 },
+      { num: 309, title: 'The Gut Doctor: Your Stomach Is Controlling Your Brain', plays: '890K', wt: '218Kh', comp: 58, compClass: 'mid', date: 'Mar 8', playsN: 890000, wtN: 218000, compN: 58, dateN: 20260308 },
+    ],
+  },
+  'all': {
+    kpi: [
+      { label: 'Total Plays', value: '284M', change: 'up', changePct: '', sub: 'Lifetime · 312 episodes', sparkPts: '0,26 8,26 16,24 24,22 32,20 40,18 48,16 56,12 64,8 72,2', detailPts: [180,200,220,240,256,270,284] },
+      { label: 'Watch Time', value: '86.2Mh', change: 'up', changePct: '', sub: 'Lifetime total', sparkPts: '0,26 9,26 18,24 27,22 36,20 45,16 54,12 63,8 72,2', detailPts: [52,58,64,70,76,82,86] },
+      { label: 'Unique Viewers', value: '94.1M', change: 'up', changePct: '', sub: 'Lifetime unique', sparkPts: '0,26 9,24 18,24 27,22 36,18 45,14 54,12 63,8 72,4', detailPts: [58,64,70,76,82,88,94] },
+      { label: 'Subscribers', value: '8.24M', change: 'up', changePct: '', sub: 'Current total', sparkPts: '0,26 9,24 18,22 27,20 36,16 45,12 54,10 63,8 72,6', detailPts: [4200,5100,5900,6600,7200,7700,8240] },
+    ],
+    platform: [
+      { icon: 'yt', name: 'YouTube', barW: '65%', views: '112M', pct: '65%', prev: '' },
+      { icon: 'sp', name: 'Spotify', barW: '24%', views: '41M', pct: '24%', prev: '' },
+      { icon: 'rs', name: 'RSS Feed', barW: '11%', views: '19M', pct: '11%', prev: '' },
+    ],
+    episodes: [
+      { num: 312, title: 'Dr. Paul Conti: "The Hidden Epidemic Nobody Wants to Talk About"', plays: '487K', wt: '142Kh', comp: 72, compClass: 'high', date: 'Mar 31', playsN: 487000, wtN: 142000, compN: 72, dateN: 20260331 },
+      { num: 311, title: 'The Sleep Scientist: Why You\'re Tired All The Time', plays: '618K', wt: '155Kh', comp: 64, compClass: 'high', date: 'Mar 22', playsN: 618000, wtN: 155000, compN: 64, dateN: 20260322 },
+      { num: 310, title: 'I Built a $100M Business at 21. Here\'s What Nobody Tells You.', plays: '2.1M', wt: '528Kh', comp: 71, compClass: 'high', date: 'Mar 15', playsN: 2100000, wtN: 528000, compN: 71, dateN: 20260315 },
+      { num: 309, title: 'The Gut Doctor: Your Stomach Is Controlling Your Brain', plays: '1.2M', wt: '294Kh', comp: 58, compClass: 'mid', date: 'Mar 8', playsN: 1200000, wtN: 294000, compN: 58, dateN: 20260308 },
+    ],
+  },
+};
+
+let s9Period = '7d';
+let s9SortCol = null;
+let s9SortAsc = true;
+
+function renderState9() {
+  const d = S9_DATA[s9Period];
+  return `<div class="page-header">
+    <div>
+      <div class="greeting">3.8M plays in the last 14 days.</div>
+      <div class="greeting-sub">Mar 19 &ndash; Apr 2, 2026 &middot; Last updated 34m ago</div>
+    </div>
+    <div class="time-tabs" id="s9TimeTabs">
+      <button class="time-tab active" data-period="7d">7d</button>
+      <button class="time-tab" data-period="30d">30d</button>
+      <button class="time-tab" data-period="90d">90d</button>
+      <button class="time-tab" data-period="all">All</button>
+    </div>
+  </div>
+  <div class="content s9">
+    <div class="kpi-grid" id="s9KpiGrid">
+      ${d.kpi.map((k, i) => `<div class="kpi-card" data-kpi="${i}">
+        <div class="kpi-header"><span class="kpi-label">${k.label}</span>${k.changePct ? `<span class="kpi-change">${IC.arrowUp}${k.changePct}</span>` : ''}</div>
+        <div class="kpi-body"><span class="kpi-value">${k.value}</span><svg class="kpi-spark" width="72" height="28" viewBox="0 0 72 28"><polyline fill="none" stroke="#0a0a0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="${k.sparkPts}"/></svg></div>
+        <div class="kpi-sub">${k.sub}</div>
+        <div class="kpi-expand" id="s9KpiExpand${i}"></div>
+        <div class="kpi-tooltip" id="s9KpiTip${i}"></div>
+      </div>`).join('')}
+    </div>
+
+    <div class="grid-main">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Latest Episode</span><span class="badge">${IC.liveDot}Live &middot; 2d ago</span></div>
+        <div class="latest-ep-body">
+          <div class="latest-ep-row">
+            <div class="latest-ep-thumb"><div class="latest-ep-thumb-inner"><svg width="80" height="24" viewBox="0 0 80 24" fill="none"><text x="0" y="18" font-family="Inter,sans-serif" font-weight="700" font-size="18" fill="#fff">DOAC</text></svg></div><span class="latest-ep-dur">2:14:38</span></div>
+            <div class="latest-ep-info">
+              <div class="latest-ep-top"><span class="badge badge-muted">Ep 312</span></div>
+              <div class="latest-ep-name">Dr. Paul Conti: &ldquo;The Hidden Epidemic Nobody Wants to Talk About&rdquo;</div>
+              <div class="latest-ep-meta">Published Mar 31, 2026</div>
+              <div class="stats-row">
+                <div class="stat-cell"><div class="stat-label">Plays</div><div class="stat-value">487K</div><div class="stat-sub up">3.1x avg</div></div>
+                <div class="stat-cell"><div class="stat-label">Watch Time</div><div class="stat-value">142Kh</div><div class="stat-sub up">+62%</div></div>
+                <div class="stat-cell"><div class="stat-label">Completion</div><div class="stat-value">72%</div><div class="stat-sub up">Top 5%</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="insight-banner">
+          ${IC.insightUp}
+          <div class="insight-banner-text">Performing <strong>3.1x better</strong> than your typical first 48 hours. Peak engagement at the <strong>41:00 mark</strong>: &ldquo;&hellip;the trauma-to-addiction pipeline segment is driving shares and saves&hellip;&rdquo;</div>
+        </div>
+        <div class="retention-section">
+          <div class="retention-header">
+            <span class="retention-label">Retention curve</span>
+            <a href="retention.html" class="retention-link">Full analysis ${IC.arrow}</a>
+          </div>
+          <div class="retention-chart-wrap" id="retChartWrap">
+            <div class="ret-hover-line" id="retHoverLine"></div>
+            <div class="ret-hover-dot yt" id="retDotYT"></div>
+            <div class="ret-hover-dot sp" id="retDotSP"></div>
+            <div class="ret-hover-dot rs" id="retDotRS"></div>
+            <div class="ret-tooltip" id="retTooltip">
+              <div class="ret-tp-item"><span class="ret-tp-label"><span class="ret-tp-dot" style="background:var(--youtube)"></span>YouTube</span><span class="ret-tp-value" id="retTpYT">&mdash;</span></div>
+              <div class="ret-tp-item"><span class="ret-tp-label"><span class="ret-tp-dot" style="background:var(--spotify)"></span>Spotify</span><span class="ret-tp-value" id="retTpSP">&mdash;</span></div>
+              <div class="ret-tp-item"><span class="ret-tp-label"><span class="ret-tp-dot" style="background:var(--rss)"></span>RSS</span><span class="ret-tp-value" id="retTpRS">&mdash;</span></div>
+            </div>
+            <svg class="retention-chart" viewBox="0 0 700 180" preserveAspectRatio="none">
+              <line x1="0" y1="0" x2="700" y2="0" stroke="#f4f4f5" stroke-width="1"/>
+              <line x1="0" y1="45" x2="700" y2="45" stroke="#f4f4f5" stroke-width="1"/>
+              <line x1="0" y1="90" x2="700" y2="90" stroke="#f4f4f5" stroke-width="1"/>
+              <line x1="0" y1="135" x2="700" y2="135" stroke="#f4f4f5" stroke-width="1"/>
+              <line x1="0" y1="180" x2="700" y2="180" stroke="#f4f4f5" stroke-width="1"/>
+              <line x1="140" y1="0" x2="140" y2="180" stroke="var(--muted-foreground)" stroke-width="0.5" stroke-dasharray="4,4" opacity="0.4"/>
+              <polyline id="retLineYT" fill="none" stroke="var(--youtube)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"
+                points="0,4 14,6 28,8 42,10 56,12 70,14 84,16 98,18 112,22 126,28 140,60 154,72 168,78 182,82 196,86 210,90 238,96 266,100 294,104 322,108 350,112 378,116 406,120 434,122 462,124 490,126 518,128 546,130 574,132 602,134 630,136 658,138 686,140 700,142"/>
+              <polyline id="retLineSP" fill="none" stroke="var(--spotify)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"
+                points="0,4 14,8 28,14 42,20 56,26 70,32 84,38 98,44 112,52 126,62 140,90 154,100 168,108 182,116 196,120 210,124 238,128 266,132 294,134 322,136 350,137 378,138 406,139 434,140 462,140 490,141 518,142 546,142 574,142 602,142 630,142 658,142 686,142 700,142"/>
+              <polyline id="retLineRS" fill="none" stroke="var(--rss)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"
+                points="0,4 14,10 28,18 42,28 56,38 70,48 84,58 98,68 112,80 126,92 140,120 154,130 168,138 182,144 196,148 210,152 238,156 266,158 294,160 322,162 350,163 378,164 406,165 434,166 462,166 490,167 518,167 546,168 574,168 602,168 630,168 658,168 686,168 700,168"/>
+            </svg>
+          </div>
+          <div class="retention-axis"><span>0:00</span><span>22:26</span><span>44:53</span><span>1:07:19</span><span>1:29:45</span><span>2:14:38</span></div>
+          <div class="ret-legend" id="s9RetLegend">
+            <div class="ret-legend-item" data-line="retLineYT"><div class="ret-legend-dot" style="background:var(--youtube)"></div>YouTube</div>
+            <div class="ret-legend-item" data-line="retLineSP"><div class="ret-legend-dot" style="background:var(--spotify)"></div>Spotify</div>
+            <div class="ret-legend-item" data-line="retLineRS"><div class="ret-legend-dot" style="background:var(--rss)"></div>RSS</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-top">
+        <div class="card" style="flex:1">
+          <div class="card-header"><span class="card-title">Insights</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">View all</a></div>
+          <div class="insights-body">
+            <div class="insight-item"><div class="insight-text"><strong>Ep 312 crossed 400K plays</strong> in 48 hours &mdash; fastest to 400K in the last 30 episodes.</div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><div class="milestone-dot"></div><div class="insight-time">2h</div></div></div>
+            <div class="insight-divider"></div>
+            <div class="insight-item"><div class="insight-text"><strong>Total subscribers passed 8.2M</strong> on Mar 30.</div><div class="insight-time">1d</div></div>
+            <div class="insight-divider"></div>
+            <div class="insight-item"><div class="insight-text"><strong>Spotify completion rate up 12%</strong> this month. Average listen-through: 68% vs 61% prev. month.</div><div class="insight-time">3d</div></div>
+            <div class="insight-divider"></div>
+            <div class="insight-item"><div class="insight-text"><strong>YouTube crossed 5M total plays</strong> this period. Up 22% from previous period.</div><div class="insight-time">5d</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Platform Distribution</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">Details</a></div>
+          <div class="platform-body" id="s9PlatformBody">
+            <div class="plat-tooltip" id="s9PlatTip"></div>
+            ${d.platform.map(p => platformRow(p.icon, p.name, p.barW, p.views, p.pct)).join('')}
+          </div>
+        </div>
+      </div>
+
+      ${feySection(['How are my episodes performing?','What trends do you see in my analytics?','How can I improve engagement?','What are my top performing episodes?'])}
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Account</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">Manage</a></div>
+        <div class="account-body">
+          ${accountItem('yt', 'YouTube', 'Active', 'active', 'var(--youtube)')}
+          ${accountItem('sp', 'Spotify', 'Active', 'active', 'var(--spotify)')}
+          ${accountItem('rs', 'RSS Feed', 'Active', 'active', 'var(--rss)')}
+          ${accountItem('published', 'Published', '14', 'count')}
+          ${accountItem('scheduled', 'Scheduled', '0', 'count')}
+          ${accountItem('drafts', 'Drafts', '8', 'count')}
+        </div>
+      </div>
+    </div>
+
+    <div class="episodes-section">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Recent Episodes</span><a href="#" class="card-action" style="font-size:14px;color:#171717;padding:8px 12px">View all</a></div>
+        <div style="padding:0 24px 16px" id="s9EpTable">
+          <div class="ep-table-header-row">
+            <div class="ep-cell-header" style="width:55px">#</div>
+            <div class="ep-cell-header" style="flex:1">Episode</div>
+            <div class="ep-cell-header right sortable" style="width:70px" data-sort="playsN">Plays <span class="sort-arrow" id="s9SortPlays">&darr;</span></div>
+            <div class="ep-cell-header right sortable" style="width:70px" data-sort="wtN">Watch Time <span class="sort-arrow" id="s9SortWt">&darr;</span></div>
+            <div class="ep-cell-header center sortable" style="width:120px" data-sort="compN">Completion <span class="sort-arrow" id="s9SortComp">&darr;</span></div>
+            <div class="ep-cell-header sortable" style="width:80px" data-sort="dateN">Published <span class="sort-arrow" id="s9SortDate">&darr;</span></div>
+            <div style="width:52px"></div>
+          </div>
+          <div class="ep-table-divider"></div>
+          <div id="s9EpRows">${renderS9Episodes(d.episodes)}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderS9Episodes(eps) {
+  return eps.map((ep, i) => {
+    const compHTML = (ep.comp === 0 && !ep.compClass)
+      ? '<span class="completion-pct" style="color:#a3a3a3">&mdash;</span>'
+      : `<div class="completion-track"><div class="completion-fill ${ep.compClass}" style="width:${ep.comp}%"></div></div><span class="completion-pct">${ep.comp}%</span>`;
+    return `<div class="ep-table-row" style="--row-delay:${0.1 + i * 0.06}s">
+      <div class="ep-cell ep-cell-num">${ep.num}</div>
+      <div class="ep-cell ep-cell-episode"><div class="ep-title-cell"><div class="ep-thumb"></div><span class="ep-name">${ep.title}</span></div></div>
+      <div class="ep-cell ep-cell-stat">${ep.plays}</div>
+      <div class="ep-cell ep-cell-stat">${ep.wt}</div>
+      <div class="ep-cell ep-cell-completion">${compHTML}</div>
+      <div class="ep-cell ep-cell-date">${ep.date}</div>
+      <div class="ep-cell-actions"><button class="ep-more-btn">${IC.more}</button></div>
+    </div><div class="ep-table-divider"></div>`;
+  }).join('');
+}
+
+function initState9() {
+  s9Period = '7d';
+  s9SortCol = null;
+  s9SortAsc = true;
+
+  // ── Time period tabs ──
+  document.querySelectorAll('#s9TimeTabs .time-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const period = btn.dataset.period;
+      if (period === s9Period) return;
+      s9Period = period;
+      document.querySelectorAll('#s9TimeTabs .time-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      s9UpdateData();
+    });
+  });
+
+  // ── KPI sparkline hover ──
+  document.querySelectorAll('.s9 .kpi-card').forEach((card, idx) => {
+    const tip = document.getElementById('s9KpiTip' + idx);
+    const spark = card.querySelector('.kpi-spark');
+    if (!spark || !tip) return;
+
+    card.addEventListener('mousemove', e => {
+      const rect = spark.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const w = rect.width;
+      if (x < 0 || x > w) { tip.style.opacity = '0'; return; }
+      const poly = spark.querySelector('polyline');
+      if (!poly) return;
+      const pts = poly.getAttribute('points').trim().split(/\s+/).map(p => { const [px, py] = p.split(',').map(Number); return { x: px, y: py }; });
+      const svgX = (x / w) * 72;
+      let interpY = pts[0].y;
+      for (let i = 0; i < pts.length - 1; i++) {
+        if (svgX >= pts[i].x && svgX <= pts[i + 1].x) {
+          const t = (svgX - pts[i].x) / (pts[i + 1].x - pts[i].x);
+          interpY = pts[i].y + t * (pts[i + 1].y - pts[i].y);
+          break;
+        }
+      }
+      const val = Math.round((1 - interpY / 28) * 100);
+      const d = S9_DATA[s9Period].kpi[idx];
+      const detailPts = d.detailPts;
+      const dataIdx = Math.min(Math.floor((x / w) * detailPts.length), detailPts.length - 1);
+      const fmt = detailPts[dataIdx] >= 1000000 ? (detailPts[dataIdx] / 1000000).toFixed(1) + 'M' : detailPts[dataIdx] >= 1000 ? Math.round(detailPts[dataIdx] / 1000) + 'K' : detailPts[dataIdx].toString();
+      tip.textContent = fmt;
+      tip.style.opacity = '1';
+      tip.style.left = (e.clientX - card.getBoundingClientRect().left - tip.offsetWidth / 2) + 'px';
+      tip.style.top = (rect.top - card.getBoundingClientRect().top - 24) + 'px';
+    });
+
+    card.addEventListener('mouseleave', () => { tip.style.opacity = '0'; });
+
+    // ── KPI expand on click ──
+    card.addEventListener('click', () => {
+      const expandEl = document.getElementById('s9KpiExpand' + idx);
+      if (!expandEl) return;
+      const wasExpanded = card.classList.contains('expanded');
+      // Collapse all
+      document.querySelectorAll('.s9 .kpi-card').forEach(c => c.classList.remove('expanded'));
+      if (wasExpanded) return;
+      card.classList.add('expanded');
+      const d = S9_DATA[s9Period].kpi[idx];
+      const pts = d.detailPts;
+      const maxV = Math.max(...pts) * 1.1;
+      const w = 240, h = 80;
+      const polyPts = pts.map((v, i) => `${(i / (pts.length - 1)) * w},${h - (v / maxV) * h}`).join(' ');
+      const areaPts = `0,${h} ${polyPts} ${w},${h}`;
+      expandEl.innerHTML = `<svg width="${w}" height="${h + 20}" viewBox="0 0 ${w} ${h + 20}">
+        <polygon points="${areaPts}" fill="#0a0a0b" opacity="0.04"/>
+        <polyline points="${polyPts}" fill="none" stroke="#0a0a0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        ${pts.map((v, i) => `<circle cx="${(i / (pts.length - 1)) * w}" cy="${h - (v / maxV) * h}" r="3" fill="white" stroke="#0a0a0b" stroke-width="1.5"/>`).join('')}
+        <text x="0" y="${h + 14}" font-size="10" fill="#a3a3a3" font-family="var(--font)">${s9Period === 'all' ? '2020' : 'Start'}</text>
+        <text x="${w}" y="${h + 14}" font-size="10" fill="#a3a3a3" font-family="var(--font)" text-anchor="end">${s9Period === 'all' ? '2026' : 'Now'}</text>
+      </svg>`;
+    });
+  });
+
+  // ── Platform hover tooltips ──
+  const platTip = document.getElementById('s9PlatTip');
+  document.querySelectorAll('.s9 .platform-row').forEach((row, idx) => {
+    row.addEventListener('mouseenter', e => {
+      const d = S9_DATA[s9Period].platform[idx];
+      if (!d || !platTip) return;
+      const prev = d.prev ? ` · vs. ${d.prev} prev.` : '';
+      platTip.textContent = `${d.views} views${prev}`;
+      platTip.style.opacity = '1';
+    });
+    row.addEventListener('mousemove', e => {
+      if (!platTip) return;
+      const body = document.getElementById('s9PlatformBody');
+      const rect = body.getBoundingClientRect();
+      platTip.style.left = (e.clientX - rect.left + 12) + 'px';
+      platTip.style.top = (e.clientY - rect.top - 28) + 'px';
+    });
+    row.addEventListener('mouseleave', () => { if (platTip) platTip.style.opacity = '0'; });
+  });
+
+  // ── Episode table sorting ──
+  document.querySelectorAll('.s9 .ep-cell-header.sortable').forEach(hdr => {
+    hdr.addEventListener('click', () => {
+      const col = hdr.dataset.sort;
+      if (s9SortCol === col) { s9SortAsc = !s9SortAsc; }
+      else { s9SortCol = col; s9SortAsc = false; } // default: descending
+      // Update arrows
+      document.querySelectorAll('.s9 .sort-arrow').forEach(a => { a.classList.remove('active'); a.innerHTML = '&darr;'; });
+      const arrow = hdr.querySelector('.sort-arrow');
+      if (arrow) { arrow.classList.add('active'); arrow.innerHTML = s9SortAsc ? '&uarr;' : '&darr;'; }
+      s9SortEpisodes();
+    });
+  });
+
+  // ── Retention legend toggle ──
+  document.querySelectorAll('#s9RetLegend .ret-legend-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const lineId = item.dataset.line;
+      const line = document.getElementById(lineId);
+      if (!line) return;
+      item.classList.toggle('muted');
+      line.style.opacity = item.classList.contains('muted') ? '0.08' : '0.8';
+    });
+  });
+}
+
+function s9UpdateData() {
+  const d = S9_DATA[s9Period];
+
+  // Update KPIs with animation
+  document.querySelectorAll('.s9 .kpi-card').forEach((card, i) => {
+    const k = d.kpi[i];
+    const valEl = card.querySelector('.kpi-value');
+    const changeEl = card.querySelector('.kpi-change');
+    const subEl = card.querySelector('.kpi-sub');
+    const sparkPoly = card.querySelector('.kpi-spark polyline');
+
+    if (valEl) { valEl.textContent = k.value; valEl.classList.remove('value-updating'); void valEl.offsetWidth; valEl.classList.add('value-updating'); }
+    if (changeEl) { changeEl.innerHTML = k.changePct ? `${IC.arrowUp}${k.changePct}` : ''; }
+    if (subEl) { subEl.textContent = k.sub; }
+    if (sparkPoly) { sparkPoly.setAttribute('points', k.sparkPts); }
+
+    // Collapse expanded cards on period switch
+    card.classList.remove('expanded');
+  });
+
+  // Update platform bars
+  const platBody = document.getElementById('s9PlatformBody');
+  if (platBody) {
+    const rows = platBody.querySelectorAll('.platform-row');
+    rows.forEach((row, i) => {
+      const p = d.platform[i];
+      const bar = row.querySelector('.platform-bar');
+      const views = row.querySelector('.platform-views');
+      const pct = row.querySelector('.platform-pct-badge');
+      if (bar) bar.style.width = p.barW;
+      if (views) { views.textContent = p.views; views.classList.remove('value-updating'); void views.offsetWidth; views.classList.add('value-updating'); }
+      if (pct) pct.textContent = p.pct;
+    });
+  }
+
+  // Update episode table
+  s9SortCol = null;
+  s9SortAsc = true;
+  document.querySelectorAll('.s9 .sort-arrow').forEach(a => { a.classList.remove('active'); a.innerHTML = '&darr;'; });
+  const epRows = document.getElementById('s9EpRows');
+  if (epRows) { epRows.innerHTML = renderS9Episodes(d.episodes); }
+
+  // Re-stagger episode rows
+  document.querySelectorAll('.s9 .ep-table-row').forEach((r, i) => {
+    r.style.setProperty('--row-delay', `${0.05 + i * 0.04}s`);
+  });
+}
+
+function s9SortEpisodes() {
+  const d = S9_DATA[s9Period];
+  const sorted = [...d.episodes].sort((a, b) => {
+    const va = a[s9SortCol], vb = b[s9SortCol];
+    return s9SortAsc ? va - vb : vb - va;
+  });
+  const epRows = document.getElementById('s9EpRows');
+  if (epRows) epRows.innerHTML = renderS9Episodes(sorted);
+  document.querySelectorAll('.s9 .ep-table-row').forEach((r, i) => {
+    r.style.setProperty('--row-delay', `${0.03 + i * 0.04}s`);
+  });
+}
+
+const renderers = { 1: renderState7, 2: renderState1, 3: renderState2, 4: renderState3, 5: renderState4, 6: renderState5, 7: renderState0, 8: renderState6, 9: renderState9 };
+
+function switchState(n) {
+  if (n === currentState) return;
+  const mc = mainContent;
+
+  // Exit animation
+  mc.classList.remove('entering');
+  mc.classList.add('exiting');
+
+  setTimeout(() => {
+    mc.innerHTML = renderers[n]();
+    mc.classList.remove('exiting');
+    mc.classList.add('entering');
+    currentState = n;
+
+    // Update switcher buttons
+    document.querySelectorAll('.state-btn').forEach(b => {
+      b.classList.toggle('active', +b.dataset.state === n);
+    });
+
+    // Update sidebar episode count
+    const epCounts = { 1: '—', 2: 247, 3: 247, 4: 0, 5: 248, 6: 313, 7: 312, 8: 278, 9: 312 };
+    const epEl = document.getElementById('sidebarEpCount');
+    if (epEl) epEl.textContent = epCounts[n] ?? 312;
+
+    // Reinitialize interactive elements
+    initInteractivity();
+
+    // Reinitialize retention hover if chart exists
+    initRetentionHover();
+
+    // Initialize State 9 interactivity
+    if (n === 9) initState9();
+
+    // Scroll to top
+    document.querySelector('.main').scrollTop = 0;
+
+    setTimeout(() => mc.classList.remove('entering'), 250);
+  }, 200);
+}
+
+function initInteractivity() {
+  // Time tabs
+  document.querySelectorAll('.time-tab:not(.disabled)').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.time-tab').forEach(t => t.classList.remove('active'));
+      b.classList.add('active');
+    });
+  });
+
+  // Episode row stagger
+  document.querySelectorAll('.ep-table-row').forEach((r, i) => {
+    r.style.setProperty('--row-delay', `${0.1 + i * 0.06}s`);
+  });
+
+  // Checklist item stagger
+  document.querySelectorAll('.checklist-item').forEach((item, i) => {
+    item.style.animation = `fade-up 0.4s cubic-bezier(0.16,1,0.3,1) ${0.1 + i * 0.05}s both`;
+  });
+
+  // Insight item stagger (for items that are direct children)
+  document.querySelectorAll('.insights-body > .insight-item').forEach((item, i) => {
+    item.style.animation = `fade-up 0.4s cubic-bezier(0.16,1,0.3,1) ${0.15 + i * 0.06}s both`;
+  });
+}
+
+function initRetentionHover() {
+  const wrap = document.getElementById('retChartWrap');
+  if (!wrap) return;
+  const hLine = document.getElementById('retHoverLine');
+  const dotYT = document.getElementById('retDotYT');
+  const dotSP = document.getElementById('retDotSP');
+  const dotRS = document.getElementById('retDotRS');
+  const tooltip = document.getElementById('retTooltip');
+  const tpYT = document.getElementById('retTpYT');
+  const tpSP = document.getElementById('retTpSP');
+  const tpRS = document.getElementById('retTpRS');
+
+  function parsePoints(polyline) {
+    return polyline.getAttribute('points').trim().split(/\s+/).map(p => {
+      const [x, y] = p.split(',').map(Number);
+      return { x, y };
+    });
+  }
+
+  const svg = wrap.querySelector('.retention-chart');
+  if (!svg) return;
+  const polylines = svg.querySelectorAll('polyline');
+  if (polylines.length < 3) return;
+  const ytPts = parsePoints(polylines[0]);
+  const spPts = parsePoints(polylines[1]);
+  const rsPts = parsePoints(polylines[2]);
+
+  function interpY(pts, svgX) {
+    if (svgX <= pts[0].x) return pts[0].y;
+    if (svgX >= pts[pts.length - 1].x) return pts[pts.length - 1].y;
+    for (let i = 0; i < pts.length - 1; i++) {
+      if (svgX >= pts[i].x && svgX <= pts[i + 1].x) {
+        const t = (svgX - pts[i].x) / (pts[i + 1].x - pts[i].x);
+        return pts[i].y + t * (pts[i + 1].y - pts[i].y);
+      }
+    }
+    return pts[pts.length - 1].y;
+  }
+
+  function yToRetention(y) { return Math.round((1 - y / 180) * 100); }
+
+  wrap.addEventListener('mousemove', function(e) {
+    const rect = wrap.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const w = rect.width;
+    const h = rect.height;
+    const svgX = (x / w) * 700;
+    const ytY = interpY(ytPts, svgX);
+    const spY = interpY(spPts, svgX);
+    const rsY = interpY(rsPts, svgX);
+
+    hLine.style.opacity = '1'; hLine.style.left = x + 'px';
+    [dotYT, dotSP, dotRS].forEach((dot, i) => {
+      const sy = [ytY, spY, rsY][i];
+      dot.style.opacity = '1'; dot.style.left = x + 'px'; dot.style.top = (sy / 180) * h + 'px';
+    });
+
+    tpYT.textContent = yToRetention(ytY) + '%';
+    tpSP.textContent = yToRetention(spY) + '%';
+    tpRS.textContent = yToRetention(rsY) + '%';
+
+    const minY = Math.min(ytY, spY, rsY);
+    const tooltipPixelY = (minY / 180) * h;
+    tooltip.style.opacity = '1';
+    const tw = tooltip.offsetWidth || 200;
+    let tLeft = x - tw / 2;
+    if (tLeft < 0) tLeft = 0;
+    if (tLeft + tw > w) tLeft = w - tw;
+    tooltip.style.left = tLeft + 'px';
+    tooltip.style.top = Math.max(0, tooltipPixelY - (tooltip.offsetHeight || 40) - 10) + 'px';
+  });
+
+  wrap.addEventListener('mouseleave', function() {
+    [hLine, dotYT, dotSP, dotRS, tooltip].forEach(el => el.style.opacity = '0');
+  });
+}
+
+// ── Keyboard shortcuts ──
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const n = parseInt(e.key);
+  if (n >= 1 && n <= 9) switchState(n);
+});
+
+// ── Sidebar nav (static, not part of state) ──
+document.querySelectorAll('.sidebar-link').forEach(l => {
+  l.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelectorAll('.sidebar-link').forEach(s => s.classList.remove('active'));
+    l.classList.add('active');
+  });
+});
+
+// ── Initialize default state ──
+mainContent.innerHTML = renderers[currentState]();
+initInteractivity();
+initRetentionHover();
+</script>
+</body>
+</html>
