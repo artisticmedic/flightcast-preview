@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flightcast — Preview: Video Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --font: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  --text-primary: #171717;
+  --text-secondary: #525252;
+  --text-tertiary: #7f7f7f;
+  --bg-page: #ffffff;
+  --bg-card: #ffffff;
+  --bg-hover: #fafafa;
+  --bg-active: #f5f5f5;
+  --bg-muted: #f5f5f5;
+  --accent: #7857d1;
+  --accent-hover: #6a4abf;
+  --accent-light: #f3f0fb;
+  --accent-muted: #ebe5f7;
+  --success: #30a84a;
+  --success-light: #f0fdf4;
+  --danger: #d5432c;
+  --danger-light: #fef2f2;
+  --warning: #e5a00d;
+  --warning-light: #fffbeb;
+  --info: #3b82f6;
+  --info-light: #eff6ff;
+  --border: #e5e5e5;
+  --border-hover: #a3a3a3;
+  --border-light: #f0f0f0;
+  --radius: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --ease: 150ms ease;
+
+  /* Chart palette */
+  --c-video: #7857d1;        /* combined / full-fidelity track (the "video viewing" mode) */
+  --c-video-fill: rgba(120,87,209,0.22);
+  --c-audio: #3b82f6;        /* audio-only track */
+  --c-audio-fill: rgba(59,130,246,0.22);
+  --c-combined: #a855f7;     /* legacy combined rendition */
+  --c-combined-fill: rgba(168,85,247,0.20);
+}
+
+/* ── Preview Nav ── */
+.preview-nav {
+  height: 40px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; background: #ffffff; border-bottom: 1px solid #e5e5e5;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  flex-shrink: 0; z-index: 100; position: relative;
+}
+.preview-nav-left { display: flex; align-items: center; gap: 10px; }
+.preview-nav-wordmark { font-size: 14px; font-weight: 700; color: #525252; letter-spacing: -0.3px; }
+.preview-nav-sep { width: 1px; height: 16px; background: #d4d4d4; }
+.preview-nav-label { font-size: 12px; font-weight: 600; color: #7f7f7f; letter-spacing: 0.5px; text-transform: uppercase; }
+.preview-nav-links { display: flex; gap: 2px; }
+.preview-nav-link {
+  font-size: 13px; font-weight: 500; color: #7f7f7f; padding: 8px 12px;
+  border-radius: 4px; text-decoration: none; transition: all 150ms ease;
+  letter-spacing: -0.1px;
+}
+.preview-nav-link:hover { color: #171717; background: #f5f5f5; }
+.preview-nav-link.active { color: #7857d1; font-weight: 600; }
+.preview-nav-pilot {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 700; padding: 1px 6px; margin-left: 4px;
+  border-radius: 20px; background: var(--accent-light); color: var(--accent);
+  letter-spacing: 0.3px; text-transform: uppercase;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { height: 100%; }
+body {
+  font-family: var(--font); font-size: 16px; color: var(--text-primary);
+  background: var(--bg-page); -webkit-font-smoothing: antialiased;
+  height: 100vh; overflow: hidden; letter-spacing: -0.15px;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; font-size: inherit; color: inherit; }
+a { text-decoration: none; color: inherit; }
+
+.app { display: flex; flex-direction: column; height: calc(100vh - 40px); overflow: hidden; }
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+.content { flex: 1; overflow-y: auto; padding: 28px 32px 80px; display: flex; flex-direction: column; gap: 20px; max-width: 1280px; margin: 0 auto; width: 100%; }
+.content > * { flex-shrink: 0; }
+
+/* ── Page header ── */
+.page-head { display: flex; flex-direction: column; gap: 8px; }
+.page-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px; font-size: 13px;
+  font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.6px;
+}
+.page-eyebrow .eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.page-title { font-size: 28px; font-weight: 700; letter-spacing: -0.6px; }
+.page-sub { font-size: 15px; color: var(--text-tertiary); max-width: 760px; line-height: 1.45; }
+.page-sub strong { color: var(--text-secondary); font-weight: 600; }
+
+/* ── Filter bar ── */
+.filter-bar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-lg);
+  background: white;
+}
+.filter-bar-label {
+  font-size: 12px; font-weight: 700; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: 0.4px; padding-right: 6px;
+  border-right: 1px solid var(--border-light); margin-right: 4px;
+}
+.filter-group { display: flex; align-items: center; gap: 6px; }
+.filter-group-label { font-size: 13px; font-weight: 600; color: var(--text-tertiary); }
+.filter-select {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--text-primary);
+  background: white; cursor: pointer; transition: all var(--ease);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237f7f7f' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+  padding-right: 26px;
+}
+.filter-select:hover { border-color: var(--border-hover); }
+.filter-spacer { flex: 1; }
+.filter-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px 3px 10px; border-radius: 20px; font-size: 13px; font-weight: 600;
+  background: var(--accent-light); color: var(--accent);
+}
+.filter-tag-x {
+  width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 13px; color: var(--accent); transition: background var(--ease);
+}
+.filter-tag-x:hover { background: var(--accent-muted); }
+
+/* ── KPI ── */
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.kpi-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 16px 18px;
+  position: relative; overflow: hidden;
+}
+.kpi-label { font-size: 12px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi-value { font-size: 26px; font-weight: 700; letter-spacing: -0.8px; line-height: 1.1; margin-top: 8px; font-variant-numeric: tabular-nums; }
+.kpi-sub { display: flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 13px; color: var(--text-tertiary); }
+.kpi-change { display: inline-flex; align-items: center; gap: 2px; font-weight: 700; font-size: 13px; }
+.kpi-change.up { color: var(--success); }
+.kpi-change.down { color: var(--danger); }
+.kpi-spark { position: absolute; right: 14px; bottom: 14px; }
+
+/* ── Card (generic) ── */
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 24px;
+}
+.card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; gap: 16px; }
+.card-title-block { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.card-eyebrow { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.6px; }
+.card-eyebrow .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+.card-title { font-size: 17px; font-weight: 700; letter-spacing: -0.25px; }
+.card-desc { font-size: 14px; color: var(--text-tertiary); margin-top: 2px; line-height: 1.4; max-width: 640px; }
+.card-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.card-tab {
+  font-size: 13px; font-weight: 500; padding: 5px 10px; border-radius: var(--radius);
+  color: var(--text-tertiary); cursor: pointer; transition: all var(--ease);
+}
+.card-tab:hover { background: var(--bg-muted); color: var(--text-primary); }
+.card-tab.active { background: var(--bg-active); color: var(--text-primary); font-weight: 600; }
+
+/* Hero card (audio↔video drop-off) */
+.hero-card { padding: 24px 24px 28px; border: 1px solid var(--border); position: relative; overflow: hidden; }
+.hero-chart-wrap { position: relative; height: 360px; margin-top: 8px; }
+.hero-chart-wrap svg { width: 100%; height: 100%; display: block; overflow: visible; }
+
+/* Stacked area animation */
+.area-stack path { opacity: 0; transition: opacity 600ms ease; }
+.reveal.visible .area-stack path { opacity: 1; }
+.reveal.visible .area-stack path.combined-area { transition-delay: 200ms; }
+.reveal.visible .area-stack path.audio-area { transition-delay: 100ms; }
+.reveal.visible .area-stack path.video-area { transition-delay: 0ms; }
+
+/* Hover lookup overlay */
+.hero-tooltip {
+  position: absolute; pointer-events: none;
+  background: white; border-radius: 8px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06);
+  padding: 10px 12px; min-width: 200px; opacity: 0; transition: opacity 120ms ease;
+  font-size: 13px; z-index: 20;
+}
+.hero-tooltip.visible { opacity: 1; }
+.hero-tooltip-time { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+.hero-tooltip-row { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+.hero-tooltip-row .dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.hero-tooltip-row .lbl { flex: 1; color: var(--text-secondary); font-weight: 500; }
+.hero-tooltip-row .val { font-weight: 700; font-variant-numeric: tabular-nums; }
+.hero-hover-line {
+  position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(23,23,23,0.25);
+  pointer-events: none; opacity: 0; transition: opacity 120ms ease;
+}
+.hero-hover-line.visible { opacity: 1; }
+
+/* Insight callout inside hero */
+.hero-insight {
+  margin-top: 18px; padding: 12px 14px;
+  background: linear-gradient(180deg, var(--accent-light) 0%, rgba(243,240,251,0.4) 100%);
+  border: 1px solid var(--accent-muted);
+  border-radius: var(--radius-lg);
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.hero-insight-badge {
+  flex-shrink: 0; width: 28px; height: 28px; border-radius: var(--radius);
+  background: var(--accent); color: white;
+  display: flex; align-items: center; justify-content: center;
+}
+.hero-insight-badge svg { width: 14px; height: 14px; }
+.hero-insight-text { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+.hero-insight-text strong { color: var(--text-primary); font-weight: 700; }
+.hero-insight-text em { font-style: normal; color: var(--accent); font-weight: 600; }
+
+/* Legend */
+.chart-legend {
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  font-size: 13px; font-weight: 500; color: var(--text-secondary);
+}
+.chart-legend-item { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.chart-legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+.chart-legend-item .legend-val { color: var(--text-tertiary); margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+/* ── Two-up grid ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+
+/* ── Retention by-cohort line chart ── */
+.retention-chart-wrap { position: relative; height: 260px; }
+.retention-chart-wrap svg { width: 100%; height: 100%; display: block; overflow: visible; }
+@keyframes drawLine { from { stroke-dashoffset: var(--line-len); } to { stroke-dashoffset: 0; } }
+.retention-chart-wrap .ret-line {
+  fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: var(--line-len); stroke-dashoffset: var(--line-len);
+}
+.reveal.visible .ret-line { animation: drawLine 900ms cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
+.reveal.visible .ret-line.l1 { animation-delay: 0ms; }
+.reveal.visible .ret-line.l2 { animation-delay: 120ms; }
+.reveal.visible .ret-line.l3 { animation-delay: 240ms; }
+.reveal.visible .ret-line.l4 { animation-delay: 360ms; }
+
+/* ── Funnel ── */
+.funnel-row { display: flex; flex-direction: column; gap: 8px; }
+.funnel-step {
+  position: relative; display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-radius: var(--radius-lg); overflow: hidden;
+  border: 1px solid var(--border-light);
+}
+.funnel-step-bg {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  background: var(--accent-light); z-index: 0;
+  transition: width 700ms cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.reveal:not(.visible) .funnel-step-bg { width: 0 !important; }
+.funnel-step-label { position: relative; z-index: 1; font-size: 14px; font-weight: 600; color: var(--text-primary); flex: 0 0 110px; }
+.funnel-step-meta { position: relative; z-index: 1; font-size: 13px; color: var(--text-tertiary); flex: 1; }
+.funnel-step-val { position: relative; z-index: 1; font-size: 16px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.funnel-step-pct { position: relative; z-index: 1; font-size: 13px; font-weight: 700; color: var(--accent); width: 50px; text-align: right; font-variant-numeric: tabular-nums; }
+.funnel-step-drop { position: relative; z-index: 1; font-size: 12px; font-weight: 600; color: var(--danger); width: 56px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ── Rendition consumption stacked bar over time ── */
+.rendition-chart-wrap { height: 220px; display: flex; align-items: flex-end; gap: 3px; padding: 8px 0; }
+.rendition-col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; gap: 1px; cursor: default; transition: filter var(--ease); position: relative; }
+.rendition-col:hover { filter: brightness(0.94); }
+.rendition-seg { width: 100%; transition: height 700ms cubic-bezier(0.25,0.46,0.45,0.94); }
+.reveal:not(.visible) .rendition-seg { height: 0 !important; }
+.rendition-axis { display: flex; gap: 3px; margin-top: 6px; padding: 0 0; }
+.rendition-axis span { flex: 1; text-align: center; font-size: 11px; color: var(--text-tertiary); font-weight: 600; }
+
+/* ── Scrub heatmap ── */
+.scrub-grid {
+  display: grid; grid-template-columns: repeat(20, 1fr); gap: 3px;
+}
+.scrub-cell {
+  aspect-ratio: 1; border-radius: 3px;
+  transition: transform var(--ease), filter var(--ease);
+  cursor: default;
+}
+.scrub-cell:hover { transform: scale(1.18); filter: saturate(1.2); z-index: 2; position: relative; }
+.scrub-axis { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--text-tertiary); font-weight: 600; }
+
+/* ── Histogram ── */
+.histo { display: flex; align-items: flex-end; gap: 3px; height: 140px; padding: 8px 0; }
+.histo-bar {
+  flex: 1; background: var(--accent); border-radius: 3px 3px 0 0; opacity: 0.85;
+  transition: height 700ms cubic-bezier(0.25,0.46,0.45,0.94), filter var(--ease);
+}
+.reveal:not(.visible) .histo-bar { height: 0 !important; }
+.histo-bar:hover { opacity: 1; filter: brightness(1.05); }
+.histo-bar.peak { background: var(--accent); opacity: 1; }
+.histo-bar.muted { background: var(--accent-muted); opacity: 1; }
+.histo-axis { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: var(--text-tertiary); font-weight: 600; }
+.histo-stat-row { display: flex; gap: 18px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-light); }
+.histo-stat-label { font-size: 12px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.3px; }
+.histo-stat-val { font-size: 17px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+
+/* ── Bg-bar rows (returning vs new, etc.) ── */
+.bgbar-list { display: flex; flex-direction: column; gap: 6px; }
+.bgbar-item {
+  position: relative; display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: var(--radius-lg); overflow: hidden;
+}
+.bgbar-bg {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  border-radius: var(--radius-lg); z-index: 0;
+  transition: width 700ms cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.reveal:not(.visible) .bgbar-bg { width: 0 !important; }
+.bgbar-bg.purple { background: var(--accent-light); }
+.bgbar-bg.green { background: var(--success-light); }
+.bgbar-rank { font-size: 13px; font-weight: 600; color: var(--text-tertiary); width: 16px; text-align: right; position: relative; z-index: 1; }
+.bgbar-label { font-size: 14px; font-weight: 500; flex: 1; position: relative; z-index: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bgbar-meta { font-size: 12px; color: var(--text-tertiary); position: relative; z-index: 1; font-variant-numeric: tabular-nums; }
+.bgbar-val { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; position: relative; z-index: 1; }
+.bgbar-val.purple { color: var(--accent); }
+.bgbar-val.green { color: var(--success); }
+
+/* ── Pencil section header ── */
+.section-header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding-top: 8px; padding-bottom: 4px;
+}
+.section-header-title { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+.section-header-sub { font-size: 13px; color: var(--text-tertiary); }
+
+/* ── Action hint (what should a user do with this chart) ── */
+.action-hint {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin-top: 16px; padding: 10px 12px;
+  background: var(--bg-muted); border-radius: var(--radius);
+  font-size: 13px; line-height: 1.5; color: var(--text-secondary);
+}
+.action-hint-icon {
+  flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--accent); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; margin-top: 1px;
+}
+.action-hint strong { color: var(--text-primary); font-weight: 700; }
+.action-hint em { font-style: normal; color: var(--accent); font-weight: 600; }
+
+/* Chart inline KPI callout */
+.chart-kpi-callout {
+  display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px;
+  padding: 10px 14px; border-left: 3px solid var(--accent);
+  background: linear-gradient(90deg, var(--accent-light) 0%, transparent 80%);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.chart-kpi-callout-val { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: var(--accent); font-variant-numeric: tabular-nums; }
+.chart-kpi-callout-text { font-size: 13px; color: var(--text-secondary); }
+.chart-kpi-callout-text strong { color: var(--text-primary); font-weight: 700; }
+
+/* Scrub strip — replaces the 5×20 grid */
+.scrub-strip-wrap { position: relative; height: 80px; margin-top: 4px; }
+.scrub-strip {
+  position: relative; height: 56px;
+  background: var(--bg-muted); border-radius: var(--radius);
+  overflow: hidden;
+}
+.scrub-strip-cell {
+  position: absolute; top: 0; bottom: 0;
+  background: var(--accent);
+  transition: opacity var(--ease);
+}
+.scrub-marker {
+  position: absolute; bottom: 100%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center;
+  font-size: 11px; font-weight: 700; color: var(--accent);
+  white-space: nowrap;
+}
+.scrub-marker-dot {
+  width: 10px; height: 10px; border-radius: 50%; background: var(--accent);
+  border: 2px solid white; box-shadow: 0 0 0 1px var(--accent); margin-bottom: 2px;
+}
+.scrub-marker-line {
+  position: absolute; top: 14px; bottom: -54px; width: 1px;
+  background: var(--accent); opacity: 0.4;
+}
+
+/* Histogram percentile markers */
+.histo-wrap { position: relative; }
+.histo-marker {
+  position: absolute; top: 0; bottom: 0; width: 1px;
+  background: var(--text-primary); opacity: 0.4; pointer-events: none;
+}
+.histo-marker-label {
+  position: absolute; top: -2px; left: 4px; font-size: 10px;
+  font-weight: 700; color: var(--text-primary); background: white;
+  padding: 0 3px; border-radius: 2px; white-space: nowrap;
+}
+.histo-marker.p99 { background: var(--danger); opacity: 0.6; }
+.histo-marker.p99 .histo-marker-label { color: var(--danger); }
+
+/* Funnel step states */
+.funnel-step.worst .funnel-step-bg { background: #fdecea; }
+.funnel-step.worst .funnel-step-pct { color: var(--danger); }
+.funnel-step.worst .funnel-step-drop { color: var(--danger); font-weight: 800; }
+
+/* Histogram annotation */
+.histo-annotation {
+  position: absolute; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center;
+  font-size: 11px; font-weight: 700; color: var(--text-secondary);
+  white-space: nowrap;
+}
+.histo-annotation::before {
+  content: ''; width: 1px; height: 100%; background: var(--text-secondary); opacity: 0.35;
+  position: absolute; top: 14px; bottom: 0;
+}
+
+/* ── v1-deferred callout ── */
+.deferred-card {
+  border: 1px dashed var(--border); background: var(--bg-muted);
+  border-radius: var(--radius-lg); padding: 20px 24px;
+}
+.deferred-title { font-size: 14px; font-weight: 700; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.deferred-title svg { width: 14px; height: 14px; color: var(--text-tertiary); }
+.deferred-list { display: flex; flex-direction: column; gap: 6px; }
+.deferred-item { font-size: 13px; color: var(--text-tertiary); display: flex; align-items: flex-start; gap: 8px; line-height: 1.45; }
+.deferred-item .dl-bullet { color: var(--text-tertiary); flex-shrink: 0; line-height: 1.45; }
+.deferred-item strong { color: var(--text-secondary); font-weight: 600; }
+
+/* ── Reveal ── */
+.reveal {
+  opacity: 0; transform: translateY(8px);
+  transition: opacity 600ms cubic-bezier(0.25,0.46,0.45,0.94), transform 600ms cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* Sparkline */
+.sparkline { width: 60px; height: 22px; }
+</style>
+</head>
+<body>
+<nav class="preview-nav">
+  <div class="preview-nav-left">
+    <span class="preview-nav-wordmark">Flightcast</span>
+    <div class="preview-nav-sep"></div>
+    <span class="preview-nav-label">Preview</span>
+  </div>
+  <div class="preview-nav-links">
+    <a href="./dashboard.html" class="preview-nav-link">Dashboard</a>
+    <a href="./overview.html" class="preview-nav-link">Overview</a>
+    <a href="./retention.html" class="preview-nav-link">Retention</a>
+    <a href="./video.html" class="preview-nav-link active">Video<span class="preview-nav-pilot">New</span></a>
+    <a href="./clusters.html" class="preview-nav-link">Listener Clusters</a>
+  </div>
+</nav>
+<div class="app">
+  <div class="main">
+    <div class="content">
+
+      <!-- ═══ PAGE HEADER ═══ -->
+      <div class="page-head reveal">
+        <div class="page-eyebrow"><span class="eyebrow-dot"></span>Apple Video — Pilot launch</div>
+        <h1 class="page-title">Video analytics</h1>
+        <p class="page-sub">
+          How viewers move between <strong>video</strong>, <strong>audio-only</strong>, and the <strong>combined rendition</strong> across each episode.
+          The split-track Apple HLS path makes this trivially queryable — these views aren't possible on YouTube or Spotify.
+        </p>
+      </div>
+
+      <!-- ═══ FILTER BAR ═══ -->
+      <div class="filter-bar reveal">
+        <span class="filter-bar-label">Slice</span>
+        <div class="filter-group">
+          <span class="filter-group-label">Episode</span>
+          <select class="filter-select">
+            <option>Episode 47 — Apple Video deep-dive</option>
+            <option>Episode 46 — RSS at scale</option>
+            <option>Episode 45 — Latency wars</option>
+            <option>All episodes</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-group-label">Geo</span>
+          <select class="filter-select"><option>All countries</option><option>United States</option><option>EU</option><option>APAC</option></select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-group-label">Device</span>
+          <select class="filter-select"><option>All devices</option><option>Mobile</option><option>Tablet</option><option>Desktop</option><option>TV</option></select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-group-label">Player</span>
+          <select class="filter-select"><option>All players</option><option>Safari</option><option>Chrome</option><option>AppleCoreMedia</option><option>Firefox</option></select>
+        </div>
+        <div class="filter-spacer"></div>
+        <div class="filter-tag">Bots filtered <span class="filter-tag-x">×</span></div>
+      </div>
+
+      <!-- ═══ KPI STRIP ═══ -->
+      <div class="kpi-grid reveal">
+        <div class="kpi-card">
+          <div class="kpi-label">Video plays</div>
+          <div class="kpi-value">12,847</div>
+          <div class="kpi-sub"><span class="kpi-change up">↑ 23.4%</span> vs prior episode</div>
+          <svg class="sparkline kpi-spark" viewBox="0 0 60 22" fill="none">
+            <polyline points="0,18 8,15 16,16 24,12 32,13 40,9 48,7 60,4" stroke="var(--accent)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Avg watch depth</div>
+          <div class="kpi-value">62.4%</div>
+          <div class="kpi-sub"><span class="kpi-change up">↑ 4.1pp</span> vs audio-only baseline</div>
+          <svg class="sparkline kpi-spark" viewBox="0 0 60 22" fill="none">
+            <polyline points="0,12 10,11 20,13 30,10 40,8 50,9 60,6" stroke="var(--success)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Audio-mode share</div>
+          <div class="kpi-value">38.2%</div>
+          <div class="kpi-sub"><span class="kpi-change neutral" style="color:var(--text-tertiary)">first measurement</span></div>
+          <svg class="sparkline kpi-spark" viewBox="0 0 60 22" fill="none">
+            <polyline points="0,16 10,14 20,12 30,10 40,8 50,7 60,5" stroke="var(--info)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">First-chunk p50</div>
+          <div class="kpi-value">412<span style="font-size:14px;font-weight:600;color:var(--text-tertiary);margin-left:4px">ms</span></div>
+          <div class="kpi-sub"><span class="kpi-change down">↑ 38ms</span> p99 = 1.8s</div>
+          <svg class="sparkline kpi-spark" viewBox="0 0 60 22" fill="none">
+            <polyline points="0,8 10,9 20,7 30,11 40,10 50,12 60,14" stroke="var(--warning)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+
+      <!-- ═══ HERO: AUDIO ↔ VIDEO DROP-OFF TIMELINE ═══ -->
+      <div class="card hero-card reveal" id="heroCard">
+        <div class="card-header">
+          <div class="card-title-block">
+            <div class="card-eyebrow"><span class="dot"></span>Hero · Flightcast-only</div>
+            <div class="card-title">Audio ↔ video drop-off timeline</div>
+            <div class="card-desc">
+              Active viewers at each second, split by the track they're consuming. Answers: <em>did viewers start watching, drop to audio when the video stopped helping, then come back?</em>
+              YouTube can't show this — they don't host audio and video as parallel renditions of the same playlist.
+            </div>
+          </div>
+          <div class="card-actions" id="heroTabs">
+            <span class="card-tab active" data-mode="stacked">Stacked</span>
+            <span class="card-tab" data-mode="share">100% share</span>
+            <span class="card-tab" data-mode="lines">Lines</span>
+          </div>
+        </div>
+
+        <div class="hero-chart-wrap" id="heroChartWrap">
+          <div class="hero-hover-line" id="heroHoverLine"></div>
+          <div class="hero-tooltip" id="heroTooltip"></div>
+        </div>
+
+        <div class="chart-legend" style="margin-top:14px;">
+          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:var(--c-video)"></span>Video<span class="legend-val">5,134</span></div>
+          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:var(--c-audio)"></span>Audio-only<span class="legend-val">3,948</span></div>
+          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:var(--c-combined)"></span>Combined rendition<span class="legend-val">1,832</span></div>
+          <div style="flex:1"></div>
+          <div style="font-size:13px;color:var(--text-tertiary)">Hover the chart to inspect a moment</div>
+        </div>
+
+        <div class="hero-insight">
+          <div class="hero-insight-badge">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M8 1.5l1.7 4.6 4.8.3-3.7 3 1.2 4.7L8 11.4l-4 2.7 1.2-4.7L1.5 6.4l4.8-.3z" fill="currentColor"/></svg>
+          </div>
+          <div class="hero-insight-text">
+            <strong>Insight:</strong> at <em>~22:30</em> roughly <strong>34%</strong> of video viewers switch to audio-only mode (visual content lulls), and roughly <strong>18%</strong> of them switch back to video at <em>~38:00</em> when the demo segment hits.
+            That's the kind of mixed-modality engagement no one else surfaces today.
+          </div>
+        </div>
+
+        <div class="action-hint">
+          <div class="action-hint-icon">→</div>
+          <div><strong>What to do:</strong> identify the <em>video → audio</em> switch points and ask the host to either cut the visuals there (save encode cost) or add a stronger hook (recover viewers). The <em>audio → video</em> recoveries mark <em>"this is the moment"</em> — promote those clips on social.</div>
+        </div>
+      </div>
+
+
+      <!-- ═══ WATCH-DEPTH BY DEVICE COHORT ═══ -->
+      <div class="card reveal">
+        <div class="card-header">
+          <div class="card-title-block">
+            <div class="card-title">Watch-depth retention curve</div>
+            <div class="card-desc">% of sessions still active at each chunk position. Split by device class — desktop drops fastest, TV holds best.</div>
+          </div>
+          <div class="card-actions">
+            <span class="card-tab active">By device</span>
+            <span class="card-tab">By geo</span>
+            <span class="card-tab">By OS</span>
+          </div>
+        </div>
+        <div class="retention-chart-wrap" id="retentionChartWrap"></div>
+        <div class="chart-legend" style="margin-top:12px">
+          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:var(--accent)"></span>iOS<span class="legend-val">68% finish</span></div>
+          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:var(--info)"></span>Android<span class="legend-val">61% finish</span></div>
+          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#f97316"></span>Desktop<span class="legend-val">52% finish</span></div>
+          <div class="chart-legend-item"><span class="chart-legend-dot" style="background:var(--success)"></span>TV<span class="legend-val">81% finish</span></div>
+        </div>
+        <div class="action-hint">
+          <div class="action-hint-icon">→</div>
+          <div><strong>What to do:</strong> the <em>29pp gap</em> between TV (81%) and Desktop (52%) is the lever. Desktop dropping fastest means <em>player UX</em> on web is the bottleneck, not content. Ship the new web player; track this number to confirm.</div>
+        </div>
+      </div>
+
+
+      <!-- ═══ COMPLETION FUNNEL + RENDITION CONSUMPTION ═══ -->
+      <div class="grid-2 reveal">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-block">
+              <div class="card-title">Completion funnel</div>
+              <div class="card-desc">Apple-style milestone funnel: started → 25% → 50% → 75% → finished.</div>
+            </div>
+          </div>
+          <div class="funnel-row" id="funnelRow"></div>
+          <div class="action-hint">
+            <div class="action-hint-icon">→</div>
+            <div><strong>What to do:</strong> the <em>27pp drop</em> at the 25% mark is the worst in the funnel. Whatever happens between 0:00 and 15:00 is losing a quarter of viewers — review the cold open with the host this week.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-block">
+              <div class="card-title">Rendition consumption</div>
+              <div class="card-desc">% of bytes served at each video rendition over the episode timeline.</div>
+            </div>
+          </div>
+          <div class="chart-kpi-callout">
+            <div class="chart-kpi-callout-val">12%</div>
+            <div class="chart-kpi-callout-text">of bytes served <strong>sub-720p</strong> — mostly cellular sessions in APAC.</div>
+          </div>
+          <div class="rendition-chart-wrap" id="renditionChart"></div>
+          <div class="rendition-axis"><span>0%</span><span></span><span>25%</span><span></span><span>50%</span><span></span><span>75%</span><span></span><span>100%</span></div>
+          <div class="chart-legend" style="margin-top:12px">
+            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#1e1b4b"></span>1080p</div>
+            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#7857d1"></span>720p</div>
+            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#a855f7"></span>480p</div>
+            <div class="chart-legend-item"><span class="chart-legend-dot" style="background:#d8b4fe"></span>240p</div>
+          </div>
+          <div class="action-hint">
+            <div class="action-hint-icon">→</div>
+            <div><strong>What to do:</strong> if sub-720p exceeds <em>20%</em>, ABR is the bottleneck and we should ship a smaller mobile encode ladder. <em>12%</em> = healthy. Re-check after the next APAC PoP rolls out.</div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ═══ SCRUB HEATMAP + TIME-TO-FIRST-CHUNK ═══ -->
+      <div class="grid-2 reveal">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-block">
+              <div class="card-title">Seek density</div>
+              <div class="card-desc">iframe-track chunk fetches per chunk position. Iframe chunks <em>only</em> load during scrubbing — peaks mean viewers jumped here.</div>
+            </div>
+          </div>
+          <div class="scrub-strip-wrap" id="scrubStripWrap" style="margin-top:24px;"></div>
+          <div class="scrub-axis" style="margin-top:18px;"><span>0:00</span><span>15:00</span><span>30:00</span><span>45:00</span><span>60:00</span></div>
+          <div class="action-hint">
+            <div class="action-hint-icon">→</div>
+            <div><strong>What to do:</strong> three hotspots tell three stories. <em>22:00</em> is a rewatch — cut a clip. <em>38:00</em> is a sponsor skip — shorten or move the read. <em>51:30</em> is jump-to-outro — the closing 9 minutes are skippable; tighten or cut.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-block">
+              <div class="card-title">Time-to-first-chunk</div>
+              <div class="card-desc">Cold-start latency on <code style="font-size:13px;background:var(--bg-muted);padding:1px 5px;border-radius:3px">chunk_index=0</code>. P50 / P95 / P99 across viewer sessions.</div>
+            </div>
+          </div>
+          <div class="histo-wrap">
+            <div class="histo" id="ttfcHisto"></div>
+            <div class="histo-marker" style="left:20.6%"><span class="histo-marker-label">p50</span></div>
+            <div class="histo-marker" style="left:49%"><span class="histo-marker-label">p95</span></div>
+            <div class="histo-marker p99" style="left:92%"><span class="histo-marker-label">p99</span></div>
+          </div>
+          <div class="histo-axis"><span>0ms</span><span>500ms</span><span>1s</span><span>1.5s</span><span>2s+</span></div>
+          <div class="histo-stat-row">
+            <div><div class="histo-stat-label">P50</div><div class="histo-stat-val">412ms</div></div>
+            <div><div class="histo-stat-label">P95</div><div class="histo-stat-val">980ms</div></div>
+            <div><div class="histo-stat-label">P99</div><div class="histo-stat-val" style="color:var(--danger)">1.84s</div></div>
+            <div><div class="histo-stat-label">Sessions</div><div class="histo-stat-val">12,847</div></div>
+          </div>
+          <div class="action-hint">
+            <div class="action-hint-icon">→</div>
+            <div><strong>What to do:</strong> p50 at <em>412ms</em> is fine but p99 at <em>1.84s</em> is the felt-pain — those sessions experience a noticeable cold-start. Slice this by region; if APAC dominates the tail, that's a CDN PoP decision.</div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ═══ RETURNING VS NEW + SESSION LENGTH ═══ -->
+      <div class="grid-2 reveal">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-block">
+              <div class="card-title">New-viewer retention</div>
+              <div class="card-desc">Of viewers whose first-ever Flightcast episode was Episode 47 — how many came back?</div>
+            </div>
+          </div>
+          <div class="funnel-row" id="returningFunnel"></div>
+          <div class="action-hint">
+            <div class="action-hint-icon">→</div>
+            <div><strong>What to do:</strong> <em>37%</em> of new viewers return for ep 2 — that's the conversion-to-listener number to optimize. If it slips below <em>30%</em> on a future episode, that episode failed as a gateway. Track week-over-week.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-block">
+              <div class="card-title">Session length distribution</div>
+              <div class="card-desc"><code style="font-size:13px;background:var(--bg-muted);padding:1px 5px;border-radius:3px">max(timestamp) − min(timestamp)</code> grouped by <code style="font-size:13px;background:var(--bg-muted);padding:1px 5px;border-radius:3px">persistence_id</code>.</div>
+            </div>
+          </div>
+          <div class="histo-wrap">
+            <div class="histo" id="sessionHisto"></div>
+            <div class="histo-marker" style="left:13%"><span class="histo-marker-label">bounce</span></div>
+            <div class="histo-marker" style="left:48%"><span class="histo-marker-label">median 28m</span></div>
+          </div>
+          <div class="histo-axis"><span>&lt;5m</span><span>15m</span><span>30m</span><span>45m</span><span>60m+</span></div>
+          <div class="histo-stat-row">
+            <div><div class="histo-stat-label">Bounce (&lt;3m)</div><div class="histo-stat-val">14%</div></div>
+            <div><div class="histo-stat-label">Median (engaged)</div><div class="histo-stat-val">28m 14s</div></div>
+            <div><div class="histo-stat-label">Sessions/listener</div><div class="histo-stat-val">1.43</div></div>
+          </div>
+          <div class="action-hint">
+            <div class="action-hint-icon">→</div>
+            <div><strong>What to do:</strong> the bimodal split lets us cut bouncers from KPIs. Define <em>"engaged session ≥ 3 min"</em> and report retention on that cohort — current avg-watch numbers are diluted by the 14% who bounce in the first 3 min.</div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ═══ V1-DEFERRED CALLOUT ═══ -->
+      <div class="deferred-card reveal">
+        <div class="deferred-title">
+          <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 5v3l2 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Not yet wired — surfaced for transparency
+        </div>
+        <div class="deferred-list">
+          <div class="deferred-item"><span class="dl-bullet">·</span><div><strong>Explicit pause / resume events.</strong> HLS players don't beacon those without active SDK instrumentation. We <em>infer</em> drop-off from chunks ceasing — fine for retention, but can't distinguish "paused at 20:00" from "closed the tab at 20:00".</div></div>
+          <div class="deferred-item"><span class="dl-bullet">·</span><div><strong>Ad chunk tracking.</strong> <code>track=ad_audio</code>/<code>ad_video</code> are reserved values; the stitcher's <code>RouteAdStitchAudioSplit</code> carries a TODO. Ad-impression analytics still come from the existing <code>ad_analytics</code> / VAST pixel path.</div></div>
+          <div class="deferred-item"><span class="dl-bullet">·</span><div><strong>Closed captions / chapter markers.</strong> Not modelled.</div></div>
+          <div class="deferred-item"><span class="dl-bullet">·</span><div><strong>Per-frame quality switches inside one rendition.</strong> We see which rendition was served, not adaptive-bitrate fluctuations within it.</div></div>
+          <div class="deferred-item"><span class="dl-bullet">·</span><div><strong>Thumbnail strip on scrub-heatmap.</strong> <em>Pixel says we already have IFRAME-track thumbnails (~6fps).</em> Wiring them to the heatmap is a follow-up — would let editorial preview the exact frame at each hot spot.</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// MOCK DATA
+// ═══════════════════════════════════════
+
+// Audio↔video drop-off — 60-min episode, 121 buckets (every 30s).
+// At each bucket: active viewers split into video / audio-only / combined.
+// Total decays from ~10,900 to ~3,800. Audio share grows mid-episode then stabilises.
+const HERO_BUCKETS = (() => {
+  const N = 121;
+  const buckets = [];
+  for (let i = 0; i < N; i++) {
+    const t = i / (N - 1);                   // 0..1
+    const totalStart = 10900;
+    // Smooth retention curve with two small bumps (engagement re-spikes)
+    const decay = Math.exp(-1.05 * t) + 0.03 * Math.sin(t * 7.5);
+    const total = Math.max(3500, totalStart * decay);
+
+    // Audio share grows from 0.18 to 0.46, dips back at 0.62 (demo segment), then ~0.42 to end
+    let audioShare = 0.18 + 0.30 * Math.min(1, t * 1.7);
+    if (t > 0.55 && t < 0.72) audioShare -= 0.12;   // demo segment pulls people back to video
+    if (t > 0.85) audioShare = 0.32 + (t - 0.85) * 0.6;
+
+    // Combined-rendition share decays (legacy clients): 0.22 → 0.10
+    const combinedShare = 0.22 - 0.12 * t;
+
+    const videoShare = 1 - audioShare - combinedShare;
+
+    buckets.push({
+      idx: i,
+      seconds: i * 30,
+      total: Math.round(total),
+      video: Math.round(total * videoShare),
+      audio: Math.round(total * audioShare),
+      combined: Math.round(total * combinedShare),
+    });
+  }
+  return buckets;
+})();
+
+const formatTime = s => {
+  const m = Math.floor(s / 60), sec = s % 60;
+  return `${m}:${String(sec).padStart(2,'0')}`;
+};
+
+let HERO_MODE = 'stacked';   // 'stacked' | 'share' | 'lines'
+
+// ═══════════════════════════════════════
+// HERO CHART — stacked area / 100% share / lines
+// ═══════════════════════════════════════
+function renderHeroChart() {
+  const wrap = document.getElementById('heroChartWrap');
+  const W = wrap.clientWidth || 1100;
+  const H = 360;
+  const padL = 48, padR = 16, padT = 20, padB = 36;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  const data = HERO_BUCKETS;
+  const x = i => padL + (i / (data.length - 1)) * innerW;
+
+  let yMax, ticks, ticksLabel, areas;
+
+  if (HERO_MODE === 'share') {
+    // Normalised 0..1
+    yMax = 1;
+    ticks = [0, 0.25, 0.5, 0.75, 1];
+    ticksLabel = ticks.map(t => `${(t * 100).toFixed(0)}%`);
+    const y = v => padT + innerH - (v / yMax) * innerH;
+    const buildArea = (lower, upper) => {
+      let pts = '';
+      for (let i = 0; i < data.length; i++) pts += `${x(i)},${y(upper(data[i]))} `;
+      for (let i = data.length - 1; i >= 0; i--) pts += `${x(i)},${y(lower(data[i]))} `;
+      return pts.trim();
+    };
+    const sh = d => d.video / d.total;
+    const sa = d => d.audio / d.total;
+    const videoPts    = buildArea(_ => 0, d => sh(d));
+    const audioPts    = buildArea(d => sh(d), d => sh(d) + sa(d));
+    const combinedPts = buildArea(d => sh(d) + sa(d), _ => 1);
+    areas = `
+      <g class="area-stack">
+        <polygon class="video-area" points="${videoPts}" fill="var(--c-video)" opacity="0.85"/>
+        <polygon class="audio-area" points="${audioPts}" fill="var(--c-audio)" opacity="0.78"/>
+        <polygon class="combined-area" points="${combinedPts}" fill="var(--c-combined)" opacity="0.70"/>
+      </g>`;
+  } else if (HERO_MODE === 'lines') {
+    const maxAny = Math.max(...data.map(d => Math.max(d.video, d.audio, d.combined)));
+    yMax = Math.ceil(maxAny / 1000) * 1000;
+    ticks = [0, 0.25, 0.5, 0.75, 1].map(p => Math.round(yMax * p));
+    ticksLabel = ticks.map(t => `${(t / 1000).toFixed(1)}k`);
+    const y = v => padT + innerH - (v / yMax) * innerH;
+    const linePts = sel => data.map((d, i) => `${x(i)},${y(sel(d))}`).join(' ');
+    areas = `
+      <g class="area-stack" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline class="video-area" points="${linePts(d => d.video)}" stroke="var(--c-video)"/>
+        <polyline class="audio-area" points="${linePts(d => d.audio)}" stroke="var(--c-audio)"/>
+        <polyline class="combined-area" points="${linePts(d => d.combined)}" stroke="var(--c-combined)"/>
+      </g>`;
+  } else {
+    // stacked absolute
+    const maxTotal = Math.max(...data.map(d => d.total));
+    yMax = Math.ceil(maxTotal / 1000) * 1000;
+    ticks = [0, 0.25, 0.5, 0.75, 1].map(p => Math.round(yMax * p));
+    ticksLabel = ticks.map(t => `${(t / 1000).toFixed(0)}k`);
+    const y = v => padT + innerH - (v / yMax) * innerH;
+    const buildArea = (lower, upper) => {
+      let pts = '';
+      for (let i = 0; i < data.length; i++) pts += `${x(i)},${y(upper(data[i]))} `;
+      for (let i = data.length - 1; i >= 0; i--) pts += `${x(i)},${y(lower(data[i]))} `;
+      return pts.trim();
+    };
+    const videoPts    = buildArea(_ => 0, d => d.video);
+    const audioPts    = buildArea(d => d.video, d => d.video + d.audio);
+    const combinedPts = buildArea(d => d.video + d.audio, d => d.video + d.audio + d.combined);
+    areas = `
+      <g class="area-stack">
+        <polygon class="video-area" points="${videoPts}" fill="var(--c-video)" opacity="0.85"/>
+        <polygon class="audio-area" points="${audioPts}" fill="var(--c-audio)" opacity="0.78"/>
+        <polygon class="combined-area" points="${combinedPts}" fill="var(--c-combined)" opacity="0.70"/>
+      </g>`;
+  }
+
+  const yTick = v => padT + innerH - (v / yMax) * innerH;
+
+  // X-axis ticks every 10 min
+  const xTickIdx = [0, 20, 40, 60, 80, 100, 120].filter(i => i < data.length);
+
+  const svg = `
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      <g stroke="#f0f0f0" stroke-width="1">
+        ${ticks.map(t => `<line x1="${padL}" x2="${W - padR}" y1="${yTick(t)}" y2="${yTick(t)}" />`).join('')}
+      </g>
+      <g font-family="var(--font)" font-size="11" font-weight="600" fill="var(--text-tertiary)">
+        ${ticks.map((t, i) => `<text x="${padL - 8}" y="${yTick(t) + 3}" text-anchor="end">${ticksLabel[i]}</text>`).join('')}
+      </g>
+      <g font-family="var(--font)" font-size="11" font-weight="600" fill="var(--text-tertiary)">
+        ${xTickIdx.map(i => `<text x="${x(i)}" y="${H - 14}" text-anchor="middle">${formatTime(data[i].seconds)}</text>`).join('')}
+      </g>
+      ${areas}
+      <rect id="heroHoverHit" x="${padL}" y="${padT}" width="${innerW}" height="${innerH}" fill="transparent" style="cursor:crosshair"/>
+    </svg>
+  `;
+  wrap.innerHTML = svg + wrap.querySelector('#heroHoverLine').outerHTML + wrap.querySelector('#heroTooltip').outerHTML;
+
+  // Re-bind references after replacing innerHTML
+  const hover = document.getElementById('heroHoverLine');
+  const tt = document.getElementById('heroTooltip');
+  const hit = wrap.querySelector('#heroHoverHit');
+
+  hit.addEventListener('mousemove', e => {
+    const rect = wrap.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const ratio = (px - padL) / innerW;
+    const idx = Math.max(0, Math.min(data.length - 1, Math.round(ratio * (data.length - 1))));
+    const d = data[idx];
+    const lineX = x(idx) * (rect.width / W);
+
+    hover.style.left = lineX + 'px';
+    hover.classList.add('visible');
+
+    tt.classList.add('visible');
+    tt.innerHTML = `
+      <div class="hero-tooltip-time">${formatTime(d.seconds)} into episode</div>
+      <div class="hero-tooltip-row"><span class="dot" style="background:var(--c-video)"></span><span class="lbl">Video</span><span class="val">${d.video.toLocaleString()}</span></div>
+      <div class="hero-tooltip-row"><span class="dot" style="background:var(--c-audio)"></span><span class="lbl">Audio-only</span><span class="val">${d.audio.toLocaleString()}</span></div>
+      <div class="hero-tooltip-row"><span class="dot" style="background:var(--c-combined)"></span><span class="lbl">Combined</span><span class="val">${d.combined.toLocaleString()}</span></div>
+      <div class="hero-tooltip-row" style="border-top:1px solid var(--border-light);padding-top:6px;margin-top:4px"><span style="width:8px"></span><span class="lbl" style="color:var(--text-primary);font-weight:700">Active total</span><span class="val">${d.total.toLocaleString()}</span></div>
+    `;
+    const ttW = 220;
+    const ttX = Math.min(rect.width - ttW - 8, Math.max(8, lineX + 12));
+    const ttY = Math.max(8, e.clientY - rect.top - 60);
+    tt.style.left = ttX + 'px';
+    tt.style.top = ttY + 'px';
+  });
+  hit.addEventListener('mouseleave', () => {
+    hover.classList.remove('visible');
+    tt.classList.remove('visible');
+  });
+}
+
+// ═══════════════════════════════════════
+// RETENTION BY-COHORT LINE CHART
+// ═══════════════════════════════════════
+function renderRetention() {
+  const wrap = document.getElementById('retentionChartWrap');
+  const W = wrap.clientWidth || 700;
+  const H = 260;
+  const padL = 36, padR = 16, padT = 16, padB = 28;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  // 5 cohort curves; iOS strongest, desktop weakest, TV best
+  const N = 21;
+  const xs = i => padL + (i / (N - 1)) * innerW;
+  const yp = p => padT + innerH - p * innerH;
+
+  const cohorts = [
+    { name: 'iOS',     color: 'var(--accent)',  endPct: 0.68, dropAt: 0.45, dropAmt: 0.04 },
+    { name: 'Android', color: 'var(--info)',    endPct: 0.61, dropAt: 0.42, dropAmt: 0.06 },
+    { name: 'Desktop', color: '#f97316',        endPct: 0.52, dropAt: 0.38, dropAmt: 0.09 },
+    { name: 'TV',      color: 'var(--success)', endPct: 0.81, dropAt: 0.62, dropAmt: 0.02 },
+  ];
+
+  const buildCurve = (c) => {
+    const pts = [];
+    for (let i = 0; i < N; i++) {
+      const t = i / (N - 1);
+      // smooth decay from 1 → endPct, with a small dip at dropAt
+      let p = 1 - (1 - c.endPct) * Math.pow(t, 1.05);
+      const dipFactor = Math.exp(-Math.pow((t - c.dropAt) * 8, 2));
+      p -= c.dropAmt * dipFactor;
+      pts.push({ x: xs(i), y: yp(p), p });
+    }
+    return pts;
+  };
+
+  const curves = cohorts.map(c => ({ ...c, pts: buildCurve(c) }));
+
+  const ticksY = [0, 0.25, 0.5, 0.75, 1];
+  const xTicks = [0, 5, 10, 15, 20];
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">`;
+  svg += `<g stroke="#f0f0f0" stroke-width="1">${ticksY.map(t => `<line x1="${padL}" x2="${W-padR}" y1="${yp(t)}" y2="${yp(t)}"/>`).join('')}</g>`;
+  svg += `<g font-family="var(--font)" font-size="11" font-weight="600" fill="var(--text-tertiary)">${ticksY.map(t => `<text x="${padL - 6}" y="${yp(t)+3}" text-anchor="end">${(t*100).toFixed(0)}%</text>`).join('')}</g>`;
+  svg += `<g font-family="var(--font)" font-size="11" font-weight="600" fill="var(--text-tertiary)">${xTicks.map(i => `<text x="${xs(i)}" y="${H-10}" text-anchor="middle">${formatTime(i*180)}</text>`).join('')}</g>`;
+
+  curves.forEach((c, idx) => {
+    const ptsStr = c.pts.map(p => `${p.x},${p.y}`).join(' ');
+    svg += `<polyline class="ret-line l${idx+1}" points="${ptsStr}" stroke="${c.color}"/>`;
+  });
+
+  svg += `</svg>`;
+  wrap.innerHTML = svg;
+
+  // Compute line lengths for draw animation
+  requestAnimationFrame(() => {
+    wrap.querySelectorAll('.ret-line').forEach(line => {
+      try {
+        const len = line.getTotalLength();
+        line.style.setProperty('--line-len', len);
+      } catch(e) {}
+    });
+  });
+}
+
+// ═══════════════════════════════════════
+// COMPLETION FUNNEL
+// ═══════════════════════════════════════
+function renderFunnel() {
+  const steps = [
+    { label: 'Started',  count: 12847, pct: 100, drop: 0 },
+    { label: '25% mark', count: 9420,  pct: 73, drop: 27 },
+    { label: '50% mark', count: 7980,  pct: 62, drop: 11 },
+    { label: '75% mark', count: 6541,  pct: 51, drop: 11 },
+    { label: 'Finished', count: 5212,  pct: 41, drop: 10 },
+  ];
+  const worstIdx = steps.reduce((acc, s, i) => (i > 0 && s.drop > steps[acc].drop ? i : acc), 0);
+  const html = steps.map((s, i) => `
+    <div class="funnel-step ${i === worstIdx ? 'worst' : ''}">
+      <div class="funnel-step-bg" style="width:${s.pct}%"></div>
+      <div class="funnel-step-label">${s.label}</div>
+      <div class="funnel-step-meta">${s.count.toLocaleString()} viewers</div>
+      <div class="funnel-step-pct">${s.pct}%</div>
+      <div class="funnel-step-drop">${s.drop ? '−'+s.drop+'pp' : ''}</div>
+    </div>
+  `).join('');
+  document.getElementById('funnelRow').innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+// RENDITION CONSUMPTION
+// ═══════════════════════════════════════
+function renderRendition() {
+  // 30 columns across episode duration; segments = [240p, 480p, 720p, 1080p]
+  // 1080p starts dominant, drops as bandwidth-constrained sessions degrade
+  const colors = { '240p': '#d8b4fe', '480p': '#a855f7', '720p': '#7857d1', '1080p': '#1e1b4b' };
+  const N = 32;
+  const cols = [];
+  for (let i = 0; i < N; i++) {
+    const t = i / (N - 1);
+    const p1080 = Math.max(0.32, 0.62 - 0.20 * t + 0.05 * Math.sin(t * 7));
+    const p720  = 0.22 + 0.06 * Math.sin(t * 5);
+    const p480  = 0.12 + 0.08 * t;
+    const p240  = 1 - p1080 - p720 - p480;
+    cols.push({ '240p': p240, '480p': p480, '720p': p720, '1080p': p1080 });
+  }
+  const html = cols.map(c => {
+    const segs = ['240p', '480p', '720p', '1080p'].map(r =>
+      `<div class="rendition-seg" style="height:${(c[r]*100).toFixed(1)}%;background:${colors[r]}"></div>`
+    ).join('');
+    return `<div class="rendition-col">${segs}</div>`;
+  }).join('');
+  document.getElementById('renditionChart').innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+// SEEK DENSITY STRIP (1D) — replaces 5×20 heatmap
+// ═══════════════════════════════════════
+function renderScrubStrip() {
+  const wrap = document.getElementById('scrubStripWrap');
+  const N = 120;     // resolution along episode timeline (every 30s)
+  const hotspots = [
+    { pos: 0.36, intensity: 0.95, label: '22:00', note: 'demo rewatch' },
+    { pos: 0.63, intensity: 0.92, label: '38:00', note: 'sponsor skip' },
+    { pos: 0.86, intensity: 0.88, label: '51:30', note: 'jump to outro' },
+  ];
+  const density = [];
+  for (let i = 0; i < N; i++) {
+    const x = i / (N - 1);
+    let v = 0.06 + Math.random() * 0.05;
+    hotspots.forEach(h => {
+      const d = Math.abs(x - h.pos);
+      if (d < 0.06) v = Math.max(v, h.intensity * (1 - d / 0.06));
+    });
+    density.push(Math.min(1, v));
+  }
+
+  // Build the strip cells + hotspot markers
+  let cells = '';
+  density.forEach((v, i) => {
+    cells += `<div class="scrub-strip-cell" style="left:${(i / N * 100).toFixed(2)}%;width:${(100/N).toFixed(3)}%;opacity:${v.toFixed(3)};"></div>`;
+  });
+  let markers = '';
+  hotspots.forEach(h => {
+    markers += `
+      <div class="scrub-marker" style="left:${(h.pos * 100).toFixed(1)}%;">
+        <div class="scrub-marker-dot"></div>
+        <div>${h.label} · ${h.note}</div>
+        <div class="scrub-marker-line"></div>
+      </div>`;
+  });
+  wrap.innerHTML = `
+    <div style="position:relative;height:24px;">${markers}</div>
+    <div class="scrub-strip">${cells}</div>
+  `;
+}
+
+// ═══════════════════════════════════════
+// TIME-TO-FIRST-CHUNK HISTOGRAM
+// ═══════════════════════════════════════
+function renderTtfcHisto() {
+  // 24 buckets, 0–2.4s. Right-skewed.
+  const buckets = [];
+  for (let i = 0; i < 24; i++) {
+    const x = i / 23;
+    // log-normal-ish: peak around 0.18, long tail
+    const y = Math.exp(-Math.pow((x - 0.18) * 5, 2)) + 0.18 * Math.exp(-Math.pow((x - 0.55) * 3, 2)) + 0.05;
+    buckets.push(y);
+  }
+  const max = Math.max(...buckets);
+  const peakIdx = buckets.indexOf(max);
+  const html = buckets.map((b, i) => {
+    const cls = i === peakIdx ? 'peak' : (i > 18 ? 'muted' : '');
+    return `<div class="histo-bar ${cls}" style="height:${(b/max*100).toFixed(1)}%"></div>`;
+  }).join('');
+  document.getElementById('ttfcHisto').innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+// SESSION-LENGTH HISTOGRAM
+// ═══════════════════════════════════════
+function renderSessionHisto() {
+  const buckets = [];
+  for (let i = 0; i < 24; i++) {
+    const x = i / 23;
+    // bimodal: short bounce (0–5min) + main mode at 28–30min
+    const y = 0.45 * Math.exp(-Math.pow((x - 0.05) * 8, 2)) + Math.exp(-Math.pow((x - 0.48) * 4, 2)) + 0.12 * Math.exp(-Math.pow((x - 0.95) * 6, 2));
+    buckets.push(y);
+  }
+  const max = Math.max(...buckets);
+  const peakIdx = buckets.indexOf(max);
+  const html = buckets.map((b, i) => {
+    const cls = i === peakIdx ? 'peak' : '';
+    return `<div class="histo-bar ${cls}" style="height:${(b/max*100).toFixed(1)}%"></div>`;
+  }).join('');
+  document.getElementById('sessionHisto').innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+// NEW-VIEWER RETENTION FUNNEL
+// ═══════════════════════════════════════
+function renderReturningFunnel() {
+  const steps = [
+    { label: 'First episode',  count: 8420, pct: 100, drop: 0 },
+    { label: 'Came back for ep 2', count: 3115, pct: 37, drop: 63 },
+    { label: 'Watched 3+', count: 1820, pct: 22, drop: 15 },
+    { label: 'Loyalist (6+)',  count: 412,  pct: 5,  drop: 17 },
+  ];
+  // Worst drop step gets red treatment
+  const worstIdx = steps.reduce((acc, s, i) => (i > 0 && s.drop > steps[acc].drop ? i : acc), 0);
+  const html = steps.map((s, i) => `
+    <div class="funnel-step ${i === worstIdx ? 'worst' : ''}">
+      <div class="funnel-step-bg" style="width:${s.pct}%"></div>
+      <div class="funnel-step-label">${s.label}</div>
+      <div class="funnel-step-meta">${s.count.toLocaleString()} viewers</div>
+      <div class="funnel-step-pct">${s.pct}%</div>
+      <div class="funnel-step-drop">${s.drop ? '−' + s.drop + 'pp' : ''}</div>
+    </div>
+  `).join('');
+  document.getElementById('returningFunnel').innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+// INIT + REVEAL OBSERVER
+// ═══════════════════════════════════════
+function initAll() {
+  renderHeroChart();
+  renderRetention();
+  renderFunnel();
+  renderRendition();
+  renderScrubStrip();
+  renderTtfcHisto();
+  renderSessionHisto();
+  renderReturningFunnel();
+}
+
+function bindHeroTabs() {
+  const tabs = document.querySelectorAll('#heroTabs .card-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      HERO_MODE = tab.dataset.mode;
+      renderHeroChart();
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initAll();
+  bindHeroTabs();
+
+  // Reveal observer
+  const scrollRoot = document.querySelector('.content');
+  const reveals = document.querySelectorAll('.reveal');
+
+  const inViewport = el => {
+    const r = el.getBoundingClientRect();
+    return r.top < window.innerHeight && r.bottom > 0;
+  };
+
+  const deferred = [];
+  let loadIdx = 0;
+  reveals.forEach(el => {
+    if (inViewport(el)) {
+      el.style.transitionDelay = (loadIdx * 40) + 'ms';
+      el.classList.add('visible');
+      loadIdx++;
+    } else {
+      deferred.push(el);
+    }
+  });
+
+  if (deferred.length) {
+    const observer = new IntersectionObserver(entries => {
+      const batch = [];
+      entries.forEach(e => { if (e.isIntersecting) batch.push(e.target); });
+      batch.forEach((el, i) => {
+        el.style.transitionDelay = (i * 40) + 'ms';
+        el.classList.add('visible');
+        observer.unobserve(el);
+      });
+    }, { root: scrollRoot, threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
+    deferred.forEach(el => observer.observe(el));
+  }
+
+  // Re-render hero on resize (for responsive width)
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      renderHeroChart();
+      renderRetention();
+    }, 150);
+  });
+});
+</script>
+</body>
+</html>
